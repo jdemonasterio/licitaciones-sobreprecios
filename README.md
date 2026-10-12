@@ -59,3 +59,9 @@ python -m pytest -q                               # tests
 Grupo Quijote (Calles, Madanes, Oks, Serebrennik; software de David Ruiz Díaz), "Indicadores de Transparencia en
 Argentina – El Precio de los Insumos Críticos que compra el Estado" (2021). Este proyecto reimplementa y extiende
 esa metodología; su dataset 2021 se usa como caso de validación.
+
+## Licencia
+
+[MIT](LICENSE) — Copyright (c) 2026 Grupo Quijote. Se puede usar, copiar, modificar y redistribuir libremente,
+manteniendo el aviso de copyright y la licencia. Chart.js (`sobreprecios/web/static/vendor/`) conserva su propia
+licencia MIT.

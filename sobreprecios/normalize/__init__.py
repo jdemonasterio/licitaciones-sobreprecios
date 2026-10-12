@@ -1,6 +1,6 @@
 """Normalización de entidades: CUIT, empresas, personas y organismos.
 
-Reglas (decisiones del LLM prime P13/P14, 2026-10-11, pendientes de check de Mateo):
+Reglas (decisiones del LLM prime P13/P14, 2026-10-11, pendientes de check de jdemonasterio):
 - Una empresa se identifica por CUIT válido. Sin CUIT, el nombre normalizado solo
   genera CANDIDATOS de unión (nunca une solo).
 - Una persona se identifica por DNI. Sin DNI, los tokens del nombre son una pista,

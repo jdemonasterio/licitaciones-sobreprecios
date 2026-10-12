@@ -14,7 +14,7 @@ Cómo se arma la referencia (todo por unidad base: ARS/kg, ARS/l, ARS/u):
    no es compatible.
 4. Outliers: por canal, < outlier_bajo*mediana o > outlier_alto*mediana.
 5. Referencia principal: misma marca si la compra la nombra y está; si no, el MÍNIMO de
-   mercado de ambos canales (Mateo 2026-10-11; prime P16).
+   mercado de ambos canales (jdemonasterio 2026-10-11; prime P16).
 
 Dos brechas, siempre a la vista:
   - vs mínimo observado (referencia principal): decide amarillo/verde;
@@ -139,7 +139,7 @@ def filter_presentation(obs: list[Obs], contenido_estado: float | None, exacta: 
     """Filtra por tamaño de envase. Devuelve (observaciones, se usó presentación exacta).
 
     Si la licitación dice el envase ("envases de 1 kg", "x 800 g") se compara contra ese
-    envase (±15%) (Mateo 2026-10-11: "salvo que en la licitación se indique precisamente
+    envase (±tolerancia_presentacion, 3 %) (jdemonasterio 2026-10-11: "salvo que en la licitación se indique precisamente
     la presentación"). Con presentacion_exigida_estricta (default, riesgo del prime) no se
     relaja a envases parecidos si no está. Sin envase exigido, cualquier envase dentro de
     la banda (un bulto de 25 kg no es referencia de un paquete de 1 kg). Una observación

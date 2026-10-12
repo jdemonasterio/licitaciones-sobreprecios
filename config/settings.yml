@@ -45,7 +45,7 @@ comparacion:
   # Plazo de pago típico del Estado. Con inflación mensual m, se descuenta m*plazo
   # del sobreprecio ("costo financiero", Grupo Quijote §8).
   plazo_pago_meses: 1.0
-  # Contra qué se calcula el semáforo y el exceso en $ (Mateo 2026-10-11):
+  # Contra qué se calcula el semáforo y el exceso en $ (jdemonasterio 2026-10-11):
   #   1. si la licitación nombra la MARCA y está en el mercado -> esa marca;
   #   2. si no, el MÍNIMO de mercado normalizado por kg/l/u, sin importar la marca;
   #      si la licitación dice el envase ("envases de 1 kg") se usa solo ese envase.

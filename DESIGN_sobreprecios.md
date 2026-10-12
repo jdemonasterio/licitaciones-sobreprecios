@@ -37,7 +37,7 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 - **2026-10-11 · Fuente de precios pagados**: Boletín Oficial 1ª sección (resoluciones que adjudican). Trae
   proveedor, CUIT, cantidad, marca y precio unitario en 2020-2022; desde 2024 casi solo totales y el número de
   proceso → COMPR.AR es necesario para lo reciente. La 3ª sección y los CSV de la ONC no tienen precio por renglón.
-- **2026-10-11 · Referencia de mercado** (Mateo): misma marca si la norma la nombra; si no, mínimo de mercado
+- **2026-10-11 · Referencia de mercado** (jdemonasterio): misma marca si la norma la nombra; si no, mínimo de mercado
   normalizado por unidad base sin importar marca; envase exacto (±15 %) si la norma lo indica, si no banda 2,5×.
   Orden: misma marca → mínimo mayorista → mínimo supermercado → P25/mediana → INDEC. Configurable en
   `comparacion.referencia_principal`.
@@ -64,7 +64,7 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   oficial en un bucket público (índice en github.com/catdevnull/sepa-precios-metadata). Se bajan solo los días
   cercanos a las compras + uno por mes. Mercado Libre, Rappi y PedidosYa no tienen historia ni API pública
   (verificado). 2022-2023 sigue sin fuente por producto.
-- **2026-10-11 · Decisiones del LLM prime (pendientes de check de Mateo, ver _scratch/licitaciones/DECISIONES_prime.md)**:
+- **2026-10-11 · Decisiones del LLM prime (pendientes de check de jdemonasterio, ver _scratch/licitaciones/DECISIONES_prime.md)**:
   rojo exige mínimo corroborado por ≥2 familias de fuentes independientes; el dictamen es recomendación (no
   adjudicación) y las OC son contrato (no pago); uniones de empresas solo por CUIT válido; organismos con el
   nombre de la fecha (el SAF no une renombres); nada sale sin "publicable".

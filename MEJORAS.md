@@ -9,9 +9,9 @@ pensada para dos lectores: vos (para elegir que pedir primero) y Claude Code
 mejora #7" o "lee MEJORAS.md y hace la mejora #12". Claude va a leer el detalle
 de ese numero, hacer el cambio, correr los tests y avisarte que modifico.
 
-Las que dicen **"pendiente de check de Mateo"** son decisiones que el LLM prime
+Las que dicen **"pendiente de check de jdemonasterio"** son decisiones que el LLM prime
 ya analizo (ver `_scratch/licitaciones/DECISIONES_prime.md`, no se sube a git)
-pero que Mateo todavia no marco como aprobadas. Pedile a Claude que implemente
+pero que jdemonasterio todavia no marco como aprobadas. Pedile a Claude que implemente
 esas solo despues de marcarlas `[x] OK` en ese archivo.
 
 ---
@@ -21,14 +21,14 @@ esas solo despues de marcarlas `[x] OK` en ese archivo.
 **#1 — Bajar el acto de adjudicacion final, no solo el dictamen.**
 Hoy "quien gano" sale del Dictamen de Evaluacion (que *recomienda*, no decide).
 Falta bajar el acto administrativo final y sus anexos para confirmar ganador,
-cantidad y precio por renglon. *Pendiente de check de Mateo (P6).*
+cantidad y precio por renglon. *Pendiente de check de jdemonasterio (P6).*
 Como verificar: un caso de COMPR.AR muestra un renglon con fuente "acto de
 adjudicacion" en vez de (o ademas de) "recomendado (dictamen)".
 
 **#2 — Leer la condicion de pago real del pliego.**
 El costo financiero hoy usa 1 mes fijo como aproximacion por IPC. Falta leer
 plazo, hito desde el que corre, y anticipos del pliego/contrato de cada caso.
-*Pendiente de check de Mateo (P2).*
+*Pendiente de check de jdemonasterio (P2).*
 Como verificar: el detalle de una licitacion muestra el plazo de pago leido del
 pliego (no solo "1 mes, aproximado").
 
@@ -54,7 +54,7 @@ Como verificar: existe un borrador de nota/pedido en el repo o en Drive.
 **#6 — Sumar mayoristas regionales (empezar por Diarco).**
 Hoy el unico mayorista en vivo es Maxiconsumo (sucursal Moreno): para compras
 en otras provincias esa referencia puede no ser representativa.
-*Pendiente de check de Mateo (P9).*
+*Pendiente de check de jdemonasterio (P9).*
 Como verificar: "Datos y fuentes" lista una segunda fuente mayorista con fecha
 de observacion y, si falla, dice "sin datos" (nunca reusa un precio viejo).
 
@@ -84,14 +84,14 @@ Como verificar: existe `requirements-dev.txt` (o una seccion aparte) con
 **#10 — Fijar el modelo del juez LLM externo.**
 El modulo de auditoria (`auditoria/`, solo lectura, tope de gasto por corrida)
 ya esta implementado, pero el modelo por defecto queda sin fijar hasta medir
-su acuerdo contra los veredictos de Mateo en una muestra real.
-*Pendiente de check de Mateo (P11).*
+su acuerdo contra los veredictos de jdemonasterio en una muestra real.
+*Pendiente de check de jdemonasterio (P11).*
 Como verificar: `_scratch/licitaciones/auditoria/<fecha>/` tiene un resumen con
 tasa de acuerdo juez-humano y el modelo elegido.
 
 **#11 — Golden de validacion de uniones de entidades.**
 Falta generar `validation_entidades_*.tsv` (cada alias → clave canonica de
-empresa/organismo/persona) para que Mateo marque cuales uniones son correctas.
+empresa/organismo/persona) para que jdemonasterio marque cuales uniones son correctas.
 Como verificar: `python -m sobreprecios.cli goldens` genera ese TSV en
 `_scratch/licitaciones/` con columnas `Tu veredicto` / `Tu comentario`.
 
@@ -103,7 +103,7 @@ por separado, y una designacion parcial no cierra cargos que no menciona.
 
 **#13 — Revisar y marcar las 23 decisiones del LLM prime.**
 `_scratch/licitaciones/DECISIONES_prime.md` (no se sube a git) tiene 23
-decisiones ya tomadas por el LLM prime (P1-P15 y la ronda de método P16-P23), esperando que Mateo marque cada una
+decisiones ya tomadas por el LLM prime (P1-P15 y la ronda de método P16-P23), esperando que jdemonasterio marque cada una
 `[x] OK` o `[ ] cambiar: ...`. Varias mejoras de esta lista dependen de eso.
 Como verificar: ese archivo no tiene ninguna fila `Tu check` vacia.
 
@@ -158,7 +158,7 @@ volcado <= fecha a <= 15 días para cada compra comparable.
 Ya esta implementado que el sistema NO une renombres automaticamente (ej.
 Desarrollo Social → Capital Humano), pero falta la vista de agrupacion
 historica con las correspondencias documentadas, para quien la quiera ver.
-*Pendiente de check de Mateo (P13).*
+*Pendiente de check de jdemonasterio (P13).*
 Como verificar: "Analitica" permite ver un ranking "agrupado historicamente"
 que explica que organismos agrupa y con que fuente.
 
@@ -195,7 +195,7 @@ Orden sugerido: limpiadores/detergentes (formulacion y dilucion) → bolsas
 (medida, espesor, material) → papel higienico/toallas (largo, ancho, capas) →
 aderezos/especias (composicion y presentacion equivalente). Lavandina necesita
 concentracion de cloro verificada; guantes quedan para una fase aparte.
-*Pendiente de check de Mateo (P7, incluye decidir que especias puntuales).*
+*Pendiente de check de jdemonasterio (P7, incluye decidir que especias puntuales).*
 Como verificar: `config/productos.yml` tiene los productos nuevos con sus
 atributos criticos obligatorios, y sus tests pasan.
 

@@ -1,4 +1,4 @@
-/* soft-nav.js — in-place refresh for the WHOLE webui (Mateo 2026-10-10).
+/* soft-nav.js — in-place refresh for the WHOLE webui (jdemonasterio 2026-10-10).
  *
  * Rule ("the backend never resets the page"):
  * an action that runs in the backend never reloads the page, never jumps to
