@@ -154,7 +154,8 @@ tr.rojo td:nth-child(8){{color:#b42318;font-weight:bold}} tr.amarillo td:nth-chi
 <li>Se descuenta un costo financiero: inflación mensual × {cfg.get('plazo_pago_meses', 1)} mes(es) de plazo de pago del Estado.</li>
 <li>Semáforo: brecha ajustada ≥ {cfg.get('umbral_rojo_pct', 20)}% con confianza media o alta = alta; ≥ {cfg.get('umbral_amarillo_pct', 8)}% = moderada. Diferencias mayores a {cfg.get('plausibilidad_max_ratio', 4)}x se marcan para revisar (casi siempre son errores de unidad) y no cuentan como sobreprecio.</li>
 </ul>
-<p class="nota"><b>Limitaciones.</b> Una brecha no prueba irregularidad. Pueden explicarla costos de logística y distribución, plazos de pago más largos, presentaciones o especificaciones distintas (por ejemplo, leche fortificada) o errores en la publicación original. Cada caso debe verificarse con el expediente y, si corresponde, pedir explicaciones al organismo. Los precios de mercado provienen de relevamientos públicos de mayoristas, supermercados (SEPA / Precios Claros) e INDEC.</p>
+<p class="nota"><b>Limitaciones.</b> Un color (sobre todo rojo) es una investigación pendiente de revisión humana, no una
+conclusión publicada: una brecha no prueba irregularidad. Pueden explicarla costos de logística y distribución, plazos de pago más largos, presentaciones o especificaciones distintas (por ejemplo, leche fortificada) o errores en la publicación original. Cada caso debe verificarse con el expediente y, si corresponde, pedir explicaciones al organismo. Los precios de mercado provienen de relevamientos públicos de mayoristas, supermercados (SEPA / Precios Claros) e INDEC.</p>
 <h2>Todos los renglones ({len(rows)})</h2>
 {table(rows[:1000])}
 </body></html>"""

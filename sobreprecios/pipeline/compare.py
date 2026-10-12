@@ -38,6 +38,7 @@ from dataclasses import asdict, dataclass, field, replace
 
 from .. import config, db
 from ..catalog import Producto, load_catalog, variante as variante_de, variante_estado, variantes_aceptadas
+from ..revision_humana import aplicar_correcciones, aplicar_exclusiones_mercado
 from .comprar_import import brecha_ofertas
 from ..textnorm import norm, tokens
 from ..units import parse_size
@@ -360,7 +361,7 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
             bloqueo = ("atributo_desconocido",
                        f"atributo crítico {estado} (variedad / formulación): no se puede saber contra qué "
                        "comparar; revisar el pliego o la ficha y cargar la variante")
-        elif estado in {"verificado", "por_defecto"} and variante:
+        elif estado in {"verificado", "por_defecto", "verificado (humano)"} and variante:
             aceptadas = variantes_ok or {variante}
             misma = [o for o in obs if o.canal == "oficial" or variante_obs(o.descripcion) in aceptadas]
             if select_observations(misma, fecha, contenido_estado, indice, cfg,
@@ -618,35 +619,52 @@ def run(conn: sqlite3.Connection, proceso_ids: list[int] | None = None,
     obs_cache: dict[str, list[Obs]] = {}
     counts = {"rojo": 0, "amarillo": 0, "verde": 0, "gris": 0}
     for r in rows:
-        pid = r["producto_id"]
+        # Correcciones manuales vigentes (módulo de revisión humana): se resuelven ANTES de
+        # armar la comparación, así compare() (el núcleo puro) no sabe que hubo una corrección,
+        # solo recibe el dato ya corregido (ver revision_humana.aplicar_correcciones).
+        renglon, notas_manuales = aplicar_correcciones(conn, r)
+        pid = renglon["producto_id"]
         if pid not in obs_cache:
             obs_cache[pid] = load_observations(conn, pid)
         prod = catalog.get(pid)
         indice = indices.get("ipc_alimentos" if prod and prod.rubro in {"alimentos", "bebidas"}
                              else "ipc_general", {})
-        cantidad_base = (r["cantidad"] * r["contenido_base"]) if r["cantidad"] and r["contenido_base"] else None
-        size = parse_size(r["descripcion"])
+        cantidad_base = (renglon["cantidad"] * renglon["contenido_base"]
+                        if renglon["cantidad"] and renglon["contenido_base"] else None)
+        size = parse_size(renglon["descripcion"])
         exacta = size is not None
         # Pack de 50 jabones de 180 g: la presentación comparable es la barra, no el pack de 9 kg.
-        presentacion = r["contenido_base"]
-        if size and size.pack_count > 1 and size.base()[1] == r["unidad_base"] and r["contenido_base"]:
+        # (salvo que el envase ya haya sido corregido a mano: ese valor manda tal cual).
+        presentacion = renglon["contenido_base"]
+        envase_manual = "contenido_base" in renglon["_campos_corregidos"] or "unidad_base" in renglon["_campos_corregidos"]
+        if not envase_manual and size and size.pack_count > 1 and size.base()[1] == renglon["unidad_base"] \
+                and renglon["contenido_base"]:
             presentacion = size.base()[0] / size.pack_count
         vfn = (lambda d, _p=prod: variante_de(_p, d)) if prod and prod.variantes else None
-        var, estado_attr = variante_estado(prod, r["descripcion"])
+        if renglon["_variante_manual"]:
+            var, estado_attr = renglon["_variante_manual"], "verificado (humano)"
+        else:
+            var, estado_attr = variante_estado(prod, renglon["descripcion"])
         # Una inconsistencia material del aviso bloquea el rojo, no es solo una nota (riesgo del prime).
         bloquear = ("el monto total del aviso no cierra con cantidad x precio"
-                    if r["alertas"] and "monto_inconsistente" in r["alertas"] else None)
-        res = compare(r["precio_unidad_base"], cantidad_base, r["fecha"], presentacion,
-                      obs_cache[pid], indice, cfg, marca=r["marca"], presentacion_exacta=exacta,
+                    if renglon["alertas"] and "monto_inconsistente" in renglon["alertas"] else None)
+        # Observaciones que un humano marcó "no es el mismo producto" o "precio/tamaño mal leído"
+        # PARA ESTE RENGLÓN (P16, revisión humana): se sacan del pool antes de comparar. compare()
+        # sigue sin saber que hubo una exclusión, solo recibe un pool más chico.
+        obs_renglon = aplicar_exclusiones_mercado(conn, r["id"], obs_cache[pid])
+        res = compare(renglon["precio_unidad_base"], cantidad_base, renglon["fecha"], presentacion,
+                      obs_renglon, indice, cfg, marca=renglon["marca"], presentacion_exacta=exacta,
                       gap_maximo=gap_maximo,
                       indec_principal=bool(prod and prod.indec.get("verificado") == "oficial"),
                       variante=var, variante_obs=vfn, estado_atributo=estado_attr, bloquear_rojo=bloquear,
                       variantes_ok=variantes_aceptadas(prod, var), plazo_pago_dias=r["plazo_pago_dias"])
+        if notas_manuales:
+            res.motivo = (res.motivo + "; " if res.motivo else "") + "dato corregido a mano: " + ", ".join(notas_manuales)
         row = asdict(res)
         row["evidencia_json"] = json.dumps(row.pop("evidencia"), ensure_ascii=False)
         row["sensibilidad_json"] = json.dumps(row.pop("sensibilidad"), ensure_ascii=False)
-        row.update(renglon_id=r["id"], fecha_compra=r["fecha"], computed_at=db.now_iso())
-        row.update(brecha_ofertas(conn, r["proceso_id"], r["nro_renglon"], r["precio_unitario"]))
+        row.update(renglon_id=r["id"], fecha_compra=renglon["fecha"], computed_at=db.now_iso())
+        row.update(brecha_ofertas(conn, r["proceso_id"], r["nro_renglon"], renglon["precio_unitario"]))
         # Reemplazo íntegro: un upsert parcial podía dejar porcentajes viejos de otra corrida.
         conn.execute("DELETE FROM comparaciones WHERE renglon_id=?", (r["id"],))
         db.upsert(conn, "comparaciones", row, ("renglon_id",))

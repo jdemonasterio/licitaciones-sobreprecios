@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Revisión · Sobreprecios{% endblock %}
+{% block content %}
+<h1>Revisión humana</h1>
+<p class="muted small">Cola de casos que necesitan un ojo humano: grises que el sistema no pudo comparar solo,
+rojos (la brecha más fuerte), equivalencias que el catálogo aceptó sin confirmar y lo que marcó el juez LLM
+externo (importado en <a href="/revision/juez">Corridas del juez</a>). {{ LEGENDA_INVESTIGACION }}</p>
+
+<div class="kpis">
+    <div class="kpi"><div class="label">Gris</div><div class="value"><span class="sem sem-gris">{{ counts.gris }}</span></div></div>
+    <div class="kpi"><div class="label">Rojo</div><div class="value"><span class="sem sem-rojo">{{ counts.rojo }}</span></div></div>
+    <div class="kpi"><div class="label">Equivalencia por verificar</div><div class="value">{{ counts.equivalencia }}</div></div>
+    <div class="kpi"><div class="label">Juez externo</div><div class="value">{{ counts.juez }}</div></div>
+    <div class="kpi"><div class="label">Agregados a mano</div><div class="value">{{ counts.manual }}</div></div>
+</div>
+
+<form class="filters" method="get" action="/revision" data-soft="off">
+    <div class="field"><label>Origen</label>
+        <select name="origen"><option value="">Todos</option>
+        {% for o, t in [('gris','Gris'),('equivalencia','Equivalencia'),('rojo','Rojo'),('juez','Juez externo'),('manual','Agregado a mano')] %}
+        <option value="{{ o }}" {% if filtros.origen == o %}selected{% endif %}>{{ t }}</option>{% endfor %}
+        </select></div>
+    <div class="field"><label>Estado</label>
+        <select name="estado"><option value="">Todos</option>
+        {% for s in ['pendiente','resuelto','descartado'] %}<option value="{{ s }}" {% if filtros.estado == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+    <div class="field"><label>Producto</label>
+        <select name="producto" style="max-width:260px"><option value="">Todos</option>
+        {% for p in opciones.productos %}<option value="{{ p.id }}" {% if filtros.producto == p.id %}selected{% endif %}>{{ p.nombre }}</option>{% endfor %}
+        </select></div>
+    <button class="btn btn-primary" type="submit">Filtrar</button>
+    <a class="btn" href="/revision">Limpiar</a>
+    <a class="btn" href="/revision/juez" style="margin-left:auto">Corridas del juez externo →</a>
+</form>
+
+{% if not items %}
+<div class="help">No hay casos con estos filtros. Si recién corriste "Recalcular sobreprecios" en
+<a href="/fuentes">Datos y fuentes</a>, puede que todavía no haya grises/rojos nuevos, o que ya estén todos
+revisados (probá limpiar el filtro de estado).</div>
+{% else %}
+<div class="table-wrap"><table>
+<thead><tr><th>Origen</th><th>Semáforo</th><th>Fecha</th><th>Organismo</th><th>Bien</th><th class="num">Brecha</th>
+<th>Estado</th><th>Veredicto</th></tr></thead>
+<tbody>
+{% set ORIGEN_TXT = {'gris':'Gris','equivalencia':'Equivalencia','rojo':'Rojo','juez':'Juez externo','manual':'Agregado a mano'} %}
+{% for it in items %}
+<tr data-soft-key="rev:{{ it.renglon_id }}" class="row-link" onclick="location.href='/revision/{{ it.renglon_id }}'">
+    <td><span class="tag">{{ ORIGEN_TXT.get(it.origen, it.origen) }}</span></td>
+    <td><span class="sem sem-{{ it.semaforo or 'gris' }}">{{ SEMAFORO_TXT[it.semaforo or 'gris'] }}</span></td>
+    <td>{{ it.fecha or '—' }}</td>
+    <td>{{ it.organismo or '—' }}</td>
+    <td><a href="/revision/{{ it.renglon_id }}">{{ it.descripcion }}</a><div class="muted small">{{ (it.producto or '')|replace('_', ' ') }}</div></td>
+    <td class="num {% if it.brecha and it.brecha > 0 %}pos{% else %}neg{% endif %}">{{ it.brecha|pct }}</td>
+    <td class="small">{{ it.estado }}</td>
+    <td class="small">{{ it.veredicto or '—' }}</td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+<p class="muted small">Mostrando {{ items|length }} casos.</p>
+{% endif %}
+{% endblock %}

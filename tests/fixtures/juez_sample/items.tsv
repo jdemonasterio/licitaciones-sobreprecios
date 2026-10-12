@@ -1,0 +1,4 @@
+Capa	Veredicto juez	Tipo de error	id	Link	Explicación	Valor correcto	Regla sugerida	Ítem (JSON)	Tu veredicto	Tu comentario
+comparacion	error	referencia_inadecuada	renglon:42	https://example.org/x	La referencia usada no es el mismo envase		Exigir envase exacto siempre	{}
+comparacion	ok	ninguno	renglon:43	https://example.org/y	Todo bien			{}
+extraccion	dudoso	otro	renglon:44		Falta contexto para decidir			{}

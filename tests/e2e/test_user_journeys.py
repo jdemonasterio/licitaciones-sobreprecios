@@ -391,3 +391,114 @@ def test_doble_post_concurrente_no_duplica_el_job_en_background(seeded_app):
         despues = len(conftest.read_db(seeded_app.db_path,
                                        "SELECT id FROM corridas WHERE tipo='comparar'"))
         assert despues - antes == 1, "el guard de _background.start no evito una segunda corrida"
+
+
+# ── 11. Revision humana (MEJORAS #34) ───────────────────────────────────────
+
+def test_revision_cola_lista_grises_y_rojos_y_filtra_por_origen(page, seeded_app):
+    page.goto("/revision")
+    cuerpo = page.locator("body").inner_text()
+    assert "Yerba mate" in cuerpo   # el renglon gris de la semilla (sin referencia de variedad)
+    assert "MILKAUT" in cuerpo or "553" in cuerpo or page.locator(".sem-rojo").count() >= 1
+
+    page.select_option('form[action="/revision"] select[name="origen"]', "rojo")
+    page.click('form[action="/revision"] button:has-text("Filtrar")')
+    page.wait_for_url("**/revision?*origen=rojo*")
+    assert page.locator("table tbody .sem-gris").count() == 0   # la cola filtrada, no el KPI de arriba
+
+    conftest.assert_clean(page)
+
+
+def test_revision_caso_corrige_producto_y_recalcula_en_el_lugar(page, seeded_app):
+    """Caso gris (yerba, sin referencia de variedad confirmada): corregir el producto asignado a
+    uno SIN esa traba de variedad (galletitas de agua) tiene que recalcular y reflejarse en el
+    lugar, sin recargar la pagina (motivo_codigo pasa de atributo_desconocido a sin_datos: sigue
+    gris, pero por otra razon — demuestra que el dato corregido se usa de verdad al comparar)."""
+    renglon_id = conftest.read_db(
+        seeded_app.db_path, "SELECT id FROM renglones WHERE proceso_id=?",
+        (seeded_app.proceso_yerba_id,))[0]["id"]
+
+    page.goto(f"/revision/{renglon_id}")
+    por_que_antes = page.locator("dt:has-text('Por qué') + dd").inner_text()
+    marker = f"nav-check-{time.time()}"
+    page.evaluate(f"window.__e2e_marker = {marker!r}")
+
+    page.select_option('#form-revision select[name="producto_id"]', "galletitas_agua")
+    page.fill("#form-revision textarea[name='nota']", "e2e: producto mal asignado, era otro")
+    page.fill("#form-revision input[name='revisor']", "e2e")
+    page.click('#form-revision button:has-text("Guardar y recalcular")')
+
+    assert "recalculando" in _toast_text(page).lower()
+    estado = _wait_job_done(seeded_app.base_url, f"revision_{renglon_id}")
+    _force_soft_refresh(page, estado.get("message"))
+
+    assert page.evaluate("window.__e2e_marker") == marker, (
+        "la pagina de revision recargo completo en vez de refrescar en el lugar")
+    assert page.locator('#form-revision select[name="producto_id"]').input_value() == "galletitas_agua"
+    assert "Producto" in page.locator("body").inner_text()   # fila en "Correcciones vigentes"
+    por_que_despues = page.locator("dt:has-text('Por qué') + dd").inner_text()
+    assert por_que_despues != por_que_antes, "el cambio de producto no recalculo la comparacion"
+
+    # Persistencia real: recargar de verdad.
+    page.reload()
+    assert page.locator('#form-revision select[name="producto_id"]').input_value() == "galletitas_agua"
+    conftest.assert_clean(page)
+
+
+def test_revision_validar_mercado_no_es_el_mismo_producto_degrada_el_rojo(page, seeded_app):
+    """Marcar la observacion que forma el minimo confirmado como "no es el mismo producto" saca
+    ESE renglon del rojo (ya no hay par corroborado) sin tocar los demas renglones del proceso."""
+    renglon_id = conftest.read_db(
+        seeded_app.db_path,
+        "SELECT r.id FROM renglones r JOIN comparaciones k ON k.renglon_id=r.id "
+        "WHERE r.proceso_id=? AND k.semaforo='rojo'", (seeded_app.proceso_leche_id,))[0]["id"]
+
+    page.goto(f"/revision/{renglon_id}")
+    assert "sem-rojo" in (page.locator(".sem").first.get_attribute("class") or "")
+    marker = f"nav-check-{time.time()}"
+    page.evaluate(f"window.__e2e_marker = {marker!r}")
+
+    fila = page.locator("tr", has_text="marca0")   # seed_mayorista_a, $457: forma el minimo confirmado
+    fila.locator('select[name="juicio"]').select_option("no_es_mismo_producto")
+    fila.locator('button:has-text("Guardar")').click()
+
+    assert "recalculando" in _toast_text(page).lower()
+    estado = _wait_job_done(seeded_app.base_url, f"revision_{renglon_id}")
+    _force_soft_refresh(page, estado.get("message"))
+
+    assert page.evaluate("window.__e2e_marker") == marker, "la pagina recargo completo"
+    assert "sem-rojo" not in (page.locator(".sem").first.get_attribute("class") or ""), (
+        "sin el par corroborado (excluido) el renglon ya no deberia dar rojo")
+    assert "No es el mismo producto" in page.locator("body").inner_text()
+
+    conftest.assert_clean(page)
+
+
+def test_doc_host_no_permitido_muestra_error_en_castellano(page, seeded_app):
+    resp = page.request.get(seeded_app.base_url + "/doc", params={"url": "https://evil.example.com/x.pdf"})
+    assert resp.status == 400
+    assert "no está autorizado" in resp.text()
+
+
+# ── 12. Validacion in-line de renglones en /licitacion/<id> ────────────────
+
+def test_licitacion_validacion_inline_persiste_tras_navegar(page, seeded_app):
+    page.goto(f"/licitacion/{seeded_app.proceso_leche_id}")
+    fila_detalle = page.locator('tr[data-soft-key^="reng-det:"]').first
+    fila_detalle.locator("summary").click()
+
+    marker = f"nav-check-{time.time()}"
+    page.evaluate(f"window.__e2e_marker = {marker!r}")
+    fila_detalle.locator('form[action^="/renglon/"] button:has-text("✓ OK")').first.click()
+
+    assert "Validación guardada" in _toast_text(page)
+    assert page.evaluate("window.__e2e_marker") == marker, (
+        "la pagina de licitacion recargo completo en vez de refrescar en el lugar")
+
+    page.goto("/")
+    page.goto(f"/licitacion/{seeded_app.proceso_leche_id}")
+    cuerpo = page.locator("body").inner_text()
+    assert "validado por" in cuerpo or "revisión parcial" in cuerpo, (
+        "la validacion in-line no persistio tras navegar")
+
+    conftest.assert_clean(page)

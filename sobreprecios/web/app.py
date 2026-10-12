@@ -2,13 +2,16 @@
 
 Solapas:
   /              Licitaciones: lista filtrable, ordenada por exceso estimado
-  /licitacion/N  Detalle: contexto del proceso, renglones, referencias, evidencia, revisión humana
+  /licitacion/N  Detalle: contexto del proceso, renglones, referencias, evidencia, marca de "publicable"
+  /revision      Cola de revisión humana (casos grises/rojos/juez); /revision/N el caso con su
+                 formulario de corrección manual (sobreprecios/revision_humana.py)
   /analitica     Totales por organismo, producto, proveedor, procedimiento y mes
   /producto/ID   Precio pagado por el Estado vs mercado en el tiempo
   /empresas      Adjudicatarios; /empresa/CUIT con historia (autoridades, socios, domicilios)
   /reportes      Armar un reporte para periodistas (HTML imprimible + Excel + CSV)
   /fuentes       Estado de los datos y botones para actualizar (jobs en background)
   /investigar    Investigar UNA licitación a pedido: link del BO / COMPR.AR, número, texto o PDF
+  /doc           Proxy de solo lectura para mirar un PDF/HTML del BO o COMPR.AR en un <iframe>
 
 Regla del webui: una acción nunca recarga la página
 ni borra lo que el usuario está haciendo. Los POST pasan por soft-nav.js, el
@@ -27,12 +30,12 @@ import urllib.parse
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from .. import config, db, reports
+from .. import config, db, reports, revision_humana
 from . import _background, queries
 
 WEB_DIR = Path(__file__).resolve().parent
@@ -91,10 +94,34 @@ REF_TXT = {"misma_marca": "misma marca", "p25_mayorista": "mayorista (P25)",
            "mediana_minorista": "supermercado (mediana)", "indec": "INDEC (promedio)",
            "min_mercado": "mínimo de mercado", "min_minorista": "supermercado (mínimo)"}
 ATRIBUTO_TXT = {"verificado": "variedad verificada", "no_exigido": "variedad no exigida en la ficha",
-                "desconocido": "variedad desconocida", "ambiguo": "variedad ambigua", "sin_mercado": "variedad sin mercado"}
+                "desconocido": "variedad desconocida", "ambiguo": "variedad ambigua", "sin_mercado": "variedad sin mercado",
+                "verificado (humano)": "variedad confirmada a mano por el revisor"}
+MOTIVO_CODIGO_TXT = {
+    "sin_precio": "no se pudo calcular el precio por unidad base o falta la fecha de la compra",
+    "sin_datos": "no hay precios de mercado de este producto para comparar en esa fecha",
+    "revisar_unidad": "el Estado pagó una cantidad de veces la referencia tan grande o chica que probablemente "
+                      "haya un error de unidad (bulto vs. unidad, producto distinto) antes que un sobreprecio real",
+    "fuera_alcance": "este renglón no tiene un producto del catálogo para comparar (no es un error, es un bien "
+                     "que todavía no está catalogado)",
+    "atributo_desconocido": "no se puede saber qué variedad exige la compra (o dice dos a la vez): sin eso no "
+                            "se puede elegir contra qué precio de mercado comparar",
+    "sin_referencia_variante": "la compra exige una variedad puntual y el mercado no tiene precios de ESA "
+                               "variedad en la fecha: las otras variedades no son referencia válida",
+    "sin_referencia_presentacion": "la compra exige un envase puntual y el mercado no tiene ESE envase en la "
+                                   "fecha: un envase distinto no es referencia válida",
+    "equivalencia_por_verificar": "el sistema aceptó una variedad de mercado como equivalente a la exigida; "
+                                  "un humano todavía no confirmó que esa equivalencia sea correcta",
+    "ok": "se pudo calcular una referencia de mercado comparable",
+}
+# Legenda corta de #35: un caso es una investigación para que un humano decida, nunca una conclusión publicada sola.
+LEGENDA_INVESTIGACION = ("Un color (sobre todo rojo) es una investigación pendiente de revisión humana, no una "
+                         "conclusión: puede explicarse por logística, plazos de pago, especificaciones o un "
+                         "error de publicación. Nada sale a prensa sin pasar por Revisión y quedar \"publicable\".")
 
 templates.env.filters.update(ars=_ars, num=_num, pct=_pct, millones=_millones)
-templates.env.globals.update(SEMAFORO_TXT=SEMAFORO_TXT, REF_TXT=REF_TXT, ATRIBUTO_TXT=ATRIBUTO_TXT)
+templates.env.globals.update(SEMAFORO_TXT=SEMAFORO_TXT, REF_TXT=REF_TXT, ATRIBUTO_TXT=ATRIBUTO_TXT,
+                             MOTIVO_CODIGO_TXT=MOTIVO_CODIGO_TXT, LEGENDA_INVESTIGACION=LEGENDA_INVESTIGACION,
+                             PARTE_TXT=revision_humana.PARTE_TXT, PARTES_RENGLON=revision_humana.PARTES_RENGLON)
 
 
 # ── Seguridad mínima ───────────────────────────────────────────────────────
@@ -163,6 +190,7 @@ def licitacion(request: Request, proceso_id: int):
         if not proc:
             return _redirect("/", "No existe esa licitación")
         rows = queries.renglones(conn, proceso_id)
+        validaciones = revision_humana.validaciones_renglones(conn, [r["id"] for r in rows])
         from ..normalize import moneda as moneda_mod
         mon = moneda_mod.cargar(conn)
         fecha = proc.get("fecha_adjudicacion") or proc.get("fecha_publicacion")
@@ -172,7 +200,7 @@ def licitacion(request: Request, proceso_id: int):
     from ..pipeline.extract import resolutive_part
     texto = resolutive_part(proc.get("texto") or "", 12000) if proc.get("texto") else ""
     return _render(request, "licitacion.html", p=proc, renglones=rows, texto=texto, equiv=equiv,
-                   cfg=config.settings().get("comparacion") or {})
+                   validaciones=validaciones, cfg=config.settings().get("comparacion") or {})
 
 
 @app.post("/licitacion/{proceso_id}/revision")
@@ -184,6 +212,35 @@ def licitacion_revision(proceso_id: int, estado: str = Form(...), nota: str = Fo
         revision.marcar(conn, proceso_id, estado, nota.strip() or None)
     extra = " (si cambia el cálculo, la marca se revoca sola)" if estado == "publicable" else ""
     return _redirect(f"/licitacion/{proceso_id}", f"Marcada como {estado}{extra}")
+
+
+@app.post("/licitacion/{proceso_id}/validar")
+def licitacion_validar(proceso_id: int, nota: str = Form("")):
+    """"Validé esta licitación": atajo de un clic sobre el mismo comentario de arriba (reusa
+    revision.marcar, el mismo gate que "Guardar"; marca estado='revisado')."""
+    from .. import revision
+    with db.session() as conn:
+        if not conn.execute("SELECT 1 FROM procesos WHERE id=?", (proceso_id,)).fetchone():
+            return _redirect("/", "No existe esa licitación")
+        revision.marcar(conn, proceso_id, "revisado", nota.strip() or None)
+    return _redirect(f"/licitacion/{proceso_id}", "Licitación validada")
+
+
+@app.post("/renglon/{renglon_id}/validar")
+def renglon_validar(renglon_id: int, parte: str = Form(...), juicio: str = Form(...),
+                    nota: str = Form(""), revisor: str = Form("")):
+    """Validación rápida in-line de UNA parte de UN renglón, sin abrir /revision/<renglon_id>."""
+    with db.session() as conn:
+        row = conn.execute("SELECT proceso_id FROM renglones WHERE id=?", (renglon_id,)).fetchone()
+        if not row:
+            return _redirect("/", "No existe ese renglón")
+        try:
+            revision_humana.guardar_validacion_renglon(conn, renglon_id, parte, juicio, nota.strip(),
+                                                       revisor.strip() or "revisor")
+        except ValueError as exc:
+            return _redirect(f"/licitacion/{row['proceso_id']}", str(exc))
+        proceso_id = row["proceso_id"]
+    return _redirect(f"/licitacion/{proceso_id}", "Validación guardada")
 
 
 # ── Analítica ──────────────────────────────────────────────────────────────
@@ -300,6 +357,135 @@ async def investigar_run(entrada: str = Form(""), archivo: UploadFile | None = F
         return inv.investigar(entrada, path, progress=lambda t: _background.set_progress("investigar", t))
     started, msg = _background.start("investigar", run)
     return _redirect("/investigar", "Investigando… (podés seguir usando el resto de la página)" if started else msg)
+
+
+# ── Revisión humana (MEJORAS #34) ───────────────────────────────────────────
+# Rutas estáticas (/revision/juez...) ANTES de la dinámica (/revision/{renglon_id}): Starlette
+# matchea en el orden de declaración, así "juez" nunca intenta convertirse a renglon_id:int.
+
+@app.get("/revision/juez", response_class=HTMLResponse)
+def revision_juez(request: Request):
+    with db.session() as conn:
+        corridas = revision_humana.corridas_juez(conn)
+        for c in corridas:
+            c["items"] = revision_humana.items_corrida_juez(conn, c["id"])
+        return _render(request, "revision_juez.html", corridas=corridas)
+
+
+@app.post("/revision/juez/importar")
+def revision_juez_importar(carpeta: str = Form(...)):
+    with db.session() as conn:
+        try:
+            msg = revision_humana.importar_corrida_juez(conn, carpeta.strip())
+        except FileNotFoundError as exc:
+            return _redirect("/revision/juez", str(exc))
+    return _redirect("/revision/juez", msg)
+
+
+@app.get("/revision", response_class=HTMLResponse)
+def revision_page(request: Request):
+    filtros = {k: request.query_params.get(k, "").strip() for k in ("origen", "estado", "producto")}
+    with db.session() as conn:
+        datos = revision_humana.cola(conn, filtros)
+        return _render(request, "revision.html", filtros=filtros, items=datos["items"], counts=datos["counts"],
+                       opciones=queries.opciones_filtros(conn))
+
+
+@app.get("/revision/{renglon_id}", response_class=HTMLResponse)
+def revision_caso(request: Request, renglon_id: int):
+    with db.session() as conn:
+        data = revision_humana.caso(conn, renglon_id)
+        if not data:
+            return _redirect("/revision", "No existe ese renglón")
+        return _render(request, "revision_caso.html", c=data, valores=revision_humana.formulario(data))
+
+
+def _recalcular_proceso(proceso_id: int) -> str:
+    """Corre en el worker thread del job 'revision_<renglon_id>': abre SU PROPIA conexión
+    (ver docstring de web/_background.py), nunca la del request que disparó el guardado."""
+    from ..pipeline import compare as compare_mod
+    with db.session() as conn:
+        return compare_mod.run(conn, [proceso_id])
+
+
+@app.post("/revision/{renglon_id}/guardar")
+def revision_guardar(renglon_id: int, producto_id: str = Form(""), variante: str = Form(""),
+                     contenido_base: str = Form(""), unidad_base: str = Form(""),
+                     precio_unitario: str = Form(""), cantidad: str = Form(""),
+                     fecha_comparacion: str = Form(""), marca: str = Form(""),
+                     veredicto: str = Form(""), nota: str = Form(""), revisor: str = Form("")):
+    with db.session() as conn:
+        data = revision_humana.caso(conn, renglon_id)
+        if not data:
+            return _redirect("/revision", "No existe ese renglón")
+        actuales = revision_humana.formulario(data)
+        entrada = {"producto_id": producto_id, "variante": variante, "contenido_base": contenido_base,
+                   "unidad_base": unidad_base, "precio_unitario": precio_unitario, "cantidad": cantidad,
+                   "fecha_comparacion": fecha_comparacion, "marca": marca}
+        cambiados = revision_humana.procesar_formulario(conn, renglon_id, actuales, entrada,
+                                                         nota.strip(), revisor.strip() or "revisor")
+        if veredicto.strip() or nota.strip() or revisor.strip():
+            revision_humana.guardar_revision(conn, renglon_id, veredicto.strip() or None, nota.strip(),
+                                             revisor.strip(), estado="resuelto" if veredicto.strip() else "pendiente")
+        proceso_id = data["proceso_id"]
+    etiquetas = {"producto_id": "producto", "variante": "variedad", "contenido_base": "envase",
+                "unidad_base": "envase", "precio_unitario": "precio", "cantidad": "cantidad",
+                "fecha_comparacion": "fecha", "marca": "marca"}
+    if not cambiados:
+        return _redirect(f"/revision/{renglon_id}", "Revisión guardada")
+    resumen = ", ".join(dict.fromkeys(etiquetas[c] for c in cambiados))
+    started, jmsg = _background.start(f"revision_{renglon_id}", lambda: _recalcular_proceso(proceso_id))
+    return _redirect(f"/revision/{renglon_id}", f"Guardado ({resumen}); recalculando…" if started else jmsg)
+
+
+@app.post("/revision/{renglon_id}/deshacer")
+def revision_deshacer(renglon_id: int, correccion_id: int = Form(...)):
+    with db.session() as conn:
+        row = conn.execute("SELECT proceso_id FROM renglones WHERE id=?", (renglon_id,)).fetchone()
+        if not row:
+            return _redirect("/revision", "No existe ese renglón")
+        ok = revision_humana.deshacer_correccion(conn, correccion_id)
+        proceso_id = row["proceso_id"]
+    if not ok:
+        return _redirect(f"/revision/{renglon_id}", "Esa corrección ya no existe")
+    _background.start(f"revision_{renglon_id}", lambda: _recalcular_proceso(proceso_id))
+    return _redirect(f"/revision/{renglon_id}", "Corrección deshecha; recalculando…")
+
+
+@app.post("/revision/{renglon_id}/validar-mercado")
+def revision_validar_mercado(renglon_id: int, obs_fuente: str = Form(...), obs_fecha: str = Form(...),
+                             obs_descripcion: str = Form(...), juicio: str = Form(""), nota: str = Form(""),
+                             revisor: str = Form("")):
+    """Juicio humano sobre UNA observación de mercado, para ESTE renglón (P16): juicio vacío
+    ("sin marcar") borra la fila y vuelve a incluir la observación."""
+    with db.session() as conn:
+        row = conn.execute("SELECT proceso_id FROM renglones WHERE id=?", (renglon_id,)).fetchone()
+        if not row:
+            return _redirect("/revision", "No existe ese renglón")
+        if juicio.strip():
+            try:
+                revision_humana.guardar_validacion_mercado(conn, renglon_id, obs_fuente, obs_fecha,
+                                                           obs_descripcion, juicio.strip(), nota.strip(),
+                                                           revisor.strip() or "revisor")
+            except ValueError as exc:
+                return _redirect(f"/revision/{renglon_id}", str(exc))
+        else:
+            revision_humana.quitar_validacion_mercado(conn, renglon_id, obs_fuente, obs_fecha, obs_descripcion)
+        proceso_id = row["proceso_id"]
+    started, jmsg = _background.start(f"revision_{renglon_id}", lambda: _recalcular_proceso(proceso_id))
+    return _redirect(f"/revision/{renglon_id}", "Guardado; recalculando…" if started else jmsg)
+
+
+@app.get("/doc")
+def doc_proxy(url: str):
+    try:
+        contenido, ctype = revision_humana.obtener_documento(url)
+    except ValueError as exc:
+        return HTMLResponse(f"<p class='help'>No se pudo mostrar el documento: {exc}</p>", status_code=400)
+    except Exception as exc:   # noqa: BLE001 — una fuente externa caída no debe tumbar la página
+        return HTMLResponse(f"<p class='help'>No se pudo bajar el documento ({type(exc).__name__}). "
+                            "Probá abrirlo directo con el link de arriba.</p>", status_code=502)
+    return Response(content=contenido, media_type=ctype)
 
 
 # ── Fuentes y jobs ─────────────────────────────────────────────────────────

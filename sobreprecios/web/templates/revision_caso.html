@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% block title %}Caso {{ c.id }} · Revisión · Sobreprecios{% endblock %}
+{% block jobs %}datos,investigar,reporte,revision_{{ c.id }}{% endblock %}
+{% block content %}
+<p class="small"><a href="/revision">← Revisión</a> · <a href="/licitacion/{{ c.proceso_id }}">Ver la licitación completa →</a></p>
+<h1>{{ c.organismo or 'Organismo sin identificar' }}</h1>
+<p class="muted">{{ c.numero or '' }}{% if c.producto_nombre %} · {{ c.producto_nombre }}{% endif %}
+· <span class="sem sem-{{ c.semaforo or 'gris' }}">{{ SEMAFORO_TXT[c.semaforo or 'gris'] }}</span>
+{% if c.revision %}· estado de revisión: <b>{{ c.revision.estado }}</b>{% if c.revision.veredicto %} ({{ c.revision.veredicto }}){% endif %}{% endif %}</p>
+<p class="help">{{ LEGENDA_INVESTIGACION }}</p>
+
+<div class="grid-2">
+
+<div class="card">
+    <h3>a. La compra</h3>
+    <dl class="meta-grid small">
+        <dt>Renglón</dt><dd>{{ c.nro_renglon or '—' }}</dd>
+        <dt>Descripción</dt><dd>{{ c.descripcion }}</dd>
+        <dt>Cantidad</dt><dd>{{ c.cantidad|num }} {{ c.unidad_compra or '' }}</dd>
+        <dt>Precio unitario</dt><dd>{{ c.precio_unitario|ars(2) }}</dd>
+        <dt>Proveedor</dt><dd>{% if c.proveedor_cuit %}<a href="/empresa/{{ c.proveedor_cuit }}">{{ c.proveedor or c.proveedor_cuit }}</a> ({{ c.proveedor_cuit }}){% else %}{{ c.proveedor or '—' }}{% endif %}</dd>
+        <dt>Marca</dt><dd>{{ c.marca or '—' }}</dd>
+        <dt>Fecha del proceso</dt><dd>{{ c.fecha_proceso or '—' }}</dd>
+        <dt>Producto asignado</dt><dd>{{ c.producto_nombre or 'sin producto comparable' }}{% if c.match_razon %}<div class="muted">{{ c.match_razon }}</div>{% endif %}</dd>
+    </dl>
+    {% if c.alertas_list %}{% for a in c.alertas_list %}<div><span class="tag tag-alerta">{{ a }}</span></div>{% endfor %}{% endif %}
+
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        {% if c.proceso_url %}
+        <a class="btn btn-sm" href="{{ c.proceso_url }}" target="_blank" rel="noopener">Abrir el proceso ↗</a>
+        {% endif %}
+        {% if c.doc_url and c.doc_url != c.proceso_url %}
+        <a class="btn btn-sm" href="{{ c.doc_url }}" target="_blank" rel="noopener">Abrir el aviso del Boletín Oficial ↗</a>
+        {% endif %}
+    </div>
+    {% if c.proceso_url %}
+    <details data-soft-key="doc-proceso" style="margin-top:8px"
+             ontoggle="if(this.open){var f=this.querySelector('iframe'); if(f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src);}">
+        <summary>Ver documento ({{ 'Boletín Oficial' if c.fuente == 'bo_primera' else 'COMPR.AR' }})</summary>
+        <iframe class="doc-frame" data-src="/doc?url={{ c.proceso_url|urlencode }}" title="Documento del proceso" loading="lazy"></iframe>
+    </details>
+    {% endif %}
+    {% if c.doc_url and c.doc_url != c.proceso_url %}
+    <details data-soft-key="doc-bo" style="margin-top:8px"
+             ontoggle="if(this.open){var f=this.querySelector('iframe'); if(f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src);}">
+        <summary>Ver documento (aviso del Boletín Oficial)</summary>
+        <iframe class="doc-frame" data-src="/doc?url={{ c.doc_url|urlencode }}" title="Aviso del Boletín Oficial" loading="lazy"></iframe>
+    </details>
+    {% endif %}
+
+    {% if c.fuente_fragmento %}
+    <h4 style="margin-top:14px">Lo que dice la fuente de este renglón</h4>
+    <div class="grid-2">
+        <div><b>Dictamen</b>
+        {% if c.fuente_fragmento.dictamen %}<dl class="meta-grid small">
+        {% for k, v in c.fuente_fragmento.dictamen.items() %}<dt>{{ k }}</dt><dd>{{ v }}</dd>{% endfor %}
+        </dl>{% else %}<p class="muted small">Sin dato.</p>{% endif %}</div>
+        <div><b>Pliego</b>
+        {% if c.fuente_fragmento.pliego %}<dl class="meta-grid small">
+        {% for k, v in c.fuente_fragmento.pliego.items() %}<dt>{{ k }}</dt><dd>{{ v }}</dd>{% endfor %}
+        </dl>{% else %}<p class="muted small">Sin fila de pliego para este renglón.</p>{% endif %}</div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h3>b. La comparación</h3>
+    <dl class="meta-grid small">
+        <dt>Semáforo</dt><dd><span class="sem sem-{{ c.semaforo or 'gris' }}">{{ SEMAFORO_TXT[c.semaforo or 'gris'] }}</span></dd>
+        <dt>Por qué</dt><dd>{{ MOTIVO_CODIGO_TXT.get(c.motivo_codigo, c.motivo_codigo or 'sin calcular todavía') }}</dd>
+        <dt>Detalle</dt><dd>{{ c.motivo or '—' }}</dd>
+        {% if c.estado_atributo %}<dt>Variedad</dt><dd>{{ ATRIBUTO_TXT.get(c.estado_atributo, c.estado_atributo) }}</dd>{% endif %}
+        <dt>Referencia</dt><dd>{{ c.ref_principal_valor|ars(2) }} <span class="muted small">{{ REF_TXT.get(c.ref_principal, c.ref_principal or '—') }}</span></dd>
+        <dt>Mínimo confirmado (2 fuentes)</dt><dd>{{ c.ref_corroborada|ars(2) }}{% if c.sobreprecio_corroborado_pct is not none %} · {{ c.sobreprecio_corroborado_pct|pct }}{% endif %}</dd>
+        <dt>Brecha ajustada</dt><dd class="{% if c.sobreprecio_ajustado_pct and c.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}">{{ c.sobreprecio_ajustado_pct|pct }}</dd>
+        <dt>Exceso estimado</dt><dd>{{ c.exceso_ars|ars }}</dd>
+        <dt>Días entre compra y precio</dt><dd>{{ c.gap_dias if c.gap_dias is not none else '—' }}</dd>
+    </dl>
+
+    {% if c.evidencia %}
+    <h4 style="margin-top:12px">Evidencia de mercado</h4>
+    <p class="muted small">Marcá cada observación: ✓ confirma que compara peras con peras, o decí por qué no. Las
+    marcadas "no es el mismo producto" o "precio/tamaño mal leído" se sacan del cálculo de ESTE renglón al
+    recalcular (otros renglones del mismo producto no se tocan).</p>
+    <div class="table-wrap"><table class="small">
+        <thead><tr><th>Fuente</th><th>Región / sucursal</th><th>Fecha</th><th>Producto en góndola</th>
+            <th class="num">Precio envase</th><th class="num">Contenido</th><th class="num">$/u. base</th>
+            <th>Ajuste IPC</th><th></th><th>Tu juicio</th></tr></thead>
+        <tbody>{% for o in c.evidencia[:30] %}
+        <tr{% if loop.index <= 2 and c.ref_corroborada and o.canal != 'oficial' %} style="background:var(--good-bg)"{% endif %}>
+            <td>{{ o.fuente }}<div class="muted">{{ o.canal }}</div></td>
+            <td class="small">{{ o.region or '' }}{% if o.sucursal %}<div class="muted">{{ o.sucursal }}</div>{% endif %}</td>
+            <td>{{ o.fecha }}{% if o.posterior %}<div class="muted">posterior a la compra</div>{% endif %}</td>
+            <td>{% if o.url %}<a href="{{ o.url }}" target="_blank" rel="noopener">{{ o.descripcion }}</a>{% else %}{{ o.descripcion }}{% endif %}
+                {% if loop.index <= 2 and c.ref_corroborada and o.canal != 'oficial' %}<div><span class="tag tag-alerta">forma el mínimo confirmado</span></div>{% endif %}</td>
+            <td class="num">{{ o.precio_envase|ars(2) if o.precio_envase is not none else '—' }}</td>
+            <td class="num">{{ o.contenido_base|num(3) if o.contenido_base is not none else '—' }}</td>
+            <td class="num">{{ o.precio_ub|ars(2) }}</td>
+            <td class="small">{{ 'x%.3f' % o.factor_ipc if o.factor_ipc else '—' }}</td>
+            <td>{% if o.exploratoria %}<span class="tag">exploratoria</span>{% endif %}</td>
+            <td>
+                {% if o.validacion %}<div class="small"><span class="tag {% if o.validacion.juicio in ('no_es_mismo_producto','precio_o_tamano_mal_leido') %}tag-alerta{% endif %}">{{ {'equivalente':'Equivalente','no_es_mismo_producto':'No es el mismo producto','precio_o_tamano_mal_leido':'Precio/tamaño mal leído','no_se':'No sé'}[o.validacion.juicio] }}</span></div>{% endif %}
+                <form method="post" action="/revision/{{ c.id }}/validar-mercado" style="display:flex;gap:3px;flex-wrap:wrap">
+                    <input type="hidden" name="obs_fuente" value="{{ o.fuente }}">
+                    <input type="hidden" name="obs_fecha" value="{{ o.fecha }}">
+                    <input type="hidden" name="obs_descripcion" value="{{ o.clave }}">
+                    <select name="juicio" style="font-size:12px;padding:1px">
+                        <option value="">(sin marcar)</option>
+                        {% for v, t in [('equivalente','Equivalente'),('no_es_mismo_producto','No es el mismo producto'),('precio_o_tamano_mal_leido','Precio/tamaño mal leído'),('no_se','No sé')] %}
+                        <option value="{{ v }}" {% if o.validacion and o.validacion.juicio == v %}selected{% endif %}>{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" name="nota" placeholder="nota" style="width:80px;font-size:12px" value="{{ o.validacion.nota if o.validacion else '' }}">
+                    <button type="submit" class="btn btn-sm">Guardar</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}</tbody>
+    </table></div>
+    {% else %}<p class="muted small">Sin observaciones de mercado para este renglón.</p>{% endif %}
+
+    {% if c.ofertas %}
+    <h4 style="margin-top:12px">Ofertas del renglón (cuadro comparativo)</h4>
+    <div class="table-wrap"><table class="small"><thead><tr><th>Oferente</th><th class="num">Precio unitario</th><th></th></tr></thead>
+    <tbody>{% for o in c.ofertas %}<tr><td>{{ o.proveedor }}</td><td class="num">{{ o.precio_unitario|ars(2) }}</td>
+    <td>{% if o.ganadora %}<span class="sem sem-verde">ganó</span>{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+    {% endif %}
+
+    {% if c.juez_veredictos %}
+    <h4 style="margin-top:12px">Veredictos del juez externo importados</h4>
+    <div class="table-wrap"><table class="small">
+        <thead><tr><th>Corrida</th><th>Veredicto</th><th>Tipo de error</th><th>Explicación</th><th>Valor correcto</th></tr></thead>
+        <tbody>{% for v in c.juez_veredictos %}<tr>
+            <td class="small">{{ v.carpeta }}<div class="muted">{{ v.modelo or '' }}</div></td>
+            <td>{% if v.veredicto == 'error' %}<span class="sem sem-rojo">error</span>{% elif v.veredicto == 'dudoso' %}<span class="sem sem-amarillo">dudoso</span>{% else %}<span class="sem sem-verde">{{ v.veredicto }}</span>{% endif %}</td>
+            <td class="small">{{ v.tipo_error or '' }}</td>
+            <td class="small">{{ v.explicacion or '' }}</td>
+            <td class="small">{{ v.valor_correcto or '—' }}</td>
+        </tr>{% endfor %}</tbody>
+    </table></div>
+    <p class="muted small">El juez puede equivocarse: es una segunda opinión LLM, no un veredicto. Confirmalo o descartalo abajo.</p>
+    {% endif %}
+</div>
+</div>
+
+<div class="card">
+    <h3>c. Qué entendiste vos</h3>
+    <p class="muted small">Corregí solo lo que haga falta: un campo vacío deja el dato automático. Al guardar se
+    recalcula el semáforo de esta licitación con tu corrección (en segundo plano, podés seguir navegando).</p>
+    <script type="application/json" id="variantes-data">{{ c.variantes_por_producto|tojson }}</script>
+    <form id="form-revision" method="post" action="/revision/{{ c.id }}/guardar">
+        <div class="grid-2">
+        <div>
+            <label>Producto {% if 'producto_id' in c.correcciones %}<span class="tag tag-alerta">corregido a mano</span>{% endif %}</label>
+            <select name="producto_id">
+                <option value="">(no cambiar)</option>
+                {% for pid, nombre in c.productos_catalogo %}
+                <option value="{{ pid }}" {% if valores.producto_id == pid %}selected{% endif %}>{{ nombre }}</option>
+                {% endfor %}
+            </select>
+
+            <label style="margin-top:10px">Variedad {% if 'variante' in c.correcciones %}<span class="tag tag-alerta">corregido a mano</span>{% endif %}
+            {% if c.estado_atributo %}<span class="muted small">(hoy: {{ ATRIBUTO_TXT.get(c.estado_atributo, c.estado_atributo) }})</span>{% endif %}</label>
+            <select name="variante">
+                <option value="">(sin variedad / no exigida)</option>
+                {% for v in c.variantes_producto %}
+                <option value="{{ v }}" {% if valores.variante == v %}selected{% endif %}>{{ v|replace('_', ' ') }}</option>
+                {% endfor %}
+                <option value="__no_se__" {% if valores.variante == '__no_se__' %}selected{% endif %}>No sé cuál es la variedad</option>
+            </select>
+            {% if c.variantes_detalle %}
+            <details style="margin-top:4px"><summary class="small">Qué significa cada variedad</summary>
+            <ul class="small" style="margin:4px 0 0 18px">
+            {% for vd in c.variantes_detalle %}<li><b>{{ vd.nombre|replace('_', ' ') }}</b>: identificada por "{{ vd.frases }}"</li>{% endfor %}
+            </ul></details>
+            {% endif %}
+
+            <label style="margin-top:10px">Envase: contenido {% if 'contenido_base' in c.correcciones %}<span class="tag tag-alerta">corregido a mano</span>{% endif %}</label>
+            <input type="text" name="contenido_base" value="{{ valores.contenido_base }}" placeholder="ej: 1 (en kg/l/u de abajo)">
+            <label style="margin-top:6px">Envase: unidad {% if 'unidad_base' in c.correcciones %}<span class="tag tag-alerta">corregido a mano</span>{% endif %}</label>
+            <select name="unidad_base">
+                <option value="">(no cambiar)</option>
+                {% for u in ['kg', 'l', 'u'] %}<option value="{{ u }}" {% if valores.unidad_base == u %}selected{% endif %}>{{ u }}</option>{% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Precio unitario {% if 'precio_unitario' in c.correcciones %}<span class="tag tag-alerta">corregido a mano</span>{% endif %}</label>
+            <input type="text" name="precio_unitario" value="{{ valores.precio_unitario }}" placeholder="ej: 1250.50">
+
+            <label style="margin-top:10px">Cantidad {% if 'cantidad' in c.correcciones %}<span class="tag tag-alerta">corregido a mano</span>{% endif %}</label>
+            <input type="text" name="cantidad" value="{{ valores.cantidad }}">
+
+            <label style="margin-top:10px">Fecha de comparación {% if 'fecha_comparacion' in c.correcciones %}<span class="tag tag-alerta">corregido a mano</span>{% endif %}</label>
+            <input type="date" name="fecha_comparacion" value="{{ valores.fecha_comparacion }}">
+
+            <label style="margin-top:10px">Marca {% if 'marca' in c.correcciones %}<span class="tag tag-alerta">corregido a mano</span>{% endif %}</label>
+            <input type="text" name="marca" value="{{ valores.marca }}">
+        </div>
+        </div>
+
+        <hr style="border-color:var(--border);margin:14px 0">
+        <div class="grid-2">
+        <div>
+            <label>Tu veredicto</label>
+            <select name="veredicto">
+                <option value="" {% if not c.revision or not c.revision.veredicto %}selected{% endif %}>(sin decidir todavía)</option>
+                {% for v, t in [('confirma','Confirma: la brecha es real'),('descarta','Descarta: hay una explicación'),('corrige','Corrige: el dato estaba mal'),('no_se_puede','No se puede saber con lo disponible')] %}
+                <option value="{{ v }}" {% if c.revision and c.revision.veredicto == v %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Tu nombre (revisor)</label>
+            <input type="text" name="revisor" value="{{ c.revision.revisor if c.revision else '' }}" placeholder="quién revisó">
+        </div>
+        </div>
+        <label style="margin-top:8px">Nota (qué verificaste, de dónde sale cada corrección)</label>
+        <textarea name="nota" style="min-height:70px">{{ c.revision.nota if c.revision else '' }}</textarea>
+        <button class="btn btn-primary" type="submit" style="margin-top:10px">Guardar y recalcular</button>
+    </form>
+    <script>
+    (function () {
+        var root = document.getElementById('form-revision');
+        if (!root) return;
+        var selProd = root.querySelector('select[name="producto_id"]');
+        var selVar = root.querySelector('select[name="variante"]');
+        var dataEl = document.getElementById('variantes-data');
+        if (!selProd || !selVar || !dataEl) return;
+        var variantes = {};
+        try { variantes = JSON.parse(dataEl.textContent || '{}'); } catch (e) { /* queda vacio */ }
+        selProd.addEventListener('change', function () {
+            var opciones = variantes[selProd.value] || [];
+            var html = '<option value="">(sin variedad / no exigida)</option>';
+            for (var i = 0; i < opciones.length; i++) {
+                html += '<option value="' + opciones[i] + '">' + opciones[i].replace(/_/g, ' ') + '</option>';
+            }
+            html += '<option value="__no_se__">No sé cuál es la variedad</option>';
+            selVar.innerHTML = html;
+        });
+    })();
+    </script>
+</div>
+
+{% if c.correcciones %}
+{% set ETIQ_CAMPO = {'producto_id':'Producto','variante':'Variedad','contenido_base':'Envase (contenido)','unidad_base':'Envase (unidad)','precio_unitario':'Precio unitario','cantidad':'Cantidad','fecha_comparacion':'Fecha de comparación','marca':'Marca'} %}
+<div class="card">
+    <h3>Correcciones vigentes</h3>
+    <p class="muted small">Cada una pisa el dato automático hasta que la deshagas. Deshacer vuelve a mandar el
+    dato que calcula el sistema solo.</p>
+    <div class="table-wrap"><table class="small">
+        <thead><tr><th>Campo</th><th>Valor</th><th>Nota</th><th>Autor</th><th>Cuándo</th><th></th></tr></thead>
+        <tbody>{% for campo, corr in c.correcciones.items() %}<tr>
+            <td>{{ ETIQ_CAMPO.get(campo, campo) }}</td>
+            <td>{{ 'No sé cuál es la variedad (humano miró y no pudo decidir)' if corr.valor == '__no_se__' else corr.valor }}</td>
+            <td class="small">{{ corr.nota or '—' }}</td>
+            <td class="small">{{ corr.autor or '—' }}</td>
+            <td class="small">{{ corr.created_at[:16] if corr.created_at else '' }}</td>
+            <td>
+                <form method="post" action="/revision/{{ c.id }}/deshacer" style="display:inline">
+                    <input type="hidden" name="correccion_id" value="{{ corr.id }}">
+                    <button type="submit" class="btn btn-sm">↺ Deshacer</button>
+                </form>
+            </td>
+        </tr>{% endfor %}</tbody>
+    </table></div>
+</div>
+{% endif %}
+{% endblock %}

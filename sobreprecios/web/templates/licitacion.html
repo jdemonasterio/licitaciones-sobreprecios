@@ -30,9 +30,13 @@
         <select name="estado">
         {% for s in ['pendiente','revisado','publicable','descartado'] %}<option {% if p.estado_revision == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
         </select>
-        <label style="margin-top:8px">Nota</label>
+        <label style="margin-top:8px">Comentario del proceso</label>
         <textarea name="nota" style="min-height:70px" placeholder="Qué verificaste, dudas, contexto">{{ p.nota_revision or '' }}</textarea>
-        <button class="btn btn-primary" type="submit" style="margin-top:8px">Guardar</button>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary" type="submit">Guardar</button>
+            <button class="btn" type="submit" formaction="/licitacion/{{ p.id }}/validar"
+                    title="Atajo: guarda el comentario y marca el proceso como revisado">Validé esta licitación</button>
+        </div>
     </form>
 </div>
 </div>
@@ -78,7 +82,10 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
 <tr data-soft-key="reng:{{ r.id }}">
     <td><span class="sem sem-{{ r.semaforo or 'gris' }}">{{ SEMAFORO_TXT[r.semaforo or 'gris'] }}</span>{% if r.motivo_codigo == 'equivalencia_por_verificar' %}
         <div><span class="tag tag-alerta" title="La brecha llega a rojo contra productos parecidos, pero no se pudo verificar que sea el mismo producto, variedad o envase">⚠ equivalencia por verificar</span></div>{% endif %}
-        {% if r.confianza %}<div class="muted small">confianza {{ r.confianza }}</div>{% endif %}</td>
+        {% if r.confianza %}<div class="muted small">confianza {{ r.confianza }}</div>{% endif %}
+        {% set val = validaciones.get(r.id) %}
+        {% if val %}<div class="small"><span class="tag {% if val.resumen == 'con objeciones' %}tag-alerta{% endif %}">{{ val.resumen }}</span></div>{% endif %}
+        <div class="small"><a href="/revision/{{ r.id }}">abrir revisión completa →</a></div></td>
     <td>{{ r.descripcion }}{% if r.marca %} <span class="tag">marca {{ r.marca }}</span>{% endif %}
         {% if r.producto_nombre %}<div class="small muted">→ {{ r.producto_nombre }}</div>{% else %}<div class="small muted">sin producto comparable</div>{% endif %}
         {% for a in r.alertas_list %}<div><span class="tag tag-alerta">{{ a }}</span></div>{% endfor %}</td>
@@ -94,6 +101,27 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
 <tr data-soft-key="reng-det:{{ r.id }}"><td colspan="10" style="background:var(--surface)">
     <details>
         <summary>Ver cómo se calculó y la evidencia de mercado</summary>
+        <div class="card" style="margin-top:8px">
+            <b class="small">Validación rápida</b>
+            <p class="muted small" style="margin:4px 0">Un vistazo por partes, sin abrir la revisión completa. Para
+            corregir un dato (producto, precio, envase…) usá <a href="/revision/{{ r.id }}">la revisión completa →</a>.</p>
+            {% set val = (validaciones.get(r.id, {}).get('partes', {})) %}
+            {% for parte in PARTES_RENGLON %}
+            {% set v = val.get(parte) %}
+            <div style="margin:6px 0">
+                <span class="small"><b>{{ PARTE_TXT[parte] }}</b>
+                {% if v %}<span class="tag {% if v.juicio == 'no' %}tag-alerta{% endif %}">{{ {'ok':'✓ OK','no':'✗ No','no_se':'? No sé'}[v.juicio] }} — {{ v.autor or '' }}</span>{% endif %}</span>
+                {% if v and v.nota %}<div class="muted small">{{ v.nota }}</div>{% endif %}
+                <form method="post" action="/renglon/{{ r.id }}/validar" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;margin-top:2px">
+                    <input type="hidden" name="parte" value="{{ parte }}">
+                    <button type="submit" name="juicio" value="ok" class="btn btn-sm">✓ OK</button>
+                    <button type="submit" name="juicio" value="no" class="btn btn-sm">✗ No</button>
+                    <button type="submit" name="juicio" value="no_se" class="btn btn-sm">? No sé</button>
+                    <input type="text" name="nota" placeholder="comentario (opcional)" style="width:160px" value="{{ v.nota if v else '' }}">
+                </form>
+            </div>
+            {% endfor %}
+        </div>
         <div class="grid-2" style="margin-top:8px">
             <dl class="meta-grid small">
                 <dt>Motivo</dt><dd>{{ r.motivo or '—' }}</dd>

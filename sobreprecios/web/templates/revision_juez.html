@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Corridas del juez · Sobreprecios{% endblock %}
+{% block content %}
+<p class="small"><a href="/revision">← Revisión</a></p>
+<h1>Corridas del juez LLM externo</h1>
+<p class="muted small">El juez (<code>auditoria/juez.py</code>) corre aparte, en solo lectura, y nunca escribe en la
+base. Esta pantalla importa a mano los resultados de una corrida (<code>items.tsv</code> + <code>resumen.md</code>)
+para que sus "error"/"dudoso" entren a la <a href="/revision">cola de revisión</a>. El juez puede equivocarse: es
+una segunda opinión, no un veredicto.</p>
+
+<div class="card">
+    <form method="post" action="/revision/juez/importar" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+        <div class="field"><label>Carpeta de la corrida</label>
+            <input type="text" name="carpeta" placeholder="ej: 20261012-1530" required style="min-width:220px"></div>
+        <button class="btn btn-primary" type="submit">Importar corridas del juez</button>
+        <span class="muted small">La carpeta sale de correr <code>python -m auditoria.juez --modelo ... --n 60</code>
+        (queda en <code>_scratch/licitaciones/auditoria/&lt;carpeta&gt;</code>); alcanza con el nombre.</span>
+    </form>
+</div>
+
+{% if not corridas %}
+<div class="help">Todavía no se importó ninguna corrida del juez.</div>
+{% else %}
+{% for c in corridas %}
+<details class="card" data-soft-key="corrida:{{ c.id }}" {% if loop.first %}open{% endif %}>
+<summary><b>{{ c.carpeta }}</b> · {{ c.modelo or 'modelo sin dato' }} · {{ c.modo }} · {{ c.n_items }} ítems
+· USD {{ c.usd|num(2) if c.usd is not none else '—' }} · importada {{ c.importada_at[:16] if c.importada_at else '' }}</summary>
+<div class="table-wrap" style="margin-top:8px"><table class="small">
+<thead><tr><th>Capa</th><th>Veredicto</th><th class="num">Cantidad</th></tr></thead>
+<tbody>{% for cnt in c.conteos %}<tr><td>{{ cnt.capa }}</td>
+<td>{% if cnt.veredicto == 'error' %}<span class="sem sem-rojo">error</span>{% elif cnt.veredicto == 'dudoso' %}<span class="sem sem-amarillo">dudoso</span>{% else %}<span class="sem sem-verde">{{ cnt.veredicto }}</span>{% endif %}</td>
+<td class="num">{{ cnt.n }}</td></tr>{% endfor %}</tbody>
+</table></div>
+<h4 style="margin-top:14px">Ítems</h4>
+<div class="table-wrap"><table class="small">
+<thead><tr><th>Capa</th><th>Veredicto</th><th>Tipo de error</th><th>Explicación</th><th>Regla sugerida</th><th></th></tr></thead>
+<tbody>{% for it in c.items %}<tr>
+    <td>{{ it.capa }}</td>
+    <td>{% if it.veredicto == 'error' %}<span class="sem sem-rojo">error</span>{% elif it.veredicto == 'dudoso' %}<span class="sem sem-amarillo">dudoso</span>{% else %}<span class="sem sem-verde">{{ it.veredicto }}</span>{% endif %}</td>
+    <td class="small">{{ it.tipo_error or '' }}</td>
+    <td class="small">{{ it.explicacion or '' }}</td>
+    <td class="small">{{ it.regla_sugerida or '' }}</td>
+    <td class="small">{% if it.item_id.startswith('renglon:') %}<a href="/revision/{{ it.item_id.split(':')[1] }}">ver caso →</a>{% endif %}</td>
+</tr>{% endfor %}</tbody>
+</table></div>
+</details>
+{% endfor %}
+{% endif %}
+{% endblock %}
