@@ -193,6 +193,7 @@ productos:
     - listo
     - parboilizado
     - parboil
+    - alf
     variantes:
       largo_fino:
       - largo fino
@@ -210,7 +211,8 @@ productos:
     motivo: 'Hay arroz parbolizado, platos preparados, golosinas y pastas dentro del arroz blanco. Separar Carnaroli
       de largo fino y doble Carolina. Priorizar las frases específicas sobre ''carolina'' y ''grano largo''. Quitar
       los ceros como identificador suficiente del tipo de grano: la calidad 0000/00000 debe validarse por separado.'
-    curado_por_claude: '+ ''listo'' (juez: ARROZ LISTO KNORR DE LA HUERTA); + ''parboilizado'' (P22: variante ortográfica)'
+    curado_por_claude: '+ ''listo'' (juez: ARROZ LISTO KNORR DE LA HUERTA); + ''parboilizado'' (P22: variante ortográfica);
+      + ''alf'' (alfajor ''ALF SER DE ARROZ'' entraba como arroz)'
   harina_trigo_000:
     variantes:
       organica:

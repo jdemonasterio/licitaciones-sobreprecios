@@ -30,13 +30,17 @@ Problemas: [preguntas frecuentes](docs/preguntas_frecuentes.md). Para seguir mej
 
 ## Cómo se calcula (resumen)
 
-- Cada precio se lleva a $/kg, $/litro o $/unidad y se compara solo contra el **mismo producto** (catálogo en
-  [config/productos.yml](config/productos.yml)).
-- Referencia: la **misma marca** si la licitación la nombra; si no, el **mínimo de mercado** del producto (envase igual
-  al licitado cuando la norma lo indica), descartando precios absurdos.
-- Precios a ±15 días de la compra; si no hay, el más cercano ajustado por inflación (IPC).
-- Se descuenta el costo financiero del plazo de pago del Estado (inflación mensual × 1 mes).
-- Semáforo: rojo ≥ 20 %, amarillo ≥ 8 %; diferencias > 4× se marcan "revisar unidad", nunca rojo.
+- Cada precio se lleva a $/kg, $/litro o $/unidad y se compara solo contra el **mismo producto, variedad y envase**
+  (catálogo en [config/productos.yml](config/productos.yml)). Si la compra no dice la variedad o el mercado no tiene
+  ese producto en la fecha, queda gris: no se compara contra algo distinto.
+- Referencia: la **misma marca** si la licitación la nombra; si no, el **mínimo de mercado** (supermercados y
+  mayoristas), descartando precios absurdos.
+- Precios del día de la compra o anteriores (hasta 15 días), llevados al mes de la compra con el IPC.
+- Semáforo: amarillo ≥ 8 % contra el mínimo observado (con 1 mes de plazo de pago descontado). **Rojo** ≥ 20 % contra el
+  mínimo **confirmado por dos cadenas distintas**, aun suponiendo 2 meses de plazo. Diferencias > 4× se marcan
+  "revisar unidad", nunca rojo. El promedio INDEC solo nunca da rojo.
+- Montos de distintos años se pueden ver en **pesos reales** (descontada la inflación) o en **dólares** (contado con
+  liqui del día) para sumarlos y compararlos.
 
 **Una brecha no prueba una irregularidad.** Logística, plazos de pago, especificaciones o errores de publicación
 pueden explicarla. Cada caso se revisa a mano antes de compartirlo (estado "publicable").

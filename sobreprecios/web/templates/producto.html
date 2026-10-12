@@ -8,6 +8,10 @@ precio mayorista MÍNIMO de cada mes (sin precios absurdos: se descartan los men
 promedio minorista de INDEC. El gráfico muestra el período de las compras ±6 meses; un mes sin
 relevamiento queda como hueco (no se inventa la línea).</p>
 
+<p class="small">Precios en: {% for k, t in monedas %}{% if moneda == k %}<strong>{{ t }}</strong>{% else %}<a href="?moneda={{ k }}">{{ t }}</a>{% endif %}{% if not loop.last %} · {% endif %}{% endfor %}
+{% if moneda != 'nominal' %}<br><span class="muted">Cada precio se convierte con la inflación o la cotización de su propio mes: así
+se puede ver si el producto se encareció de verdad o solo acompañó la inflación.</span>{% endif %}</p>
+
 <div class="card">
     <div class="chart-legend">
         <span style="--c: var(--series-1)">Pagado por el Estado</span>
@@ -23,14 +27,14 @@ relevamiento queda como hueco (no se inventa la línea).</p>
 <div class="table-wrap"><table class="small">
 <thead><tr><th>Fecha</th><th>Proveedor</th><th class="num">$/{{ prod.unidad_base }}</th><th>Semáforo</th></tr></thead>
 <tbody>{% for e in serie.estado %}<tr><td><a href="/licitacion/{{ e.proceso_id }}">{{ e.fecha }}</a></td><td>{{ e.proveedor or '—' }}</td>
-<td class="num">{{ e.precio|ars(2) }}</td><td><span class="sem sem-{{ e.semaforo or 'gris' }}">{{ SEMAFORO_TXT[e.semaforo or 'gris'] }}</span></td></tr>{% endfor %}</tbody>
+<td class="num">{{ e.precio|ars(2, moneda) }}</td><td><span class="sem sem-{{ e.semaforo or 'gris' }}">{{ SEMAFORO_TXT[e.semaforo or 'gris'] }}</span></td></tr>{% endfor %}</tbody>
 </table></div>
 </div>
 <div>
 <h3>Mercado por mes</h3>
 <div class="table-wrap"><table class="small">
 <thead><tr><th>Mes</th><th class="num">Mayorista mínimo</th><th class="num">Mayorista P25</th><th class="num">obs.</th></tr></thead>
-<tbody>{% for m in serie.mayorista_min %}<tr><td>{{ m[0] }}</td><td class="num">{{ m[1]|ars(2) }}</td><td class="num">{{ serie.mayorista_p25[loop.index0][1]|ars(2) }}</td><td class="num">{{ m[2] }}</td></tr>{% endfor %}</tbody>
+<tbody>{% for m in serie.mayorista_min %}<tr><td>{{ m[0] }}</td><td class="num">{{ m[1]|ars(2, moneda) }}</td><td class="num">{{ serie.mayorista_p25[loop.index0][1]|ars(2, moneda) }}</td><td class="num">{{ m[2] }}</td></tr>{% endfor %}</tbody>
 </table></div>
 </div>
 </div>
@@ -48,7 +52,7 @@ relevamiento queda como hueco (no se inventa la línea).</p>
     const el = document.getElementById('ch-prod');
     if (!el || !window.Chart || !meses.length) return;
     const old = Chart.getChart(el); if (old) old.destroy();
-    const ars = v => '$ ' + Number(v).toLocaleString('es-AR', {maximumFractionDigits: 2});
+    const ars = v => {{ ('US$ ' if moneda == 'usd' else '$ ')|tojson }} + Number(v).toLocaleString('es-AR', {maximumFractionDigits: 2});
     new Chart(el, {
         data: {labels: meses, datasets: [
             {type: 'scatter', label: 'Pagado por el Estado', data: estado.map(e => ({x: e[0], y: e[1]})),

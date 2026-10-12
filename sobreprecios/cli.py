@@ -83,6 +83,7 @@ def setup(sin_demo, dump):
         click.echo(f"base: {config.db_path()}")
         click.echo(f"catálogo: {catalog.sync_to_db(conn)} productos")
     _run("indec", indec.run)
+    _cotizaciones_sin_cortar()
     if not sin_demo:
         try:
             _run("legacy_quijotes", lambda c: legacy_quijotes.run(c, dump))
@@ -106,6 +107,23 @@ def indec():
     """Actualiza IPC y precios promedio INDEC."""
     from .sources import indec as indec_src
     _run("indec", indec_src.run)
+    _cotizaciones_sin_cortar()
+
+
+def _cotizaciones_sin_cortar():
+    """Las cotizaciones del dólar solo sirven para mostrar montos: si la API no responde, se sigue."""
+    from .sources import cotizaciones as cot
+    try:
+        _run("cotizaciones", cot.run)
+    except Exception as exc:   # noqa: BLE001 — red caída no debe frenar el resto
+        click.echo(f"(cotizaciones del dólar no disponibles: {exc})")
+
+
+@cli.command("cotizaciones")
+def cotizaciones():
+    """Actualiza las cotizaciones diarias del dólar (para ver montos en dólares o pesos reales)."""
+    from .sources import cotizaciones as cot
+    _run("cotizaciones", cot.run)
 
 
 @cli.command("bo-buscar")
@@ -200,6 +218,7 @@ def pipeline(desde, hasta, sin_llm):
     _run("extraer", lambda c: extract.run(c, use_llm=not sin_llm))
     _run("comprar_enriquecer", comprar_import.enriquecer_bo)
     _run("indec", indec_src.run)
+    _cotizaciones_sin_cortar()
     _run("machear_mercado", match.match_mercado)
     _run("machear_renglones", lambda c: match.match_renglones(c, use_llm=not sin_llm))
     from .normalize import aplicar

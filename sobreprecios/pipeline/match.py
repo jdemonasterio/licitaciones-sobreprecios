@@ -199,7 +199,19 @@ def match_mercado(conn: sqlite3.Connection, solo_pendientes: bool = True) -> str
                                "WHERE descripcion=? AND canal <> 'oficial' AND (producto_id IS NOT NULL OR match_metodo IS NULL)",
                                (desc,))
             n_quitados += cur.rowcount
+    # Envase implausible para el producto: un "arroz" de 25 g es un condimento, uno de 80 g un snack. No bajan el
+    # mínimo (son más caros por kg) pero arruinan medianas y gráficos. Fuera si < factor x tamaño de referencia.
+    factor = float((config.settings().get("comparacion") or {}).get("contenido_minimo_factor", 0.3))
+    n_chicos = 0
+    for prod in catalog.values():
+        if prod.tamano_referencia:
+            cur = conn.execute(
+                "UPDATE precios_mercado SET producto_id=NULL, match_metodo='envase_no_plausible' "
+                "WHERE producto_id=? AND canal <> 'oficial' AND contenido_base > 0 AND contenido_base < ?",
+                (prod.id, prod.tamano_referencia * factor))
+            n_chicos += cur.rowcount
     conn.commit()
     total = conn.execute("SELECT COUNT(*) FROM precios_mercado WHERE producto_id IS NOT NULL").fetchone()[0]
+    from . import cuarentena
     return (f"{len(descs)} descripciones de mercado revisadas, {n} con producto, {n_quitados} observaciones "
-            f"desmacheadas; {total} observaciones macheadas")
+            f"desmacheadas, {n_chicos} por envase implausible; {total} observaciones macheadas; {cuarentena.run(conn)}")

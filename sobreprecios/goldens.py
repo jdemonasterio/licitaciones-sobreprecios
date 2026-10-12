@@ -170,5 +170,31 @@ def entidades(conn: sqlite3.Connection) -> Path:
     return _write("validation_entidades", header, out)
 
 
+def moneda(conn: sqlite3.Connection, desde: str = "2019-01") -> Path:
+    """IPC y dólar mes a mes: para chequear contra valores conocidos las conversiones a pesos reales y dólares."""
+    from .normalize import moneda as moneda_mod
+    m = moneda_mod.cargar(conn)
+    alimentos = {r[0]: r[1] for r in conn.execute("SELECT fecha, valor FROM indices WHERE serie='ipc_alimentos'")}
+    series = {casa: moneda_mod.cargar(conn, f"usd_{casa}") for casa in ("contadoconliqui", "oficial", "mayorista", "blue")}
+    meses = sorted({f[:7] for f in m.usd} | {f[:7] for f in m.ipc})
+    out = []
+    for mes in (x for x in meses if x >= desde):
+        factor, aprox = m.factor_real(mes + "-01")
+        tasas = {c: s.tasa_usd(mes) for c, s in series.items()}
+        ccl, ofi = tasas["contadoconliqui"], tasas["oficial"]
+        out.append([mes, m.ipc.get(mes + "-01"), alimentos.get(mes + "-01"),
+                    round(factor, 4) if factor else None, "sí" if aprox else "",
+                    round(1000 * factor) if factor else None,
+                    *(round(tasas[c], 2) if tasas[c] else None for c in ("contadoconliqui", "oficial", "mayorista", "blue")),
+                    round((ccl / ofi - 1) * 100, 1) if ccl and ofi else None,
+                    round(1000 / ccl, 2) if ccl else None])
+    header = ["Mes", "IPC general (dic-2016=100)", "IPC alimentos", f"Factor a {m.etiqueta('real')}",
+              "IPC aproximado (mes sin publicar)", "$1.000 de ese mes en pesos de hoy", "Dólar CCL (prom. mes)",
+              "Dólar oficial (prom. mes)", "Dólar mayorista (prom. mes)", "Dólar blue (prom. mes)",
+              "Brecha CCL vs oficial %", "$1.000 en US$ (CCL)"]
+    return _write("validation_moneda", header, out)
+
+
 def run(conn: sqlite3.Connection) -> list[Path]:
-    return [extraccion_vs_quijote(conn), comparaciones(conn), precios_hoy(conn), comprar(conn), entidades(conn)]
+    return [extraccion_vs_quijote(conn), comparaciones(conn), precios_hoy(conn), comprar(conn), entidades(conn),
+            moneda(conn)]

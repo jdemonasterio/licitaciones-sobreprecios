@@ -14,7 +14,8 @@
         <dt>Fecha</dt><dd>{{ p.fecha_adjudicacion or p.fecha_publicacion or 'sin dato' }}</dd>
         <dt>Objeto</dt><dd>{{ p.objeto or '—' }}</dd>
         <dt>Categoría</dt><dd>{{ (p.categoria or '—')|replace('_', ' ') }}</dd>
-        <dt>Monto adjudicado</dt><dd>{{ p.monto_total|ars }}</dd>
+        <dt>Monto adjudicado</dt><dd>{{ p.monto_total|ars }}{% if p.monto_total and (equiv.usd or equiv.real) %}
+            <div class="muted small">{% if equiv.usd %}≈ {{ equiv.usd|millones('usd') }} en {{ equiv.usd_txt }} a {{ equiv.tasa|ars(2) }}{% endif %}{% if equiv.real %}{% if equiv.usd %} · {% endif %}≈ {{ equiv.real|millones }} en {{ equiv.real_txt }}{% endif %}</div>{% endif %}</dd>
         <dt>Fuente</dt><dd>{% if p.url %}<a href="{{ p.url }}" target="_blank" rel="noopener">Aviso en el Boletín Oficial ↗</a>{% else %}carga manual{% endif %}
             {% if p.numero and '-' in p.numero %} · <a href="https://comprar.gob.ar/BuscarAvanzado.aspx" target="_blank" rel="noopener">Buscar {{ p.numero }} en COMPR.AR ↗</a>{% endif %}</dd>
     </dl>

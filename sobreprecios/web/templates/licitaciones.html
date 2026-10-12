@@ -12,8 +12,8 @@ Ordenadas por el exceso estimado (lo que se pagó por encima de la referencia, y
         <div class="sub">de {{ kpis.renglones or 0 }} renglones</div></div>
     <div class="kpi"><div class="label">Con sobreprecio alto / moderado</div>
         <div class="value"><span class="sem sem-rojo">{{ kpis.rojos or 0 }}</span> <span class="sem sem-amarillo">{{ kpis.amarillos or 0 }}</span></div></div>
-    <div class="kpi"><div class="label">Monto adjudicado</div><div class="value">{{ kpis.monto|millones }}</div></div>
-    <div class="kpi"><div class="label">Exceso estimado</div><div class="value">{{ kpis.exceso|millones }}</div>
+    <div class="kpi"><div class="label">Monto adjudicado</div><div class="value">{{ kpis.monto|millones(moneda) }}</div></div>
+    <div class="kpi"><div class="label">Exceso estimado</div><div class="value">{{ kpis.exceso|millones(moneda) }}</div>
         <div class="sub">solo renglones en rojo o amarillo</div></div>
 </div>
 
@@ -37,6 +37,10 @@ Ordenadas por el exceso estimado (lo que se pagó por encima de la referencia, y
     <div class="field"><label>Revisión</label>
         <select name="revision"><option value="">Todas</option>
         {% for s in ['pendiente','revisado','publicable','descartado'] %}<option {% if filtros.revision == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+    <div class="field"><label>Montos en</label>
+        <select name="moneda">
+        {% for k, t in monedas %}<option value="{{ k }}" {% if moneda == k %}selected{% endif %}>{{ t }}</option>{% endfor %}
         </select></div>
     <div class="field"><label>Ordenar por</label>
         <select name="orden">
@@ -67,9 +71,9 @@ adjudicaciones en el Boletín Oficial, o usá <a href="/investigar">＋ Investig
             {% if p.norma and p.numero %}<div class="muted small">{{ p.norma }}</div>{% endif %}</td>
         <td class="small">{{ p.proveedores[:3]|join(', ') }}{% if p.proveedores|length > 3 %} y {{ p.proveedores|length - 3 }} más{% endif %}</td>
         <td>{% for pr in p.productos[:4] %}<span class="tag">{{ pr.replace('_', ' ') }}</span>{% endfor %}</td>
-        <td class="num">{{ p.monto|millones }}</td>
+        <td class="num">{{ p.monto|millones(moneda) }}</td>
         <td class="num {% if p.max_sobreprecio and p.max_sobreprecio > 0 %}pos{% else %}neg{% endif %}">{{ p.max_sobreprecio|pct }}</td>
-        <td class="num">{{ p.exceso|millones }}</td>
+        <td class="num">{{ p.exceso|millones(moneda) }}</td>
         <td class="num {% if p.max_brecha_ofertas and p.max_brecha_ofertas > 0 %}pos{% endif %}">{{ p.max_brecha_ofertas|pct }}</td>
         <td class="small">{{ p.estado_revision or 'pendiente' }}</td>
     </tr>

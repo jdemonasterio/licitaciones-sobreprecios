@@ -16,15 +16,23 @@
         </select></div>
     <div class="field"><label>Desde</label><input type="date" name="desde" value="{{ filtros.desde }}"></div>
     <div class="field"><label>Hasta</label><input type="date" name="hasta" value="{{ filtros.hasta }}"></div>
+    <div class="field"><label>Montos en</label>
+        <select name="moneda">
+        {% for k, t in monedas %}<option value="{{ k }}" {% if moneda == k %}selected{% endif %}>{{ t }}</option>{% endfor %}
+        </select></div>
     <button class="btn btn-primary">Aplicar</button><a class="btn" href="/analitica">Limpiar</a>
 </form>
 
 <div class="kpis">
     <div class="kpi"><div class="label">Procesos</div><div class="value">{{ kpis.procesos or 0 }}</div></div>
     <div class="kpi"><div class="label">Renglones comparados</div><div class="value">{{ kpis.comparados or 0 }}</div></div>
-    <div class="kpi"><div class="label">Monto adjudicado</div><div class="value">{{ kpis.monto|millones }}</div></div>
-    <div class="kpi"><div class="label">Exceso estimado</div><div class="value">{{ kpis.exceso|millones }}</div></div>
+    <div class="kpi"><div class="label">Monto adjudicado</div><div class="value">{{ kpis.monto|millones(moneda) }}</div></div>
+    <div class="kpi"><div class="label">Exceso estimado</div><div class="value">{{ kpis.exceso|millones(moneda) }}</div></div>
 </div>
+{% if moneda != 'nominal' %}<p class="muted small">Montos en {{ moneda_txt }}: cada renglón se convierte con la
+inflación o la cotización de SU fecha, así se pueden sumar y comparar años distintos. El semáforo no cambia
+(compara siempre contra precios de la misma fecha).{% if kpis.sin_convertir %} {{ kpis.sin_convertir }} renglones sin
+dato para convertir quedan fuera de las sumas.{% endif %}</p>{% endif %}
 
 <div class="grid-2">
     <div class="card">
@@ -48,7 +56,7 @@
     {% else %}{{ r.clave|replace('_', ' ') }}{% endif %}</td>
 <td class="num">{{ r.procesos }}</td><td class="num">{{ r.renglones }}</td><td class="num">{{ r.comparados }}</td>
 <td class="num"><span class="sem sem-rojo">{{ r.rojos }}</span> <span class="sem sem-amarillo">{{ r.amarillos }}</span></td>
-<td class="num">{{ r.monto|millones }}</td><td class="num">{{ r.exceso|millones }}</td>
+<td class="num">{{ r.monto|millones(moneda) }}</td><td class="num">{{ r.exceso|millones(moneda) }}</td>
 <td class="num {% if r.sp_prom and r.sp_prom > 0 %}pos{% else %}neg{% endif %}">{{ r.sp_prom|pct }}</td></tr>
 {% endfor %}</tbody></table></div>
 {% endmacro %}
@@ -67,10 +75,10 @@
 <tr><td><span class="sem sem-{{ r.semaforo }}">{{ SEMAFORO_TXT[r.semaforo] }}</span></td><td>{{ r.fecha }}</td>
 <td><a href="/licitacion/{{ r.proceso_id }}">{{ r.organismo or '—' }}</a></td><td>{{ r.descripcion }}</td>
 <td class="small">{{ r.proveedor or '—' }}</td>
-<td class="num">{{ r.precio_unidad_base|ars(2) }}/{{ r.unidad_base }}</td>
-<td class="num">{{ r.ref_principal_valor|ars(2) }}<div class="muted small">{{ REF_TXT.get(r.ref_principal, r.ref_principal) }}</div></td>
+<td class="num">{{ r.precio_unidad_base|ars(2, moneda) }}/{{ r.unidad_base }}</td>
+<td class="num">{{ r.ref_principal_valor|ars(2, moneda) }}<div class="muted small">{{ REF_TXT.get(r.ref_principal, r.ref_principal) }}</div></td>
 <td class="num {% if r.sobreprecio_ajustado_pct and r.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}">{{ r.sobreprecio_ajustado_pct|pct }}</td>
-<td class="num">{{ r.exceso_ars|ars }}</td></tr>
+<td class="num">{{ r.exceso_ars|ars(0, moneda) }}</td></tr>
 {% endfor %}</tbody></table></div>
 
 <script>
@@ -83,8 +91,9 @@
     const exc = {{ data.organismo[:12]|map(attribute='exceso')|list|tojson }};
     const meses = {{ data.mes|map(attribute='clave')|list|tojson }};
     const sp = {{ data.mes|map(attribute='sp_prom')|list|tojson }};
-    const ars = v => '$ ' + Math.round(v).toLocaleString('es-AR');
-    const mill = v => '$ ' + (v / 1e6).toLocaleString('es-AR', {maximumFractionDigits: 1}) + ' M';
+    const pref = {{ ('US$ ' if moneda == 'usd' else '$ ')|tojson }};
+    const ars = v => pref + Math.round(v).toLocaleString('es-AR');
+    const mill = v => pref + (v / 1e6).toLocaleString('es-AR', {maximumFractionDigits: 1}) + ' M';
     // Nombres largos en varias líneas (truncar dejaba dos "MINISTERIO DE DESARROLLO SOCIAL …" iguales).
     const wrap = s => { const out = []; let line = '';
         for (const w of s.split(' ')) { if ((line + ' ' + w).trim().length > 30) { out.push(line.trim()); line = w; } else line += ' ' + w; }

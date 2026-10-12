@@ -66,6 +66,12 @@ comparacion:
   # Si precio_estado / referencia > N (o < 1/N) casi seguro es un error de unidad
   # (bulto vs unidad, kg vs g): se marca "revisar_unidad", nunca "rojo".
   plausibilidad_max_ratio: 4.0
+  # Cuarentena de precios de mercado (pipeline/cuarentena.py): fuera del comparador, no se borran.
+  cuarentena_bajo: 0.3            # < 0,3 x mediana del producto en el mes (todas las fuentes)
+  cuarentena_alto: 5.0
+  cuarentena_precio_minimo: 5.0   # envase a menos de $5: valor de relleno
+  # Un envase < factor x tamaño de referencia del producto no es ese producto (condimento, snack, monodosis).
+  contenido_minimo_factor: 0.3
   # ── Decisiones del LLM prime P17-P21 (2026-10-11). Cada flag se puede revertir acá.
   # El rojo tiene que sobrevivir con este plazo de pago (factor compuesto); si un plazo plausible
   # cambia la alerta, queda en amarillo.
@@ -80,6 +86,15 @@ comparacion:
   variante_sin_mercado: gris
   # El promedio INDEC como única referencia nunca da rojo (máximo amarillo).
   indec_solo_habilita_rojo: false
+
+# Montos comparables entre años (normalize/moneda.py): pesos reales y dólares. Solo cambia cómo se MUESTRAN
+# y suman montos de fechas distintas en el webui; el semáforo no cambia.
+moneda:
+  ipc: ipc_general                 # deflactor de "pesos reales" (IPC nivel general INDEC)
+  base_mes: null                   # null = último mes con IPC publicado; o "2026-08-01"
+  serie_usd: usd_contadoconliqui   # usd_contadoconliqui | usd_oficial | usd_mayorista | usd_blue | usd_bolsa
+  casas: [oficial, mayorista, blue, bolsa, contadoconliqui]
+  desde: "2016-01-01"
 
 indices:
   # apis.datos.gob.ar/series — IPC base dic 2016, mensual.

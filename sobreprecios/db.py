@@ -324,6 +324,8 @@ MIGRATIONS = [
     ("comparaciones", "ref_corroborada", "REAL"),
     ("comparaciones", "sobreprecio_corroborado_pct", "REAL"),
     ("comparaciones", "estado_atributo", "TEXT"),
+    # Precio de mercado sospechoso (placeholder $1, precio viejo sin actualizar): no se borra, se aparta con motivo.
+    ("precios_mercado", "cuarentena", "TEXT"),
 ]
 
 

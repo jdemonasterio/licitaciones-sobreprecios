@@ -49,14 +49,14 @@ logger = logging.getLogger(__name__)
 
 # ── Formato ────────────────────────────────────────────────────────────────
 
-def _ars(value, decimals=0):
+def _ars(value, decimals=0, moneda="nominal"):
     if value in (None, ""):
         return "—"
     try:
         text = f"{float(value):,.{decimals}f}"
     except (TypeError, ValueError):
         return "—"
-    return "$ " + text.replace(",", "X").replace(".", ",").replace("X", ".")
+    return ("US$ " if moneda == "usd" else "$ ") + text.replace(",", "X").replace(".", ",").replace("X", ".")
 
 
 def _num(value, decimals=0):
@@ -72,15 +72,16 @@ def _pct(value):
     return f"{float(value):+.1f}%".replace(".", ",")
 
 
-def _millones(value):
+def _millones(value, moneda="nominal"):
+    pref = "US$" if moneda == "usd" else "$"
     if not value:
-        return "$ 0"
+        return f"{pref} 0"
     value = float(value)
     if abs(value) >= 1e9:
-        return f"$ {value / 1e9:,.2f} mil M".replace(".", ",")
+        return f"{pref} {value / 1e9:,.2f} mil M".replace(".", ",")
     if abs(value) >= 1e6:
-        return f"$ {value / 1e6:,.1f} M".replace(".", ",")
-    return _ars(value)
+        return f"{pref} {value / 1e6:,.1f} M".replace(".", ",")
+    return _ars(value, 0, moneda)
 
 
 SEMAFORO_TXT = {"rojo": "Sobreprecio alto", "amarillo": "Sobreprecio moderado", "verde": "En línea con mercado",
@@ -119,8 +120,23 @@ def _filtros(request: Request) -> dict:
     return {k: request.query_params.get(k, "").strip() for k in keys}
 
 
+def _moneda(request: Request) -> str:
+    """Moneda en que se muestran los montos: nominal | real | usd (normalize/moneda.py)."""
+    from ..normalize.moneda import MODOS
+    valor = request.query_params.get("moneda", "nominal")
+    return valor if valor in MODOS else "nominal"
+
+
+def _moneda_ctx(conn, moneda: str) -> dict:
+    from ..normalize import moneda as moneda_mod
+    m = moneda_mod.cargar(conn)
+    return {"moneda": moneda, "moneda_txt": m.etiqueta(moneda),
+            "monedas": [(k, m.etiqueta(k)) for k in moneda_mod.MODOS]}
+
+
 def _render(request: Request, name: str, **ctx) -> HTMLResponse:
     ctx.setdefault("message", request.query_params.get("message"))
+    ctx.setdefault("moneda", "nominal")
     ctx["request"] = request
     ctx["jobs"] = _background.all_status()
     return templates.TemplateResponse(request, name, ctx)
@@ -132,11 +148,12 @@ def _render(request: Request, name: str, **ctx) -> HTMLResponse:
 def licitaciones(request: Request):
     filtros = _filtros(request)
     orden = request.query_params.get("orden", "exceso")
+    moneda = _moneda(request)
     with db.session() as conn:
         return _render(request, "licitaciones.html", filtros=filtros, orden=orden,
-                       kpis=queries.kpis(conn, filtros),
-                       procesos=queries.list_procesos(conn, filtros, orden),
-                       opciones=queries.opciones_filtros(conn))
+                       kpis=queries.kpis(conn, filtros, moneda),
+                       procesos=queries.list_procesos(conn, filtros, orden, moneda=moneda),
+                       opciones=queries.opciones_filtros(conn), **_moneda_ctx(conn, moneda))
 
 
 @app.get("/licitacion/{proceso_id}", response_class=HTMLResponse)
@@ -146,9 +163,15 @@ def licitacion(request: Request, proceso_id: int):
         if not proc:
             return _redirect("/", "No existe esa licitación")
         rows = queries.renglones(conn, proceso_id)
+        from ..normalize import moneda as moneda_mod
+        mon = moneda_mod.cargar(conn)
+        fecha = proc.get("fecha_adjudicacion") or proc.get("fecha_publicacion")
+        equiv = {"usd": mon.a_usd(proc.get("monto_total"), fecha), "tasa": mon.tasa_usd(fecha),
+                 "real": mon.a_real(proc.get("monto_total"), fecha), "real_txt": mon.etiqueta("real"),
+                 "usd_txt": mon.etiqueta("usd")}
     from ..pipeline.extract import resolutive_part
     texto = resolutive_part(proc.get("texto") or "", 12000) if proc.get("texto") else ""
-    return _render(request, "licitacion.html", p=proc, renglones=rows, texto=texto,
+    return _render(request, "licitacion.html", p=proc, renglones=rows, texto=texto, equiv=equiv,
                    cfg=config.settings().get("comparacion") or {})
 
 
@@ -168,12 +191,14 @@ def licitacion_revision(proceso_id: int, estado: str = Form(...), nota: str = Fo
 @app.get("/analitica", response_class=HTMLResponse)
 def analitica(request: Request):
     filtros = _filtros(request)
+    moneda = _moneda(request)
     with db.session() as conn:
-        data = {dim: queries.agrupado(conn, filtros, dim) for dim in
+        data = {dim: queries.agrupado(conn, filtros, dim, moneda=moneda) for dim in
                 ["organismo", "producto", "proveedor", "procedimiento", "mes"]}
         return _render(request, "analitica.html", filtros=filtros, data=data,
-                       kpis=queries.kpis(conn, filtros), peores=queries.peores_renglones(conn, filtros),
-                       opciones=queries.opciones_filtros(conn))
+                       kpis=queries.kpis(conn, filtros, moneda),
+                       peores=queries.peores_renglones(conn, filtros, moneda=moneda),
+                       opciones=queries.opciones_filtros(conn), **_moneda_ctx(conn, moneda))
 
 
 @app.get("/producto/{producto_id}", response_class=HTMLResponse)
@@ -182,7 +207,9 @@ def producto(request: Request, producto_id: str):
         prod = conn.execute("SELECT * FROM productos WHERE id=?", (producto_id,)).fetchone()
         if not prod:
             return _redirect("/analitica", "Producto desconocido")
-        return _render(request, "producto.html", prod=dict(prod), serie=queries.serie_producto(conn, producto_id))
+        moneda = _moneda(request)
+        return _render(request, "producto.html", prod=dict(prod),
+                       serie=queries.serie_producto(conn, producto_id, moneda), **_moneda_ctx(conn, moneda))
 
 
 # ── Empresas ───────────────────────────────────────────────────────────────
@@ -283,7 +310,7 @@ ACCIONES = {
     "bo_buscar": "Buscar adjudicaciones en el Boletín Oficial",
     "extraer": "Extraer renglones de los avisos bajados",
     "machear": "Asignar productos y precios por kg/l",
-    "indec": "Actualizar IPC y precios INDEC",
+    "indec": "Actualizar IPC, precios INDEC y cotizaciones del dólar",
     "precios": "Bajar precios de hoy (supermercados y mayoristas)",
     "comparar": "Recalcular sobreprecios",
     "empresas": "Completar empresas (Registro Nacional de Sociedades, ~230 MB la primera vez)",
@@ -326,6 +353,11 @@ def _job_runner(accion: str, desde: str, hasta: str):
                     mensajes.append(comprar_import.enriquecer_bo(conn, progress=progress))
                 if accion == "indec":
                     mensajes.append(indec.run(conn))
+                    from ..sources import cotizaciones
+                    try:
+                        mensajes.append(cotizaciones.run(conn))
+                    except Exception as exc:   # noqa: BLE001 — sin dólar se sigue: solo afecta cómo se muestran montos
+                        mensajes.append(f"cotizaciones del dólar no disponibles ({type(exc).__name__})")
                 if accion == "empresas":
                     from ..sources import registro_sociedades
                     mensajes.append(registro_sociedades.run(conn, progress=progress))

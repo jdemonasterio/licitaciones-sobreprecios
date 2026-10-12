@@ -12,8 +12,24 @@ from __future__ import annotations
 import json
 import sqlite3
 
+from ..normalize import moneda as moneda_mod
+
 SEMAFORO_RANK = "CASE k.semaforo WHEN 'rojo' THEN 3 WHEN 'amarillo' THEN 2 WHEN 'verde' THEN 1 ELSE 0 END"
 _RANK_TO_SEM = {3: "rojo", 2: "amarillo", 1: "verde", 0: "gris"}
+
+
+_FECHA = "COALESCE(p.fecha_adjudicacion, p.fecha_publicacion)"
+
+
+def _m(expr: str, moneda: str) -> str:
+    """Expresión monetaria en la moneda pedida: cada renglón se convierte con SU fecha (conv() de
+    normalize/moneda.py, registrada en la conexión)."""
+    return expr if moneda == "nominal" else f"conv({expr}, {_FECHA})"
+
+
+def _preparar(conn: sqlite3.Connection, moneda: str) -> None:
+    if moneda != "nominal":
+        moneda_mod.registrar(conn, moneda)
 
 
 def _where(filtros: dict) -> tuple[str, list]:
@@ -52,15 +68,17 @@ _BASE_FROM = ("FROM procesos p JOIN renglones r ON r.proceso_id = p.id "
               "LEFT JOIN comparaciones k ON k.renglon_id = r.id")
 
 
-def kpis(conn: sqlite3.Connection, filtros: dict) -> dict:
+def kpis(conn: sqlite3.Connection, filtros: dict, moneda: str = "nominal") -> dict:
     where, params = _where(filtros)
+    _preparar(conn, moneda)
     row = conn.execute(
         f"SELECT COUNT(DISTINCT p.id) procesos, COUNT(r.id) renglones, "
         f"SUM(CASE WHEN k.semaforo IN ('rojo','amarillo','verde') THEN 1 ELSE 0 END) comparados, "
         f"SUM(CASE WHEN k.semaforo='rojo' THEN 1 ELSE 0 END) rojos, "
         f"SUM(CASE WHEN k.semaforo='amarillo' THEN 1 ELSE 0 END) amarillos, "
-        f"COALESCE(SUM(r.monto_total), 0) monto, "
-        f"COALESCE(SUM(CASE WHEN k.semaforo IN ('rojo','amarillo') THEN k.exceso_ars END), 0) exceso, "
+        f"COALESCE(SUM({_m('r.monto_total', moneda)}), 0) monto, "
+        f"COALESCE(SUM(CASE WHEN k.semaforo IN ('rojo','amarillo') THEN {_m('k.exceso_ars', moneda)} END), 0) exceso, "
+        f"SUM(CASE WHEN r.monto_total IS NOT NULL AND {_m('r.monto_total', moneda)} IS NULL THEN 1 ELSE 0 END) sin_convertir, "
         f"MIN(COALESCE(p.fecha_adjudicacion, p.fecha_publicacion)) desde, "
         f"MAX(COALESCE(p.fecha_adjudicacion, p.fecha_publicacion)) hasta "
         f"{_BASE_FROM} WHERE {where}", params).fetchone()
@@ -77,14 +95,15 @@ ORDENES = {
 
 
 def list_procesos(conn: sqlite3.Connection, filtros: dict, orden: str = "exceso",
-                  limit: int = 200, offset: int = 0) -> list[dict]:
+                  limit: int = 200, offset: int = 0, moneda: str = "nominal") -> list[dict]:
     where, params = _where(filtros)
+    _preparar(conn, moneda)
     order_by = ORDENES.get(orden, ORDENES["exceso"])
     rows = conn.execute(
         f"SELECT p.id, p.numero, p.organismo, p.objeto, p.tipo_procedimiento, p.url, p.estado_revision, "
         f"COALESCE(p.fecha_adjudicacion, p.fecha_publicacion) fecha, "
-        f"COUNT(r.id) n_renglones, COALESCE(SUM(r.monto_total), 0) monto, "
-        f"COALESCE(SUM(CASE WHEN k.semaforo IN ('rojo','amarillo') THEN k.exceso_ars END), 0) exceso, "
+        f"COUNT(r.id) n_renglones, COALESCE(SUM({_m('r.monto_total', moneda)}), 0) monto, "
+        f"COALESCE(SUM(CASE WHEN k.semaforo IN ('rojo','amarillo') THEN {_m('k.exceso_ars', moneda)} END), 0) exceso, "
         f"MAX({SEMAFORO_RANK}) peor, MAX(k.sobreprecio_ajustado_pct) max_sobreprecio, "
         f"MAX(k.brecha_oferta_min_pct) max_brecha_ofertas, "
         f"GROUP_CONCAT(DISTINCT r.producto_id) productos, GROUP_CONCAT(DISTINCT r.proveedor) proveedores, "
@@ -146,7 +165,8 @@ def opciones_filtros(conn: sqlite3.Connection) -> dict:
     }
 
 
-def agrupado(conn: sqlite3.Connection, filtros: dict, dimension: str, limit: int = 25) -> list[dict]:
+def agrupado(conn: sqlite3.Connection, filtros: dict, dimension: str, limit: int = 25,
+             moneda: str = "nominal") -> list[dict]:
     """Totales por organismo / producto / proveedor / procedimiento / mes."""
     dims = {
         "organismo": "COALESCE(p.organismo_canonico, p.organismo, '(sin organismo)')",
@@ -158,11 +178,12 @@ def agrupado(conn: sqlite3.Connection, filtros: dict, dimension: str, limit: int
     }
     expr = dims[dimension]
     where, params = _where(filtros)
+    _preparar(conn, moneda)
     order = "clave" if dimension == "mes" else "exceso DESC, monto DESC"
     rows = conn.execute(
         f"SELECT {expr} clave, COUNT(DISTINCT p.id) procesos, COUNT(r.id) renglones, "
-        f"COALESCE(SUM(r.monto_total), 0) monto, "
-        f"COALESCE(SUM(CASE WHEN k.semaforo IN ('rojo','amarillo') THEN k.exceso_ars END), 0) exceso, "
+        f"COALESCE(SUM({_m('r.monto_total', moneda)}), 0) monto, "
+        f"COALESCE(SUM(CASE WHEN k.semaforo IN ('rojo','amarillo') THEN {_m('k.exceso_ars', moneda)} END), 0) exceso, "
         f"SUM(CASE WHEN k.semaforo='rojo' THEN 1 ELSE 0 END) rojos, "
         f"SUM(CASE WHEN k.semaforo='amarillo' THEN 1 ELSE 0 END) amarillos, "
         f"SUM(CASE WHEN k.semaforo IN ('rojo','amarillo','verde') THEN 1 ELSE 0 END) comparados, "
@@ -173,18 +194,20 @@ def agrupado(conn: sqlite3.Connection, filtros: dict, dimension: str, limit: int
     return [dict(r) for r in rows]
 
 
-def peores_renglones(conn: sqlite3.Connection, filtros: dict, limit: int = 15) -> list[dict]:
+def peores_renglones(conn: sqlite3.Connection, filtros: dict, limit: int = 15, moneda: str = "nominal") -> list[dict]:
     where, params = _where(filtros)
+    _preparar(conn, moneda)
     rows = conn.execute(
         f"SELECT p.id proceso_id, p.organismo, COALESCE(p.fecha_adjudicacion, p.fecha_publicacion) fecha, "
-        f"r.descripcion, r.proveedor, r.proveedor_cuit, r.precio_unidad_base, r.unidad_base, k.ref_principal, "
-        f"k.ref_principal_valor, k.sobreprecio_ajustado_pct, k.exceso_ars, k.semaforo, k.confianza "
+        f"r.descripcion, r.proveedor, r.proveedor_cuit, {_m('r.precio_unidad_base', moneda)} precio_unidad_base, "
+        f"r.unidad_base, k.ref_principal, {_m('k.ref_principal_valor', moneda)} ref_principal_valor, "
+        f"k.sobreprecio_ajustado_pct, {_m('k.exceso_ars', moneda)} exceso_ars, k.semaforo, k.confianza "
         f"{_BASE_FROM} WHERE {where} AND k.semaforo IN ('rojo','amarillo','verde') "
         f"ORDER BY k.sobreprecio_ajustado_pct DESC LIMIT ?", params + [limit]).fetchall()
     return [dict(r) for r in rows]
 
 
-def serie_producto(conn: sqlite3.Connection, producto_id: str) -> dict:
+def serie_producto(conn: sqlite3.Connection, producto_id: str, moneda: str = "nominal") -> dict:
     """Precio pagado por el Estado (puntos) vs mercado (p25 mayorista mensual y INDEC)."""
     estado = [dict(r) for r in conn.execute(
         "SELECT COALESCE(p.fecha_adjudicacion, p.fecha_publicacion) fecha, r.precio_unidad_base precio, "
@@ -193,10 +216,19 @@ def serie_producto(conn: sqlite3.Connection, producto_id: str) -> dict:
         "WHERE r.producto_id = ? AND r.precio_unidad_base IS NOT NULL ORDER BY fecha", (producto_id,))]
     mercado_rows = conn.execute(
         "SELECT substr(fecha, 1, 7) mes, canal, precio_unidad_base FROM precios_mercado "
-        "WHERE producto_id = ? AND precio_unidad_base IS NOT NULL", (producto_id,)).fetchall()
+        "WHERE producto_id = ? AND precio_unidad_base IS NOT NULL AND cuarentena IS NULL", (producto_id,)).fetchall()
+    conv = None
+    if moneda != "nominal":
+        mon = moneda_mod.cargar(conn)
+        conv = lambda v, f: mon.convertir(v, f, moneda)   # noqa: E731
+        for e in estado:
+            e["precio"] = conv(e["precio"], e["fecha"])
+        estado = [e for e in estado if e["precio"] is not None]
     by_key: dict[tuple, list[float]] = {}
     for r in mercado_rows:
-        by_key.setdefault((r["mes"], r["canal"]), []).append(r["precio_unidad_base"])
+        valor = conv(r["precio_unidad_base"], r["mes"]) if conv else r["precio_unidad_base"]
+        if valor is not None:
+            by_key.setdefault((r["mes"], r["canal"]), []).append(valor)
 
     def p25(values):
         values = sorted(values)

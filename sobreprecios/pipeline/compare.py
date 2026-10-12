@@ -557,7 +557,7 @@ def load_index(conn: sqlite3.Connection, serie: str) -> dict[str, float]:
 def load_observations(conn: sqlite3.Connection, producto_id: str) -> list[Obs]:
     rows = conn.execute(
         "SELECT fuente, canal, fecha, precio_unidad_base, contenido_base, descripcion, url "
-        "FROM precios_mercado WHERE producto_id=? AND precio_unidad_base IS NOT NULL",
+        "FROM precios_mercado WHERE producto_id=? AND precio_unidad_base IS NOT NULL AND cuarentena IS NULL",
         (producto_id,)).fetchall()
     return [Obs(r["fuente"], r["canal"], r["fecha"], r["precio_unidad_base"], r["contenido_base"],
                 r["descripcion"] or "", r["url"]) for r in rows]
