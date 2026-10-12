@@ -724,8 +724,8 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   variantes aparecían como 3 valores distintos del filtro con sus propios conteos (4/45/19) en vez
   de un solo "Ministerio de Desarrollo Social (68)". Fix: esas 3 queries
   (`list_procesos`, `peores_renglones`, `empresa().adjudicaciones`) ahora traen también
-  `organismo_canonico`, y el `<td>` muestra el texto crudo (sigue el detalle de la subunidad) pero
-  filtra por `data-valor="{{ organismo_canonico or organismo }}"` — mismo patrón que ya usaban
+  `organismo_canonico`, y el `<td>` muestra el nombre canónico (el texto crudo, con la subunidad, queda
+  en el `title` "Como figura en el documento") y filtra por `data-valor="{{ organismo_canonico or organismo }}"` — mismo patrón que ya usaban
   `monto`/`exceso` (crudo para mostrar, vía `data-valor`, sin formato argentino).
   Segundo bug, más de fondo: `normalize/entidades.normalizar_organismo()` separaba
   jurisdicción/subunidad sobre una copia YA sin acentos (`strip_accents().upper()`, necesaria para

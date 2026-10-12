@@ -72,7 +72,7 @@ adjudicaciones en el Boletín Oficial, o usá <a href="/investigar">＋ Investig
     <tr data-soft-key="proc:{{ p.id }}" class="row-link" onclick="location.href='/licitacion/{{ p.id }}'">
         <td><span class="sem sem-{{ p.peor_semaforo }}">{{ SEMAFORO_TXT[p.peor_semaforo] }}</span></td>
         <td data-valor="{{ p.fecha or '' }}">{{ p.fecha|fecha if p.fecha else '—' }}</td>
-        <td data-valor="{{ p.organismo_canonico or p.organismo or '' }}">{{ p.organismo or '—' }}</td>
+        <td data-valor="{{ p.organismo_canonico or p.organismo or '' }}"{% if p.organismo_canonico and p.organismo_canonico != p.organismo %} title="Como figura en el documento: {{ p.organismo }}"{% endif %}>{{ p.organismo_canonico or p.organismo or '—' }}</td>
         <td><a href="/licitacion/{{ p.id }}">{{ p.numero or (p.norma or 'ver detalle') }}</a>
             {% if p.norma and p.numero %}<div class="muted small">{{ p.norma }}</div>{% endif %}</td>
         <td class="small" data-valor="{{ p.proveedores|join(', ') }}">{{ p.proveedores[:3]|join(', ') }}{% if p.proveedores|length > 3 %} y {{ p.proveedores|length - 3 }} más{% endif %}</td>

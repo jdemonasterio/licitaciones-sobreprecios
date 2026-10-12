@@ -92,7 +92,7 @@ dato para convertir quedan fuera de las sumas.{% endif %}</p>{% endif %}
 <thead><tr><th data-tipo="cat">Semáforo</th><th data-tipo="fecha">Fecha</th><th data-tipo="cat">Organismo</th><th data-tipo="texto">Bien</th><th data-tipo="cat">Proveedor</th><th class="num" data-tipo="num">Adjudicado</th><th class="num" data-tipo="num">Referencia</th><th class="num" data-tipo="num">Brecha</th><th class="num" data-tipo="num">Exceso</th></tr></thead>
 <tbody>{% for r in peores %}
 <tr><td><span class="sem sem-{{ r.semaforo }}">{{ SEMAFORO_TXT[r.semaforo] }}</span></td><td data-valor="{{ r.fecha or '' }}">{{ r.fecha|fecha }}</td>
-<td data-valor="{{ r.organismo_canonico or r.organismo or '' }}"><a href="/licitacion/{{ r.proceso_id }}">{{ r.organismo or '—' }}</a></td><td>{{ r.descripcion }}</td>
+<td data-valor="{{ r.organismo_canonico or r.organismo or '' }}"><a href="/licitacion/{{ r.proceso_id }}"{% if r.organismo_canonico and r.organismo_canonico != r.organismo %} title="Como figura en el documento: {{ r.organismo }}"{% endif %}>{{ r.organismo_canonico or r.organismo or '—' }}</a></td><td>{{ r.descripcion }}</td>
 <td class="small">{{ r.proveedor or '—' }}</td>
 <td class="num" data-valor="{{ r.precio_unidad_base if r.precio_unidad_base is not none else '' }}">{{ r.precio_unidad_base|ars(2, moneda) }}/{{ r.unidad_base }}</td>
 <td class="num" data-valor="{{ r.ref_principal_valor if r.ref_principal_valor is not none else '' }}">{{ r.ref_principal_valor|ars(2, moneda) }}<div class="muted small">{{ REF_TXT.get(r.ref_principal, r.ref_principal) }}</div></td>
