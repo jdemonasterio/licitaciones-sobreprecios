@@ -274,6 +274,12 @@ Como verificar: cada punto con su criterio en `_scratch/licitaciones/REVISION_PR
   sintético, mostrado visualmente.
 Como verificar: cada punto con su test o captura en el simulador.
 
+**#51 — Sucesión de organismos: leer el cuerpo de las notas (seguimiento de #39).**
+Corrida real 2026-10-12 con ventana de fechas del cambio: Seguridad → Seguridad Nacional CONFIRMADO (4 medios
+distintos); Desarrollo Social → Capital Humano queda PROPUESTO con 1 confirmación (La Nación): en una absorción
+los títulos casi nunca nombran los dos ministerios y el juez solo ve títulos. Próximo paso: resolver la URL de
+Google News a la nota original y pasarle al juez el primer párrafo. Como verificar: Capital Humano llega a 4.
+
 **#41 — Domicilios: solo se ocultan los de personas humanas.** Los de empresas y organismos se muestran. Verificado 2026-10-12: la página de cada empresa muestra su domicilio legal y ningún filtro oculta domicilios de personas jurídicas; los reportes no exportan datos societarios.
 
 **#42 — Impuestos en los precios.** Registrar si cada fuente informa precio con o sin IVA; las promociones se

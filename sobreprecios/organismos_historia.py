@@ -128,14 +128,34 @@ def _llm_confirma(anterior: str, nuevo: str, item: dict) -> dict | None:
         return None
 
 
-def investigar(anterior: str, nuevo: str, con_llm: bool = True, max_resultados: int = 6) -> dict:
+def _consultas(anterior: str, nuevo: str, desde: str | None) -> list[str]:
+    """Queries para Google News. Con fecha del cambio, se acota a esa ventana (after:/before:): sin eso, el RSS
+    devuelve noticias recientes que solo MENCIONAN el organismo nuevo (verificado 2026-10-12: 6 de 6 resultados
+    para Capital Humano eran de 2026 y ninguno hablaba de su creación)."""
+    import datetime as dt
+    corto_ant = anterior.replace("Ministerio de ", "")
+    corto_nuevo = nuevo.replace("Ministerio de ", "")
+    base = [f'"{anterior}" "{nuevo}"', f"{anterior} pasa a llamarse {nuevo}",
+            f'"{nuevo}" absorbe "{corto_ant}"', f'se crea el "{nuevo}" "{corto_ant}"',
+            f'decreto "{nuevo}" "{corto_ant}"', f'"{corto_nuevo}" reemplaza "{corto_ant}"',
+            f'superministerio "{corto_nuevo}" "{corto_ant}"', f'"{corto_nuevo}" unifica "{corto_ant}"',
+            f'"{corto_ant}" pasa a "{corto_nuevo}"']
+    if not desde:
+        return base
+    d = dt.date.fromisoformat(desde[:10])
+    ventana = f" after:{(d - dt.timedelta(days=45)).isoformat()} before:{(d + dt.timedelta(days=120)).isoformat()}"
+    return [q + ventana for q in base]
+
+
+def investigar(anterior: str, nuevo: str, con_llm: bool = True, max_resultados: int = 6,
+               desde: str | None = None) -> dict:
     """Busca noticias y (si `con_llm`) les pide al LLM barato que confirme el cambio institucional.
 
     Devuelve {anterior, nuevo, n_resultados, confirmaciones: [...], medios_independientes: [...],
     estado}. `estado` es "confirmado" solo con >= MIN_CONFIRMACIONES_INDEPENDIENTES medios
     DISTINTOS confirmando; si no, "propuesto" con lo que se encontró (nunca se descarta).
     """
-    queries = [f'"{anterior}" "{nuevo}"', f"{anterior} pasa a llamarse {nuevo}"]
+    queries = _consultas(anterior, nuevo, desde)
     vistos_url: set[str] = set()
     items: list[dict] = []
     for q in queries:
@@ -207,7 +227,7 @@ def run(conn, con_llm: bool = True, max_resultados: int = 6, solo: list[Seed] | 
     """Corre `investigar` + `guardar` para cada seed de config/organismos.yml (o `solo`, para tests)."""
     msgs = []
     for s in (solo if solo is not None else seeds()):
-        resultado = investigar(s.anterior, s.nuevo, con_llm=con_llm, max_resultados=max_resultados)
+        resultado = investigar(s.anterior, s.nuevo, con_llm=con_llm, max_resultados=max_resultados, desde=s.desde)
         msgs.append(guardar(conn, s.saf, resultado))
     return " · ".join(msgs) if msgs else "sin seeds en config/organismos.yml (ninguna entrada con 'renombres')"
 
