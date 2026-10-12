@@ -152,6 +152,54 @@ compras de abril-junio 2026 no pueden ser rojas. Pedir el histórico oficial
 (P8) o sumar otra fuente diaria. Como verificar: `sepa_archivo` encuentra un
 volcado <= fecha a <= 15 días para cada compra comparable.
 
+## Decisiones de jdemonasterio sobre la revisión del prime (2026-10-12)
+
+**#34 — Módulo de revisión humana (P3 + P11 + visor de P6).**
+Cola de casos para revisar (grises, "equivalencia por verificar", rojos, errores del juez) y una pantalla por
+caso muy visual: producto, renglón, evidencia de mercado, veredicto del juez y acceso con un click al PDF del
+acto, al aviso del BO y a COMPR.AR (bajados a demanda, no guardados). El humano carga lo que falte o corrige
+(fecha, unidad, envase, variedad/composición, precio, producto) y su veredicto; queda en la base local y el
+comparador lo usa como dato cargado a mano. Corridas del juez visibles en el webui (estilo "workhorse radar").
+Como verificar: un renglón gris se completa desde la pantalla, se recalcula solo y el simulador lo cubre.
+
+**#35 — Ampliar las compras a 2021-2022 (P4) y presentarlas como investigaciones.**
+Cubrir 2021-2022 en BO y COMPR.AR para cruzarlas con las listas de Precios Cuidados. Los textos presentan cada
+caso como "investigación pendiente de revisión humana", nunca como sobreprecio establecido.
+Como verificar: `estado` muestra procesos 2021-2022 comparados contra precios de programa.
+
+**#36 — Precios Cuidados / Justos / Máximos 2020-2023 como dato de mercado.**
+Están cerca del mínimo (el productor en el libre mercado suele cobrar más): se usan como un dato más cuando no
+hay datos mejores para esa fecha. Importador de las listas (PDF oficial, widget de datos vía Wayback, texto de
+diarios); muestra validada por el juez en `_scratch/licitaciones/historico_precios/`.
+Como verificar: una compra de 2021 sin SEPA se compara contra la lista vigente con la fuente a la vista.
+
+**#37 — COMPR.AR completo: acto de adjudicación, OC, ofertas desestimadas y plazo de pago (P2, P6).**
+Navegar procesos viejos (probar con 4-5) para encontrar el acto de adjudicación y las órdenes de compra; parsear
+las ofertas desestimadas con su causa; leer el plazo de pago del pliego y usarlo en el ajuste financiero en
+lugar del supuesto de 1 mes. Como verificar: test con fixtures de procesos viejos y la causa visible en el detalle.
+
+**#38 — Mayoristas: priorizar datos del pasado (P9).**
+Averiguar si Diarco y otros mayoristas tienen historial (o solo precio actual); el valor está en el pasado
+(Wayback). Como verificar: tabla de fuentes con desde/hasta por mayorista.
+
+**#39 — Cambios de nombre de organismos con búsqueda web + LLM (P13).**
+Script que busca en diarios los cambios de identidad institucional y los da por buenos con 4 confirmaciones
+independientes; grafo acíclico de sucesión/absorción. Como verificar: Desarrollo Social → Capital Humano
+aparece como sucesión con sus fuentes.
+
+**#40 — Autoridades de empresas con ventana temporal (riesgo del prime).**
+Buscar notas de diarios que fechen la designación y en qué Boletín salió; distinguir fecha del acto, vigencia y
+publicación. Como verificar: una designación parcial no cierra cargos que no menciona.
+
+**#41 — Domicilios: solo se ocultan los de personas humanas.** Los de empresas y organismos se muestran.
+
+**#42 — Impuestos en los precios.** Registrar si cada fuente informa precio con o sin IVA; las promociones se
+toman como el precio vigente; stock y compra mínima no se consideran.
+
+**#43 — Plan de uso por Quijote.** Lo operan ellos con claude.ai de punta a punta (iterar el software y las
+validaciones humanas); costo extra estimado bajo. Enviar documentos públicos a proveedores de IA está bien: es
+información pública de compras del Estado.
+
 ## Pantallas (webui)
 
 **#14 — Tabla de correspondencias de organismos renombrados.**
