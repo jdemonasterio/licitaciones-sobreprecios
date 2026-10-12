@@ -317,9 +317,26 @@ vivo con la home.
 - Documentos abiertos dentro de la misma pantalla; cola de revisión como lista de tareas inequívocas.
 - Investigación de UX de proyectos similares (transparencia, compras públicas, resultados electorales) y
   refresco visual de la interfaz.
-- Tests de punta a punta de "corregir → recalcular → publicable" y validación final del prime con un caso
-  sintético, mostrado visualmente.
+- **[hecho 2026-10-12]** Tests de punta a punta de "corregir → recalcular → publicable" y validación final
+  del prime con un caso sintético, mostrado visualmente.
 Como verificar: cada punto con su test o captura en el simulador.
+  - Journey E2E completo (`tests/e2e/test_user_journeys.py::test_journey_corregir_recalcular_publicar_y_revocar_solo`,
+    sembrado a mitad de sesión, no en `conftest._seed`): abre un caso gris (variedad mal asignada), lo corrige en
+    el lugar (sin recarga, soft-nav), el color cambia (gris → verde), aparece en `/impacto` y se marca
+    "publicable" (aparece en `/?revision=publicable`); una segunda corrección que cambia el cálculo revoca el
+    "publicable" SOLO (nunca se reafirma solo, ni siquiera deshaciendo la corrección y volviendo al cálculo
+    idéntico al aprobado). Corre con `LIC_E2E=1 .venv/bin/python -m pytest tests/e2e -v` o `scripts/simular.py`.
+  - Caso sintético con respuesta conocida (yerba mate 1 kg a $1.300/kg vs. dos cadenas de familias distintas a
+    $1.000/$1.020 el mismo mes, IPC +2% mensual conocido, plazo de pago default): `scripts/caso_sintetico.py`
+    (`build` / `screenshots` / `validar-prime`) + `tests/test_caso_sintetico.py` (assertea el número EXACTO:
+    rojo, +27,45% ajustado, +22,5% corroborado, $274.509,80 de exceso). Capturas en
+    `_scratch/licitaciones/caso_sintetico/{licitacion,comprobante,expediente}.png`.
+  - Validación del prime (gpt-6-astra, USD 0,10 de las USD 2,00 de tope — ledger
+    `_scratch/licitaciones/auditoria/gasto_prime.tsv`, prefijo `[presupuesto 2]`): recalculó la cuenta de forma
+    independiente y le dio la razón al motor (mismos números exactos); no encontró bugs reales, solo pidió hacer
+    más explícitos en el comprobante/expediente los umbrales de rojo/amarillo y qué escenario (1 mes vs. 2 meses,
+    contra $1.000 vs. contra $1.020) explica cada porcentaje mostrado. Resumen completo en
+    `_scratch/licitaciones/caso_sintetico/VALIDACION_PRIME.md`.
 
 **#51 — Sucesión de organismos: leer el cuerpo de las notas (seguimiento de #39).**
 Corrida real 2026-10-12 con ventana de fechas del cambio: Seguridad → Seguridad Nacional CONFIRMADO (4 medios
