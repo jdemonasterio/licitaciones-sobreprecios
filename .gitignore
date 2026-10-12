@@ -1,0 +1,36 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+.env
+*.log
+.DS_Store
+.ruff_cache/
+
+# Datos generados localmente: la base, los caches de descargas y de LLM.
+# Se regeneran con `python -m sobreprecios.cli setup` (ver README).
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Artefactos de trabajo (planes, goldens de validación, análisis sueltos).
+# Lo que tiene que sobrevivir va a DESIGN_sobreprecios.md.
+_scratch/
+
+# Permisos de Claude Code de cada PC: los crea instalar.bat desde docs/claude_settings_recomendado.json
+.claude/settings.json
+.claude/settings.local.json
+
+# Nunca commitear credenciales (revisión de seguridad 2026-10-12)
+.env.*
+!.env.example
+token*.json
+credentials*.json
+*.sqlite
+*.sqlite3
+*.pem
+*.key
+id_rsa*
+id_ed25519*

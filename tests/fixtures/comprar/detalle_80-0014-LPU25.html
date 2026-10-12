@@ -1,0 +1,2260 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>
+	COMPR.AR - Portal de Compras Públicas de la República Argentina
+</title><meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+
+
+
+
+</head>
+<body>
+
+
+<form action="./VistaPreviaPliegoCiudadano.aspx?qs=BQoBkoMoEhxzP1Q2BgCA4%7ca1WbNLpV84wFrGB038FyqbAmsWY5j4412M1yX4RbASWkyXoQOtyUxrD1H7egsS31%2f49DCj8g773mhrEIJCxAjpwYEjg9ZryA%3d%3d" id="aspnetForm" method="post" onsubmit="javascript:return WebForm_OnSubmit();">
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar-inverse">
+<div class="navbar-header">
+<button aria-expanded="false" class="navbar-toggle" data-target="#nav" data-toggle="collapse" type="button">
+<span class="sr-only">Toggle navigation</span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+</button>
+</div>
+<div class="collapse navbar-collapse" id="nav">
+<div class="container">
+<div class="row">
+<ul class="nav navbar-nav">
+<li><a href="https://www.argentina.gob.ar/jefatura/innovacion-publica/oficina-nacional-de-contrataciones" target="_blank"><strong>Institucional</strong></a></li>
+<li><a href="http://www.infoleg.gob.ar/?page_id=91" target="_blank"><strong>Normativa</strong></a></li>
+<li><a aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" data-toggle="dropdown" role="button"><strong>Capacitación</strong></a>
+<ul class="dropdown-menu">
+<li><a href="/ComprasElectronicas.aspx?qs=uZmpNBcarZh/t6e8LDmVN|XFAS9B6k9ddqFj4heYwZ4=" id="ctl00_CtrlMenuPortal_lnkProveedoresInstructivos">Proveedores</a></li>
+<li><a href="/capacitacion.aspx">Organismos</a></li>
+</ul>
+</li>
+<li><a href="/contactenos.aspx"><strong>Atención al usuario</strong></a></li>
+<li><a href="/Dictamen/Dictamen/Buscar"><strong>Material de apoyo</strong></a></li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+<a href="../Login.aspx" id="lnkIngresar" style="cursor: pointer">
+<span class="glyphicon glyphicon-log-in"></span>
+<strong>Ingresar</strong>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" data-backdrop="static" data-keyboard="false" id="modalIngresar" role="dialog" tabindex="-2">
+<div class="modal-dialog">
+<div class="modal-content">
+<div id="ctl00_CtrlMenuPortal_logIn_updateModal">
+<div class="modal-header" id="ctl00_CtrlMenuPortal_logIn_divHeaderModal">
+<a aria-hidden="true" class="close" data-dismiss="modal" href="javascript:__doPostBack('ctl00$CtrlMenuPortal$logIn$lnkClose','')" id="ctl00_CtrlMenuPortal_logIn_lnkClose" onclick="CloseModalIngresar();">×</a>
+<h2 class="text-center">
+<span id="ctl00_CtrlMenuPortal_logIn_lblHeader">Bienvenido</span>
+</h2>
+</div>
+<div class="modal-body" data-backdrop="static" data-keyboard="false" id="ctl00_CtrlMenuPortal_logIn_divBodyModal">
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+
+<input class="form-control" id="ctl00_CtrlMenuPortal_logIn_txtUsername_txtTextBox" name="ctl00$CtrlMenuPortal$logIn$txtUsername$txtTextBox" placeholder="CUIL / CUIT / Pasaporte" type="text"/>
+<span class="glyphicon form-control-feedback" id="ctl00_CtrlMenuPortal_logIn_txtUsername_txtTextBoxVG"></span>
+<span class="control-label" id="ctl00_CtrlMenuPortal_logIn_txtUsername_txtTextBoxV" style="display:none;">Verifique que el CUIT haya sido ingresado</span>
+</div>
+</div>
+</div>
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+<span class="text" id="ctl00_CtrlMenuPortal_logIn_Label2">El número de identificación que ingrese debe ser el personal. No el del organismo o empresa.</span>
+</div>
+</div>
+</div>
+</div>
+<div class="modal-footer">
+<div class="row">
+<div class="form-horizontal">
+<div class="col-md-12">
+<a class="btn btn-primary pull-right" data-loading-text="Validando..." href='javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions("ctl00$CtrlMenuPortal$logIn$lnkConfirmar", "", true, "vgLogin", "", false, true))' id="ctl00_CtrlMenuPortal_logIn_lnkConfirmar">Siguiente</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" data-backdrop="static" data-keyboard="false" id="modalRecuperarCuenta" role="dialog" tabindex="-2">
+<div class="modal-dialog">
+<div class="modal-content">
+<div id="ctl00_CtrlMenuPortal_logIn_ctl00">
+<div class="modal-header">
+<a aria-hidden="true" class="close" data-dismiss="modal" href="javascript:__doPostBack('ctl00$CtrlMenuPortal$logIn$ctl03','')" onclick="CloseModalRecuperarCuenta();">×</a>
+<h2 class="text-center">
+<span id="ctl00_CtrlMenuPortal_logIn_Label1">Recuperar contraseña</span>
+</h2>
+</div>
+<div class="modal-body" data-backdrop="static" data-keyboard="false">
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-12">
+<div class="alert alert-info" id="ctl00_CtrlMenuPortal_logIn_divAdvertencia"><strong>Importante:</strong> El correo electrónico debe ser el mismo que ingresó al sistema al momento de registrarse como usuario.</div>
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+<input class="form-control" id="ctl00_CtrlMenuPortal_logIn_textBoxUserRecuperoContrasenia" name="ctl00$CtrlMenuPortal$logIn$textBoxUserRecuperoContrasenia" type="text"/>
+</div>
+</div>
+</div>
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+
+<input class="form-control" id="ctl00_CtrlMenuPortal_logIn_txtMail_txtTextBox" name="ctl00$CtrlMenuPortal$logIn$txtMail$txtTextBox" placeholder="Correo electronico" type="text"/>
+<span class="glyphicon form-control-feedback" id="ctl00_CtrlMenuPortal_logIn_txtMail_txtTextBoxVG"></span>
+<span class="control-label" id="ctl00_CtrlMenuPortal_logIn_txtMail_txtTextBoxV" style="display:none;"></span>
+</div>
+</div>
+</div>
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+
+<input class="form-control" id="ctl00_CtrlMenuPortal_logIn_txtMail2_txtTextBox" name="ctl00$CtrlMenuPortal$logIn$txtMail2$txtTextBox" placeholder="Reingrese correo electronico" type="text"/>
+<span class="glyphicon form-control-feedback" id="ctl00_CtrlMenuPortal_logIn_txtMail2_txtTextBoxVG"></span>
+<span class="control-label" id="ctl00_CtrlMenuPortal_logIn_txtMail2_txtTextBoxV" style="display:none;">Verifique que el correo electrónico haya sido ingresado.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row pull-right">
+<div class="col-md-12">
+<a class="btn btn-success m-l-1 btn-sm" href='javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions("ctl00$CtrlMenuPortal$logIn$btnSolicitar", "", true, "vgRecuperar", "", false, true))' id="ctl00_CtrlMenuPortal_logIn_btnSolicitar">Solicitar</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</nav>
+<div class="bg-white-1" style="padding-top: 5px; padding-bottom: 5px;">
+<div class="container">
+<div class="row">
+
+<div id="date" style="font-size: 11px; text-align: right;">
+<span id="ctl00_CtrlTimeNow_scriptFechaHora"></span>
+<span id="divReloj"> Domingo 11 de Octubre, <b class="texto11Azul">18:43:38 </b></span>
+</div>
+</div>
+</div>
+</div>
+<section>
+<div class="container">
+<div id="divImprimir">
+
+
+
+<br/>
+<div class="row">
+<div class="col-md-12">
+<h2>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_lblTitulo">Proceso de compra</span></h2>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="panel panel-default">
+<div class="panel-body bg-info">
+<div class="row">
+<div class="col-md-6">
+<label for="lblNumPliego">Número de proceso</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_usrCabeceraPliego_lblNumPliego">80-0014-LPU25</span>
+</p>
+</div>
+<div class="col-md-6">
+<label for="lblNumExpediente">Número de expediente</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_usrCabeceraPliego_lblNumExpediente">EX-2025-48989745-   -APN-DCYC#MS</span>
+</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<label for="lblNomPliego">Nombre descriptivo del proceso</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_usrCabeceraPliego_lblNomPliego">Adquisición de medicamentos oncológicos CBDE</span>
+</p>
+</div>
+<div class="col-md-6">
+<label for="lblUnidadOperativa">Unidad Operativa de Contrataciones</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_usrCabeceraPliego_lblUnidadOperativa">80/000 - Dirección General de Administración - MS</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h4 class="panel-title">Información básica del proceso</h4>
+</div>
+<div class="panel-body">
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblNumeroProceso">Nº de proceso</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblNumeroProceso">80-0014-LPU25</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblNombreProceso">Nombre descriptivo de proceso</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblNombreProceso">Adquisición de medicamentos oncológicos CBDE</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblObjetoContratacion">Objeto de la contratación</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblObjetoContratacion">Adquisición de medicamentos oncológicos CBDE</span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblProcedimientoSeleccion">Procedimiento de selección</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblProcedimientoSeleccion">Licitacion Pública</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblEtapa">Etapa</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblEtapa">Única</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblModalidad">Modalidad</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblModalidad">Sin modalidad</span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblAlcance">Alcance</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblAlcance">Nacional</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblMoneda">Moneda</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblMoneda">Peso Argentino</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblEncuadreLegal">Encuadre legal</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblEncuadreLegal">Decreto Delegado N° 1023/2001 Art. 25<br/>Decreto N°1030/2016 Art.10<br/></span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblTipoCotizacionCantidad">Tipo de cotización</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblTipoCotizacionCantidad">Se admite cotización parcial por renglón</span><br/>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblTipoCotizacionLinea">Podrán cotizar, uno, varios o todos los renglones</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblTipoAdjudicacionCantidad">Tipo de adjudicación</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblTipoAdjudicacionCantidad">Se podrá adjudicar un renglón parcialmente</span><br/>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblTipoAdjudicacionLinea">Adjudicación por renglón</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblTipoProcesoGen">Tipo documento que genera el proceso</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblTipoProcesoGen">Orden de compra</span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblLugarRecepcionFisica">Lugar de recepción de documentación física</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblLugarRecepcionFisica">Dirección de Compras y Contrataciones, Avenida 9 de Julio 1925, piso 3, Ciudad Autónoma de Buenos Aires.</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblPlazoMantenimientoOferta">Plazo mantenimiento de la oferta</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblPlazoMantenimientoOferta">60 Días corridos Acto de apertura</span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblRequierePago">Requiere pago</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblRequierePago">No</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblTipoProcesoGen">Otras condiciones</label>
+<p>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<p>
+<br/>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblGeneraRecursos">Genera Recursos</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_GeneraRecursos">No</span><br/>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblFinanciamientoExterno">Financiamiento Externo</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_FinanciamientoExterno">No</span><br/>
+</p>
+</div>
+</div>
+<div class="row form-group">
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblAceptaProrroga">Acepta prórroga</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblAceptaProrroga">No</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4>Solicitudes de contratación asignadas al proceso</h4>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UC_SolicitudesGasto_gvSolicitudesGasto" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col" style="width:20%;">Número solicitud de contratación</th><th scope="col">Estado</th><th scope="col">Unidad Ejecutora</th><th scope="col">Rubro</th><th scope="col">Tipo de urgencia</th><th scope="col">Fecha creación</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_SolicitudesGasto_gvSolicitudesGasto_ctl02_lblSolicitudGasto">80-41-SCO25</span>
+</td><td>Autorizada en Proceso</td><td>80/000 - Dirección General de Administración - MS</td><td>PROD. MEDICO/FARMACEUTICOS/LAB</td><td>Normal</td><td>16/04/2025</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4>Detalle de productos o servicios</h4>
+<div class="table-responsive">
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_upPa">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Número renglón</th><th scope="col">Objeto del gasto</th><th scope="col">Código del ítem</th><th scope="col">Descripción</th><th scope="col">Cantidad</th><th scope="col">Acciones</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>1</td><td>2.5.2</td><td>2.5.2-3956.19</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl02_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: AC. ZOLEDRONICO, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 4 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl02_lblCantidad">480,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl02$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl02_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>2</td><td>2.5.2</td><td>2.5.2-3956.56</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl03_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: BENDAMUSTINA, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 100 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl03_lblCantidad">48,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl03$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl03_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>3</td><td>2.5.2</td><td>2.5.2-3955.6</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl04_lblDescripcion">ANTIANDROGENOS; TIPO: MONODROGA, DROGA GENERICA: BICALUTAMIDA 150 mGr, FORMA FARMACEUTICA: COMPRIMIDO, PRESENTACION: ENVASE X 30 UN</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl04_lblCantidad">4.368,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl04$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl04_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>4</td><td>2.5.2</td><td>2.5.2-3956.30</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl05_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: BORTEZOMID, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: ENVASE X 3,5 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl05_lblCantidad">300,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl05$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl05_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>5</td><td>2.5.2</td><td>2.5.2-1894.18</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl06_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: CICLOFOSFAMIDA, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 1 GR</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl06_lblCantidad">2.280,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl06$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl06_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>6</td><td>2.5.2</td><td>2.5.2-1894.17</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl07_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: CICLOFOSFAMIDA, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 200 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl07_lblCantidad">1.080,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl07$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl07_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>7</td><td>2.5.2</td><td>2.5.2-1894.16</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl08_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: CICLOFOSFAMIDA, FORMA FARMACEUTICA: COMPRIMIDO, PRESENTACION: 50 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl08_lblCantidad">360,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl08$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl08_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>8</td><td>2.5.2</td><td>2.5.2-1894.4</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl09_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: CITARABINA, PRESENTACION: 1 GR, FORMA FARMACEUTICA: AMPOLLA</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl09_lblCantidad">1.992,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl09$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl09_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>9</td><td>2.5.2</td><td>2.5.2-1894.5</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl10_lblDescripcion">CITOSTATICOS; DROGA GENERICA: CITARABINA, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 100 mGr, TIPO: MONODROGA</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl10_lblCantidad">2.676,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl10$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl10_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>10</td><td>2.5.2</td><td>2.5.2-1894.98</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl11_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: CLADRIBINA, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 10 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl11_lblCantidad">48,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl11$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl11_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>11</td><td>2.5.2</td><td>2.5.2-1894.86</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl12_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: CLOFARABINA, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 20 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl12_lblCantidad">432,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl12$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl12_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>12</td><td>2.5.2</td><td>2.5.2-3956.80</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl13_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: DACARBAZINA, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 200 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl13_lblCantidad">378,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl13$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl13_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>13</td><td>2.5.2</td><td>2.5.2-1913.9</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl14_lblDescripcion">SULFONAMIDA-QUIMIOTERAPICO; TIPO: MONODROGA, DROGA GENERICA: DACTINOMICINA, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 0,5 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl14_lblCantidad">48,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl14$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl14_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>14</td><td>2.5.2</td><td>2.5.2-1894.88</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl15_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: DASATINIB, FORMA FARMACEUTICA: COMPRIMIDO, PRESENTACION: 100 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl15_lblCantidad">2.040,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl15$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl15_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>15</td><td>2.5.2</td><td>2.5.2-1894.89</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl16_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: DASATINIB, FORMA FARMACEUTICA: COMPRIMIDO, PRESENTACION: 70 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl16_lblCantidad">720,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl16$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl16_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>16</td><td>2.5.2</td><td>2.5.2-3956.38</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl17_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: DAUNORUBICINA, FORMA FARMACEUTICA: FRASCO AMPOLLA, PRESENTACION: ENVASE X 20 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl17_lblCantidad">432,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl17$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl17_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>17</td><td>2.5.2</td><td>2.5.2-3956.93</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl18_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: ENZALUTAMIDA, FORMA FARMACEUTICA: CAPSULA, PRESENTACION: UNIDAD</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl18_lblCantidad">24.480,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl18$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl18_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>18</td><td>2.5.2</td><td>2.5.2-1894.58</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl19_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: FILGRASTIM, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 300 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl19_lblCantidad">10.056,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl19$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl19_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>19</td><td>2.5.2</td><td>2.5.2-1894.25</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl20_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: FLUOROURACILO, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 500 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl20_lblCantidad">5.520,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl20$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl20_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>20</td><td>2.5.2</td><td>2.5.2-3956.41</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl21_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: FULVESTRANT, FORMA FARMACEUTICA: JERINGA, PRESENTACION: ENVASE X 250 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl21_lblCantidad">216,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl21$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl21_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>21</td><td>2.5.2</td><td>2.5.2-1894.129</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl22_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: GEMCITABINA, FORMA FARMACEUTICA: POLVO, PRESENTACION: 1000 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl22_lblCantidad">1.224,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl22$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl22_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>22</td><td>2.5.2</td><td>2.5.2-1894.27</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl23_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: HIDROXIUREA, FORMA FARMACEUTICA: CAPSULA, PRESENTACION: 500 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl23_lblCantidad">9.900,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl23$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl23_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>23</td><td>2.5.2</td><td>2.5.2-3956.94</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl24_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: IBRUTINIB, FORMA FARMACEUTICA: CAPSULA, PRESENTACION: UNIDAD</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl24_lblCantidad">5.400,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl24$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl24_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>24</td><td>2.5.2</td><td>2.5.2-1821.102</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl25_lblDescripcion">ANTIBIOTICOS P/PERSONAS; TIPO: MONODROGA, DROGA GENERICA: IDARRUBICINA, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 10 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl25_lblCantidad">540,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl25$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl25_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>25</td><td>2.5.2</td><td>2.5.2-1894.19</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl26_lblDescripcion">CITOSTATICOS; DROGA GENERICA: IFOSFAMIDA, FORMA FARMACEUTICA: AMPOLLA, TIPO: MONODROGA, PRESENTACION: 1 GR</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl26_lblCantidad">2.424,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl26$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl26_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>26</td><td>2.5.2</td><td>2.5.2-1913.13</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl27_lblDescripcion">SULFONAMIDA-QUIMIOTERAPICO; TIPO: MONODROGA, DROGA GENERICA: MESILATO DE IMATINIB, FORMA FARMACEUTICA: CAPSULA, PRESENTACION: 100 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl27_lblCantidad">2.160,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl27$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl27_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>27</td><td>2.5.2</td><td>2.5.2-1913.14</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl28_lblDescripcion">SULFONAMIDA-QUIMIOTERAPICO; TIPO: MONODROGA, DROGA GENERICA: MESILATO DE IMATINIB, FORMA FARMACEUTICA: COMPRIMIDO, PRESENTACION: 400 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl28_lblCantidad">9.360,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl28$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl28_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>28</td><td>2.5.2</td><td>2.5.2-1913.7</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl29_lblDescripcion">SULFONAMIDA-QUIMIOTERAPICO; TIPO: MONODROGA, DROGA GENERICA: CLORHIDRATO DE IRINOTECAN, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 100 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl29_lblCantidad">900,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl29$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl29_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>29</td><td>2.5.2</td><td>2.5.2-1894.31</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl30_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: MESNA, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 200 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl30_lblCantidad">14.325,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl30$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl30_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>30</td><td>2.5.2</td><td>2.5.2-1894.34</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl31_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: METOTREXATO, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 500 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl31_lblCantidad">4.176,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl31$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl31_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>31</td><td>2.5.2</td><td>2.5.2-6910.12</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl32_lblDescripcion">ANTIEMETICOS; TIPO: MONODROGA, DROGA GENERICA: ONDANSETRON X 8 mGr, FORMA FARMACEUTICA: COMPRIMIDO, PRESENTACION: ENVASE X 10 UN</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl32_lblCantidad">11.040,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl32$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl32_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>32</td><td>2.5.2</td><td>2.5.2-3956.5</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl33_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: PACLITAXEL, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 300 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl33_lblCantidad">240,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl33$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl33_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>33</td><td>2.5.2</td><td>2.5.2-8787.8</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl34_lblDescripcion">INHIBIDORES PROTEICOS; DROGA GENERICA: PALBOCICLIB 100 MG , FORMA FARMACEUTICA: CAPSULAS, PRESENTACION: UNIDAD, TIPO: MONODROGA</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl34_lblCantidad">756,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl34$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl34_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>34</td><td>2.5.2</td><td>2.5.2-8787.6</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl35_lblDescripcion">INHIBIDORES PROTEICOS; DROGA GENERICA: PALBOCICLIB 125 MG, FORMA FARMACEUTICA: CAPSULAS, PRESENTACION: ENVASE X 21 UN, TIPO: MONODROGA</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl35_lblCantidad">8.526,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl35$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl35_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>35</td><td>2.5.2</td><td>2.5.2-3956.69</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl36_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: PAZOPANIB 200 mGr, FORMA FARMACEUTICA: COMPRIMIDO, PRESENTACION: ENVASE X 30 UN</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl36_lblCantidad">480,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl36$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl36_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>36</td><td>2.5.2</td><td>2.5.2-1894.77</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl37_lblDescripcion">CITOSTATICOS; TIPO: SIN VALOR, DROGA GENERICA: PEMETREXED DISODICO HEPTAHIDR, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 500 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl37_lblCantidad">192,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl37$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl37_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>37</td><td>2.5.2</td><td>2.5.2-3956.109</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl38_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: POMALIDOMIDA 4 mGr, FORMA FARMACEUTICA: CAPSULA DURA, PRESENTACION: ENVASE X 21 UN</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl38_lblCantidad">378,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl38$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl38_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>38</td><td>2.5.2</td><td>2.5.2-2200.3</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl39_lblDescripcion">CORTICOIDES; DROGA GENERICA: PREDNISONA, FORMA FARMACEUTICA: COMPRIMIDO, PRESENTACION: 5 mGr, TIPO: MONODROGA</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl39_lblCantidad">1.440,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl39$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl39_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>39</td><td>2.5.2</td><td>2.5.2-3956.106</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl40_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: PROCARBAZINA, FORMA FARMACEUTICA: CAPSULA, PRESENTACION: 50 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl40_lblCantidad">300,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl40$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl40_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>40</td><td>2.5.2</td><td>2.5.2-1894.73</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl41_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: RITUXIMAB, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 100 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl41_lblCantidad">900,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl41$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl41_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>41</td><td>2.5.2</td><td>2.5.2-1894.74</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl42_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: RITUXIMAB, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 500 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl42_lblCantidad">930,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl42$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl42_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>42</td><td>2.5.2</td><td>2.5.2-3956.35</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl43_lblDescripcion">ANTINEOPLASICOS; TIPO: MONODROGA, DROGA GENERICA: SUNITINIB, FORMA FARMACEUTICA: CAPSULA, PRESENTACION: ENVASE X 50 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl43_lblCantidad">1.008,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl43$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl43_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>43</td><td>2.5.2</td><td>2.5.2-1859.61</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl44_lblDescripcion">INMUNOMODULADORES; TIPO: MONODROGA, DROGA GENERICA: TALIDOMIDA 100 mGr, FORMA FARMACEUTICA: COMPRIMIDO, PRESENTACION: UNIDAD</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl44_lblCantidad">300,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl44$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl44_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>44</td><td>2.5.2</td><td>2.5.2-1894.91</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl45_lblDescripcion">CITOSTATICOS; TIPO: MONODROGA, DROGA GENERICA: TEMOZOLAMIDA, FORMA FARMACEUTICA: CAPSULA, PRESENTACION: 100 mGr</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl45_lblCantidad">2.520,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl45$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl45_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>45</td><td>2.5.2</td><td>2.5.2-1894.14</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl46_lblDescripcion">CITOSTATICOS; DROGA GENERICA: VINCRISTINA, FORMA FARMACEUTICA: AMPOLLA, PRESENTACION: 1 mGr, TIPO: MONODROGA</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl46_lblCantidad">2.772,00 UNIDAD</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl46$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl46_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div aria-labelledby="myModalLabel" class="modal" id="ModVerItem" role="dialog" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+<button aria-hidden="true" class="close" data-dismiss="modal" type="button">×</button>
+<h4 class="modal-title">Información del Ítem</h4>
+</div>
+<div class="modal-body">
+<div class="panel panel-default">
+<div class="panel-body bg-info">
+<div class="row">
+<div class="col-md-12">
+<label for="ObservacionesInput">Observaciones</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_ObservacionesInput"></span>
+</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<label for="EspecificacionesInput">Especificaciones</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_EspecificacionesInput"></span>
+</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<label for="AcondicionamientoInput">Acondicionamiento</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_AcondicionamientoInput"></span>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_TituloItem" style="font-weight:bold;">Item Agrupado</span>
+<br/>
+<br/>
+<div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_DetEntregaLbl" style="font-weight:bold;">Detalle Entrega</span>
+<br/>
+<br/>
+<div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h4 class="panel-title">Cronograma</h4>
+</div>
+<div class="panel-body">
+<div class="row">
+<div class="col-md-6">
+<label for="lblFechaPublicacion">Fecha y hora estimada de publicación en el portal</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblFechaPublicacion">24/06/2025 09:00 Hrs.</span>
+</p>
+</div>
+<div class="col-md-6">
+<label for="lblFechaPublicacionOficial">Fecha y hora publicación en boletin oficial</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblFechaPublicacionOficial">24/06/2025 00:00 Hrs.</span>
+</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<label for="lblFechaInicioConsultas">Fecha y hora inicio de consultas</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblFechaInicioConsultas">24/06/2025 10:00 Hrs.</span>
+</p>
+</div>
+<div class="col-md-6">
+<label for="lblFechaFinalConsultas">Fecha y hora final de consultas</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblFechaFinalConsultas">02/07/2025 10:00 Hrs.</span>
+</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<label for="lblCantidadDiasPublicar">Cantidad de días a publicar</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblCantidadDiasPublicar">2</span>
+</p>
+</div>
+<div class="col-md-6">
+<label for="lblFechaActoApertura">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblTitFechaActoApertura">Fecha y hora acto de apertura</span></label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblFechaActoApertura">11/07/2025 10:00 Hrs.</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_contenedor">
+<h4 id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_titulo">Pliego de bases y condiciones generales</h4>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_gvCondicionesGenerales" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Pliego de Bases y Condiciones Generales</th><th scope="col">Disposición aprobatoria</th><th scope="col">Fecha creación</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<p>
+                            DI-2024-79130471-APN-ONC#JGM
+                            <a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCCondicionesGenerales$gvCondicionesGenerales$ctl02$lnkGEDOByC','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_gvCondicionesGenerales_ctl02_lnkGEDOByC" title="Descargar GEDO">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+</p>
+</td><td>
+<p>
+                            DI-2024-79130471-APN-ONC#JGM
+                            <a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCCondicionesGenerales$gvCondicionesGenerales$ctl02$lnkGEDODisposicion','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_gvCondicionesGenerales_ctl02_lnkGEDODisposicion" title="Descargar GEDO">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+</p>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_gvCondicionesGenerales_ctl02_lblFechaCreacion">31/08/2024</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_hdnIdCondicionesGenerales" name="ctl00$CPH1$UCVistaPreviaPliego$UCCondicionesGenerales$hdnIdCondicionesGenerales" type="hidden"/>
+<br/>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<div class="list-group list-group-panel">
+<div class="list-group-item list-heading list-heading-default">
+<h4 class="panel-title">Requisitos mínimos de participación</h4>
+</div>
+<div class="list-group-item">
+<h5>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_Label4">I. Requisitos económicos y financieros</span></h5>
+<div class="table-responsive">
+<table class="table table-striped table-condensed">
+<thead>
+<tr>
+<td>Nº de requisito</td>
+<td>Descripción</td>
+<td>Tipo de documento</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            1
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoEconomico_ctl01_Label1">La cotización deberá ser efectuada en moneda nacional y deberá consignar el precio
+unitario y las cantidades ofrecidas, con referencia a la unidad de medida establecida en el
+presente pliego, utilizando el formulario electrónico que suministra COMPR.AR a tales
+efectos.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoEconomico_ctl01_TipoDocumento"> </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="list-group-item">
+<h5>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_lblTitRequisitoTecnico">II. Requisitos técnicos</span></h5>
+<div class="table-responsive">
+<table class="table table-striped table-condensed">
+<thead>
+<tr>
+<td>Nº de requisito</td>
+<td>Descripción</td>
+<td>Tipo de documento</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            1
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoTecnico_ctl01_Label1">Descripción del producto, indicando número de certificado ANMAT, marca comercial,
+composición, forma farmacéutica, presentación y origen. No se admitirá la simple
+referencia de que se ajusta al Pliego de Bases y Condiciones Particulares.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoTecnico_ctl01_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            2
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoTecnico_ctl02_Label1">Copia autenticada del documento que acredite la Habilitación para comercializar
+especialidades medicinales emitidas por la autoridad sanitaria, según los requerimientos
+de la ANMAT”.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoTecnico_ctl02_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            3
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoTecnico_ctl03_Label1">Copia del Certificado vigente del producto expedido por la ANMAT, en caso de
+encontrarse en trámite de reinscripción, deberá presentar constancia de inicio del trámite.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoTecnico_ctl03_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            4
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoTecnico_ctl04_Label1">Copia de la Disposición de primer lote del producto o del dictamen favorable de la
+verificación técnica previa, emitido por la ANMAT según lo previsto en la Disposición
+N°9707/2019 de ANMAT. En caso de que el producto no se encuentre comprendido en el
+supuesto de la norma, presentar Declaración Jurada que así lo manifieste.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoTecnico_ctl04_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            5
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoTecnico_ctl05_Label1">En caso de que el Oferente no sea el Fabricante o Titular del Registro de los Bienes que
+propone proveer, deberá presentar una “Autorización del Fabricante” para demostrar que
+ha sido debidamente autorizado por el fabricante o productor de los Bienes para
+suministrarlos.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoTecnico_ctl05_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="list-group-item">
+<h5>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_lblTitRequisitoAdministrativo">III. Requisitos administrativos</span></h5>
+<div class="table-responsive">
+<table class="table table-striped table-condensed">
+<thead>
+<tr>
+<td>Nº de requisito</td>
+<td>Descripción</td>
+<td>Tipo de documento</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            1
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl01_Label1">Garantía de mantenimiento de oferta: En la oferta presentada a través del “COMPR.AR”,
+el oferente individualizará la garantía de mantenimiento de la oferta mediante los datos
+que requiera el sistema.
+Cuando la garantía fuera una póliza de seguro de caución sólo se admitirá PÓLIZA
+ELECTRÓNICA DE SEGURO DE CAUCIÓN, emitidas por entidades aseguradoras
+habilitadas a tal fin por la SUPERINTENDENCIA DE SEGUROS DE LA NACIÓN y la
+misma no requiere se presente en forma física.
+Cuando la garantía no se trate de una póliza de seguro de caución, el original o el
+certificado pertinente de la garantía individualizada en la oferta, deberá ser presentado
+indefectiblemente entre el plazo que va desde la fecha y hora de apertura y hasta un
+plazo de DOS (2) días hábiles contados a partir del día hábil siguiente al del acto de
+apertura, en la Dirección de Compras y Contrataciones del Ministerio de Salud, sita en
+Av. 9 de Julio 1925, Piso 3, CABA. Caso contrario la oferta será desestimada.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl01_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            2
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl02_Label1">Copia del Anexo (ACTO-2023-106005735-APN-DPPT#OA1) sobre la Declaración Jurada
+de Intereses” prevista en el Decreto N° 202/2017, mediante el Formulario Digital
+habilitado por la Oficina Anticorrupción. Para eso deberán ingresar al “TAD” con clave
+fiscal y seleccionar el trámite denominado “Presentación de Declaración Jurada de
+Intereses del Decreto 202/17” con la descripción “#Oficina Anticorrupción – OA. El trámite
+permite cumplir la declaración jurada de intereses, tanto de personas humanas, como de
+personas jurídicas. Deberán descargar el formulario y acompañarse como documento
+adjunto con la oferta.
+A fin de que los interesados puedan cumplir con la obligación establecida en el artículo 2º
+del Decreto Nº 202/17, relativa a funcionarios de rango inferior a Ministro que tengan
+competencia o capacidad para decidir sobre el procedimiento en cuestión, se detallan a
+continuación los nombres y cargos de dichos funcionarios.
+A todo evento, se hace saber que, ante un cambio sobreviniente de autoridades, resultará
+de aplicación lo dispuesto en la Circular de la OFICINA ANTICORRUPCIÓN N° 2, del 19
+de octubre de 2021 o la que en el futuro la reemplace.
+Funcionarios con competencia para autorizar la convocatoria y elección del
+procedimiento, aprobar el Pliego de Bases y Condiciones Particulares, dejar sin efecto y
+declarar desierto el procedimiento son:
+? La Señora Directora de Compras y Contrataciones, Dra. Brenda de los Milagros
+DIAZ.
+? La Señora Directora Nacional de Medicamentos y Tecnología Sanitaria, Dra.
+María Celeste DIAZ.
+? La Señora Directora General de Administración, Dra. Sabrina FITTIPALDI.
+? El Señor Subsecretario de Planificación y Programación Sanitaria, Dr. Héctor Saúl
+Gervacio FLORES.
+? El Señor Secretario de Gestión Sanitaria, Dr. Alejandro Alberto VILCHES.
+? La Señora Secretaria de Gestión Administrativa, Dra. María Cecilia LOCCISANO.
+? El Señor Ministro de Salud de la Nación, Dr. Mario Iván LUGONES.
+1 Nótese que el mencionado Anexo deberán ingresar al “TAD”, y seleccionar el trámite correspondiente entre las
+siguientes opciones: - Presentación declaración jurada de intereses – Persona Humana. – Presentación declaración
+jurada de intereses – Persona Jurídica, y consignar en el formulario los datos que correspondan.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl02_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            3
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl03_Label1">"Declaración Jurada de Intereses" actualizada en "SIPRO". En oportunidad de
+presentarse como oferente en el presente procedimiento de selección, deberá verificar si
+corresponde modificar lo declarado oportunamente en SIPRO. Para ello, deberán
+ingresar al "TAD", y seleccionar el trámite correspondiente entre las siguientes opciones:
+- Presentación declaración jurada de intereses - Persona Humana. - Presentación
+declaración jurada de intereses - Persona Jurídica, y consignar en el formulario los datos
+que correspondan.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl03_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            4
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl04_Label1">Declaración jurada de elegibilidad, que se vislumbra en el Anexo I, parte integrante del
+presente Pliego.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl04_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            5
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl05_Label1">Declaración jurada de Habilidad para contratar con el Estado, que se vislumbra en el
+Anexo II, parte integrante del presente Pliego.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl05_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            6
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl06_Label1">Declaración Jurada sobre el origen del bien, a los fines de la aplicación de la preferencia establecida por la Ley N° 25.300 de Fomento para la Micro, Pequeña y Mediana
+Empresa.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl06_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            7
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl07_Label1">Declaración Jurada sobre la condición de empresa a los fines de la aplicación de la
+preferencia establecida en la Ley N° 25.300 “Compre mi pyme”.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl07_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            8
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl08_Label1">Presentación del documento “Reporte/Presentación RITE” descargado por el usuario
+desde el módulo “Programa de Integridad” de la plataforma RITE, o en su defecto,
+declaración jurada sobre los ítems detallados en formulario de Declaración Jurada sobre
+la Existencia de Programas de Integridad Adecuados Ley N° 27.401 en la plataforma
+COMPRAR.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl08_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            9
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl09_Label1">En caso que el oferente presente documentación de cualquier tipo, firmada por una
+persona distinta al Administrador Legitimado, deberá adjuntar copia del poder otorgado o
+documentos que acrediten que cuenta con facultades suficientes para actuar en todos los
+actos emergentes del presente procedimiento en nombre y representación del oferente
+como Apoderado o Representante Legal. Podrán tramitar el alta de sus apoderados y/o
+representantes legales en el Sistema de Información de Proveedores accediendo al sitio
+de Internet de COMPR.AR, para lo cual el Administrador Legitimado del proveedor o bien
+quien tuviera poder para actuar en su representación, deberá ingresar a la plataforma de
+Tramitación a Distancia (TAD) con su Clave Fiscal. Allí deberá ingresar en formato digital
+toda la documentación detallada en el Artículo 9º del Anexo de la Disposición ONC Nº
+64/2016, la que deberá ser legible, completa y escaneada de su original.</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl09_TipoDocumento">Requiere adjuntar documentación electrónica</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="row">
+<div class="col-md-12">
+<h4><span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_lblTitulo">Cláusulas particulares</span></h4>
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_UpdatePanel6">
+<div class="alert bg-danger" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_divMensajeError" style="display: none">
+<span class="text-danger" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_lblMensajeError"></span>
+</div>
+</div>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_gvActosAdministrativos" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Documento</th><th scope="col">Número GDE</th><th scope="col">Número especial</th><th scope="col">Fecha vinculación</th><th scope="col">Opciones</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_gvActosAdministrativos_ctl02_lblDocumento">Clausulas Particulares</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_gvActosAdministrativos_ctl02_lblNumeroSade">PLIEG-2025-62712105-APN-DCYC#MS</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_gvActosAdministrativos_ctl02_lblNumeroEspecial"></span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_gvActosAdministrativos_ctl02_lblFechaVinculacion">19/06/2025</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_Clausulas$gvActosAdministrativos$ctl02$btnVer','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_gvActosAdministrativos_ctl02_btnVer" title="Ver">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="list-group list-group-panel">
+<div class="list-group-item list-heading list-heading-default">
+<h4>Garantías</h4>
+</div>
+<div class="list-group-item" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_divGarImpugPreAdj">
+<h5>
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_Label13">Garantía de impugnación a la evaluación</span></strong> </h5>
+<div class="row">
+<div class="col-md-12">
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_lblImpugnacionPread">La garantía de impugnación a la evaluación deber ser del tres por ciento (3%) del monto de la oferta del renglón o los renglones en cuyo favor se hubiere aconsejado adjudicar el contrato.</span></strong>
+</div>
+</div>
+</div>
+<div class="list-group-item" id="divGarMantOferta">
+<h5><strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_lblTituloMantenimientoOferta">Garantía de mantenimiento de oferta</span></strong></h5>
+<div class="row">
+<div class="form-horizontal">
+<div class="col-md-12">
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_AclaracionGarantiaMantenimiento">La garantía de mantenimiento de oferta debe ser del 5,00% sobre el monto total de la oferta</span></strong><br/>
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_divInicioAclaracion">
+<span>Este proceso de compra </span>
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_NoRequiereMant" style="text-decoration:underline;">No requiere</span>
+</strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_lblGarantiaOfertaCompraMenorTexto">incorporar garantía de mantenimiento de oferta para las ofertas menores a 1000 módulos y para aquellas excepciones enumeradas en la normativa vigente.</span>
+</div>
+</div>
+</div>
+</div>
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_divMantOfertaAlt" style="display: none;">
+<div class="row">
+<div class="col-md-12">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_Label14">En el caso de aceptar más de una oferta por proveedor, la garantía se calcula sobre el mayor valor propuesto. En caso de resultar adjudicatario esta garantía se prolongará hasta la constitución de la garantía de cumplimiento del contrato.</span>
+</div>
+</div>
+</div>
+</div>
+<div class="list-group-item" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_divCumpContrato">
+<h5><strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_Label5">Garantía de cumplimiento de contrato</span></strong></h5>
+<div class="row">
+<div class="form-horizontal">
+<div class="col-md-12">
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_AclaracionGarantiaCumplimiento">La garantía de cumplimiento de contrato debe ser del 10,00% del monto del contrato</span></strong><br/>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_asd">Este proceso de compra </span>
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_NoRequiereCump" style="text-decoration:underline;">No requiere</span></strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_lblGarantiaCumplimientoContrato">incorporar garantía de cumplimiento de contrato cuando el monto total del documento contractual no supere los 1000 módulos y para aquellas excepciones enumeradas en la normativa vigente.</span>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="form-horizontal">
+<div class="col-md-12">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_Label2">Este proceso de compra </span>
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_NoRequiereContra" style="text-decoration:underline;">No requiere</span></strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_lblContragarantia">incorporar contragarantía.</span>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+</div>
+</div>
+<div class="list-group-item">
+<div class="row">
+<div class="col-md-12">
+<div class="list-group-item">
+<div class="row">
+<h5><strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_lblTitOtrasGarantias">Otras Garantias</span></strong>
+</h5>
+<table class="table table-striped table-condensed">
+<thead>
+<tr>
+<th>Nª Garantia</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+                                            1
+                                        </td>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_rptOtrasGarantias_ctl01_Label1">Según PBCP.</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h4 class="panel-title">Información del contrato</h4>
+</div>
+<div class="panel-body">
+<div class="row">
+<div class="col-md-3">
+</div>
+<div class="col-md-3">
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<label for="lblMontoDuracionFechaInicioContrato">Fecha estimada del inicio del contrato</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_MontoDuracion_lblMontoDuracionFechaInicioContrato">A partir del perfeccionamiento del documento contractual</span>
+</p>
+</div>
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_MontoDuracion_pnlDuracionContrato">
+<div class="col-md-6">
+<label for="lblMontoDuracionDuracionContrato">Duración del contrato</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_MontoDuracion_lblMontoDuracionDuracionContrato">6 Meses</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4>Penalidades</h4>
+<div class="table-responsive">
+<table class="table table-striped table-condensed">
+<thead>
+<tr>
+<th>Nº penalidad</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+                        1
+                    </td>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Penalidades_rptPenalidades_ctl01_Label1">Según PBCP.</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<br/>
+<br/>
+<div class="row">
+<div class="col-md-12">
+
+<div class="panel panel-default">
+<div class="panel-heading">
+<h4 class="panel-title">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_OfertasProceso_lblTitulo">Ofertas al proceso de compra</span></h4>
+</div>
+<div class="panel-body">
+<div class="row">
+<div class="col-md-4">
+<h5>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_OfertasProceso_Label2">Proveedores participantes:</span>
+<span class="badge">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_OfertasProceso_lblOfertasPresentadas">20</span>
+</span>
+</h5>
+</div>
+<div class="col-md-4">
+<h5>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_OfertasProceso_Label3">Ofertas confirmadas:</span>
+<span class="badge">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_OfertasProceso_lblOfertasConfirmadas">16</span>
+</span>
+</h5>
+</div>
+<div class="col-md-4">
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_OfertasProceso_divVerCuadro">
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_OfertasProceso_divNoVerCuadroMensaje">
+<a class="btn btn-link" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_OfertasProceso$lnkVerCuadroComparativo','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_OfertasProceso_lnkVerCuadroComparativo">Ver cuadro comparativo</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4><span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_lblTitulo">Actos administrativos</span></h4>
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_UpdatePanel6">
+<div class="alert bg-danger" id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_divMensajeError" style="display: none">
+<span class="text-danger" id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_lblMensajeError"></span>
+</div>
+</div>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Documento</th><th scope="col">Número GDE</th><th scope="col">Número especial</th><th scope="col">Fecha vinculación</th><th scope="col">Opciones</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl02_lblDocumento">Autorización pliego</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl02_lblNumeroSade">RS-2025-66333388-APN-SGS#MS</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl02_lblNumeroEspecial">RESOL-2025-840-SGS#MS</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl02_lblFechaVinculacion">19/06/2025</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_ActosAdministrativos$gvActosAdministrativos$ctl02$btnVer','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl02_btnVer" title="Ver">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl03_lblDocumento">Autorización llamado</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl03_lblNumeroSade">RS-2025-66333388-APN-SGS#MS</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl03_lblNumeroEspecial">RESOL-2025-840-SGS#MS</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl03_lblFechaVinculacion">19/06/2025</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_ActosAdministrativos$gvActosAdministrativos$ctl03$btnVer','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl03_btnVer" title="Ver">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl04_lblDocumento">Adjudicación y OC</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl04_lblNumeroSade">RS-2026-21322988-APN-MS</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl04_lblNumeroEspecial">RESOL-2026-346-MS</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl04_lblFechaVinculacion">04/03/2026</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_ActosAdministrativos$gvActosAdministrativos$ctl04$btnVer','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl04_btnVer" title="Ver">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4>Circulares</h4>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Nº</th><th scope="col">Fecha de publicación</th><th scope="col">Tipo</th><th scope="col">Acciones</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares_ctl02_lblNumero">1</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares_ctl02_lblFechaPublicacion">01/07/2025</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares_ctl02_lblTipo">Con consulta</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_Circulares$gvCirculares$ctl02$btnVerCircular','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares_ctl02_btnVerCircular" onclick="javascript:VerCircularCiudadano('N8jBG/m/v4OeL|H9IhxrYPKx5Z7uRAmM' );return false;" title="Ver Circular">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4>Actas de apertura</h4>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UC_VistaPreviaActasApertura_gvActasApertura" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Documento</th><th scope="col">Fecha creación</th><th scope="col">Acciones</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_VistaPreviaActasApertura_gvActasApertura_ctl02_lblNombreActaApertura">Acta de Apertura</span>
+</td><td>
+<p>11/7/2025</p>
+</td><td>
+<a href='javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions("ctl00$CPH1$UCVistaPreviaPliego$UC_VistaPreviaActasApertura$gvActasApertura$ctl02$lnkVerActaApertura", "", false, "", "/EVALUACIONOFERTA/GenerarActaAperturaBastrap.aspx?qs=|c3sc8YiU|rolrc9OrzYVlVCv|ltaCRSznLA9yX2EgMxt00OtKuslVufJnJl|hGbfKtp09KNzu|sWK|XaIMHmaCnnIp2AhxdJmtZuLqhhOzXrGakYpw8xvbb8K/CyP4y5cd9cBTcYZrHii9E85jVqeFsPUDP2AtLcnwcIFzKDttCMWMF5Vp9T9FJUUMPJhRJBAFe3BlHw1YlyvPldB2fRQJt6eTWhpXqaeTY0qdNi5VfQ5GTxV3rDS04cmzj7tkrdmj1Q8vIM|o1zgU3qkkgOw==", false, true))' id="ctl00_CPH1_UCVistaPreviaPliego_UC_VistaPreviaActasApertura_gvActasApertura_ctl02_lnkVerActaApertura" title="Ver acta de apertura">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4><span id="ctl00_CPH1_UCVistaPreviaPliego_UC_VistaPreviaDictamenesPreAdjudicacion_lblTituloDictamen">Dictamenes de evaluación de ofertas</span> </h4>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UC_VistaPreviaDictamenesPreAdjudicacion_gvDictamenesPreAdjudicacion" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Documento</th><th scope="col">Fecha creación</th><th scope="col">Estado</th><th scope="col">Justificación</th><th scope="col">Acciones</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_VistaPreviaDictamenesPreAdjudicacion_gvDictamenesPreAdjudicacion_ctl02_lblNombreDictamen">Dictamen de Evaluación</span>
+</td><td>
+<p>22/12/2025</p>
+</td><td>
+<p>Autorizado</p>
+</td><td>
+<p></p>
+</td><td>
+<a href='javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions("ctl00$CPH1$UCVistaPreviaPliego$UC_VistaPreviaDictamenesPreAdjudicacion$gvDictamenesPreAdjudicacion$ctl02$lnkVerDictamen", "", false, "", "/EVALUACIONOFERTA/PreAdjudicarVisualizarDictamen.aspx?qs=|c3sc8YiU|rolrc9OrzYVtq60tGYIlP1inIXJk9B6TYc0jawx12aTTHxIjxA/SZooiDzVkEGwf0dXTMrJ5f3qk8VrxxyLGkBH6gz1AdNjdlt4MRSmoJ02V0Yr6CABr52kkZ/gWa9nKy0O9jgVw4LR3lZKLoexF8dj9s5ny/7c4ACnNNo6MLW9jGxw4eIWPVv13D7XzgmX4cGsYiVmEtwroGj39AIqA8EoC0wyvZOA9|H1GkebEDwdgCCpAXVPaHyzTQSbnGYhD7AkcDbI75qAgYevqeSFi|K", false, true))' id="ctl00_CPH1_UCVistaPreviaPliego_UC_VistaPreviaDictamenesPreAdjudicacion_gvDictamenesPreAdjudicacion_ctl02_lnkVerDictamen" onclick=" ;" title="Ver vista previa dictamen">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4>Documento contractual por proveedor</h4>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Número</th><th scope="col">Nombre proveedor</th><th scope="col">Número CUIT</th><th scope="col">Tipo</th><th scope="col">Estado</th><th scope="col">Fecha perfeccionamiento</th><th scope="col">Monto</th><th scope="col">Moneda</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<a class="btn btn-link" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCDetalleImputacionAdjudicacion$gvDetalleImputacion$ctl02$lnkOC','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl02_lnkOC">80-0014-OC26</a>
+</td><td>Bioprofarma Bagó S.A.</td><td>30649364040</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl02_lblTipo">Original</span>
+</td><td>Perfeccionado</td><td>05/3/2026</td><td>471.755.705,70</td><td>Peso Argentino</td>
+</tr><tr>
+<td>
+<a class="btn btn-link" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCDetalleImputacionAdjudicacion$gvDetalleImputacion$ctl03$lnkOC','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl03_lnkOC">80-0016-OC26</a>
+</td><td>LABORATORIO ECZANE PHARMA S.A.</td><td>30697736154</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl03_lblTipo">Original</span>
+</td><td>Perfeccionado</td><td>05/3/2026</td><td>135.971.427,78</td><td>Peso Argentino</td>
+</tr><tr>
+<td>
+<a class="btn btn-link" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCDetalleImputacionAdjudicacion$gvDetalleImputacion$ctl04$lnkOC','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl04_lnkOC">80-0017-OC26</a>
+</td><td>LABORATORIO ELEA PHOENIX S.A.</td><td>30544640212</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl04_lblTipo">Original</span>
+</td><td>Perfeccionado</td><td>05/3/2026</td><td>389.145.570,00</td><td>Peso Argentino</td>
+</tr><tr>
+<td>
+<a class="btn btn-link" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCDetalleImputacionAdjudicacion$gvDetalleImputacion$ctl05$lnkOC','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl05_lnkOC">80-0065-OC26</a>
+</td><td>LABORATORIO ELEA PHOENIX S.A.</td><td>30544640212</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl05_lblTipo">Ampliación</span>
+</td><td>Perfeccionado</td><td>16/7/2026</td><td>135.716.153,00</td><td>Peso Argentino</td>
+</tr><tr>
+<td>
+<a class="btn btn-link" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCDetalleImputacionAdjudicacion$gvDetalleImputacion$ctl06$lnkOC','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl06_lnkOC">80-0012-OC26</a>
+</td><td>LABORATORIO KEMEX S.A..</td><td>30708694173</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl06_lblTipo">Original</span>
+</td><td>Perfeccionado</td><td>05/3/2026</td><td>351.274.584,00</td><td>Peso Argentino</td>
+</tr><tr>
+<td>
+<a class="btn btn-link" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCDetalleImputacionAdjudicacion$gvDetalleImputacion$ctl07$lnkOC','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl07_lnkOC">80-0011-OC26</a>
+</td><td>LABORATORIO LKM S.A.</td><td>30661728597</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl07_lblTipo">Original</span>
+</td><td>Perfeccionado</td><td>05/3/2026</td><td>183.621.093,66</td><td>Peso Argentino</td>
+</tr><tr>
+<td>
+<a class="btn btn-link" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCDetalleImputacionAdjudicacion$gvDetalleImputacion$ctl08$lnkOC','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl08_lnkOC">80-0013-OC26</a>
+</td><td>LABORATORIO VARIFARMA S.A</td><td>30682667709</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl08_lblTipo">Original</span>
+</td><td>Perfeccionado</td><td>05/3/2026</td><td>543.304.141,00</td><td>Peso Argentino</td>
+</tr><tr>
+<td>
+<a class="btn btn-link" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCDetalleImputacionAdjudicacion$gvDetalleImputacion$ctl09$lnkOC','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl09_lnkOC">80-0015-OC26</a>
+</td><td>Lowsedo SRL</td><td>30708747765</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl09_lblTipo">Original</span>
+</td><td>Perfeccionado</td><td>06/3/2026</td><td>371.904.416,00</td><td>Peso Argentino</td>
+</tr><tr>
+<td>
+<a class="btn btn-link" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCDetalleImputacionAdjudicacion$gvDetalleImputacion$ctl10$lnkOC','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl10_lnkOC">80-0064-OC26</a>
+</td><td>Lowsedo SRL</td><td>30708747765</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl10_lblTipo">Ampliación</span>
+</td><td>Perfeccionado</td><td>16/7/2026</td><td>103.889.212,00</td><td>Peso Argentino</td>
+</tr><tr>
+<td>
+<a class="btn btn-link" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCDetalleImputacionAdjudicacion$gvDetalleImputacion$ctl11$lnkOC','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl11_lnkOC">80-0010-OC26</a>
+</td><td>MICROSULES ARGENTINA SA de SCIIA</td><td>30519887335</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCDetalleImputacionAdjudicacion_gvDetalleImputacion_ctl11_lblTipo">Original</span>
+</td><td>Perfeccionado</td><td>05/3/2026</td><td>455.503.950,00</td><td>Peso Argentino</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<div class="pull-right">
+</div>
+</div>
+</div>
+<br/>
+</div>
+<div class="row">
+<div class="col-md-12">
+<a class="btn btn-default" href="javascript:__doPostBack('ctl00$CPH1$lnkVolver','')" id="ctl00_CPH1_lnkVolver">Volver</a>
+<div class="pull-right">
+<a class="btn btn-primary" href="javascript:__doPostBack('ctl00$CPH1$lnkImprimir','')" id="ctl00_CPH1_lnkImprimir" onclick="javascript:printDiv('divImprimir');">Imprimir</a>
+</div>
+</div>
+</div>
+<br/>
+</div>
+<input id="ctl00_CPH1_PopupHistorialWS" name="ctl00_CPH1_PopupHistorialWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+
+
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupHistorial_PW-1" style="border-collapse:collapse;border-collapse:separate;position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupHistorial',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupHistorial',-1)" style="height:575px;width:850px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupHistorial_CLW-1" style="height:575px;width:850px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupHistorial_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupHistorial',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupHistorial_PWH-1T" style="width:100%;"></td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupHistorial_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupHistorial',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupHistorial_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupHistorial_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;">  </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table><div class="dxpcModalBackground" id="ctl00_CPH1_PopupHistorial_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_PopupVistaActAdmWS" name="ctl00_CPH1_PopupVistaActAdmWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupVistaActAdm_PW-1" style="border-collapse:collapse;border-collapse:separate;position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupVistaActAdm',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupVistaActAdm',-1)" style="height:600px;width:920px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupVistaActAdm_CLW-1" style="height:600px;width:920px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupVistaActAdm_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupVistaActAdm',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupVistaActAdm_PWH-1T" style="width:100%;"></td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupVistaActAdm_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupVistaActAdm',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupVistaActAdm_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupVistaActAdm_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;">  </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table><div class="dxpcModalBackground" id="ctl00_CPH1_PopupVistaActAdm_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_PopupVistaCircularWS" name="ctl00_CPH1_PopupVistaCircularWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupVistaCircular_PW-1" style="border-collapse:collapse;border-collapse:separate;position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupVistaCircular',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupVistaCircular',-1)" style="height:750px;width:800px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupVistaCircular_CLW-1" style="height:750px;width:800px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupVistaCircular_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupVistaCircular',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupVistaCircular_PWH-1T" style="width:100%;"></td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupVistaCircular_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupVistaCircular',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupVistaCircular_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupVistaCircular_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;">  </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table><div class="dxpcModalBackground" id="ctl00_CPH1_PopupVistaCircular_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_PopupDictamenPreAdjudicacionWS" name="ctl00_CPH1_PopupDictamenPreAdjudicacionWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_PW-1" style="border-collapse:collapse;border-collapse:separate;position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupDictamenPreAdjudicacion',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupDictamenPreAdjudicacion',-1)" style="height:640px;width:770px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_CLW-1" style="height:640px;width:770px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupDictamenPreAdjudicacion',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_PWH-1T" style="width:100%;">Dictamen de evaluación de ofertas</td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupDictamenPreAdjudicacion',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;"> </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table><div class="dxpcModalBackground" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_PopupDictamenPreseleccionWS" name="ctl00_CPH1_PopupDictamenPreseleccionWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupDictamenPreseleccion_PW-1" style="border-collapse:collapse;border-collapse:separate;position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupDictamenPreseleccion',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupDictamenPreseleccion',-1)" style="height:640px;width:770px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupDictamenPreseleccion_CLW-1" style="height:640px;width:770px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupDictamenPreseleccion_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupDictamenPreseleccion',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupDictamenPreseleccion_PWH-1T" style="width:100%;">Dictamen de preselección</td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupDictamenPreseleccion_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupDictamenPreseleccion',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupDictamenPreseleccion_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupDictamenPreseleccion_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;"> </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table><div class="dxpcModalBackground" id="ctl00_CPH1_PopupDictamenPreseleccion_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_PopupCertificadoOfertaWS" name="ctl00_CPH1_PopupCertificadoOfertaWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupCertificadoOferta_PW-1" style="border-collapse:collapse;border-collapse:separate;position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupCertificadoOferta',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupCertificadoOferta',-1)" style="height:640px;width:770px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupCertificadoOferta_CLW-1" style="height:640px;width:770px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupCertificadoOferta_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupCertificadoOferta',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupCertificadoOferta_PWH-1T" style="width:100%;">Certificado de oferta</td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupCertificadoOferta_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupCertificadoOferta',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupCertificadoOferta_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupCertificadoOferta_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;"> </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table><div class="dxpcModalBackground" id="ctl00_CPH1_PopupCertificadoOferta_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_PopupVistaItemWS" name="ctl00_CPH1_PopupVistaItemWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+<div id="ctl00_CPH1_PopupVistaItem_PW-1" style="position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupVistaItem_PWST-1" style="border-collapse:collapse;border-collapse:separate;position:relative;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupVistaItem',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupVistaItem',-1)" style="height:500px;width:750px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupVistaItem_CLW-1" style="height:500px;width:750px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupVistaItem_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupVistaItem',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupVistaItem_PWH-1T" style="width:100%;">Vista Previa Item</td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupVistaItem_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupVistaItem',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupVistaItem_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupVistaItem_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;"> </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table>
+</div><div class="dxpcModalBackground" id="ctl00_CPH1_PopupVistaItem_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_hdnPliegoEncriptado" name="ctl00$CPH1$hdnPliegoEncriptado" type="hidden" value="ktNAZXZOhNw="/>
+<input id="ctl00_CPH1_hdnActoAdm" name="ctl00$CPH1$hdnActoAdm" type="hidden" value="2fP|ZnqiEGd0vLgE8WVEyg=="/>
+
+<input id="ctl00_CPH1_VistaGEDO" name="ctl00$CPH1$VistaGEDO" type="hidden"/>
+</section>
+
+
+
+<footer>
+<div class="footer">
+<div class="container">
+<div class="col-md-2 imgLogo">
+
+<img alt="Jefatura de Gabinete de Ministros - Argentina" src="../Imagenes/Logos/jefatura.png" style="border-style:None;width:200px;"/>
+</div>
+<div class="col-md-2 lblFooter lblFooterLeft">
+<span id="ctl00_pie_lblSecretaria" style="display:inline-block;width:140px;">Secretaría Ejecutiva</span>
+</div>
+<div class="col-md-2 lblFooter">
+<span id="ctl00_pie_lblContrataciones" style="display:inline-block;width:140px;">Oficina Nacional de Contrataciones</span>
+</div>
+<div class="col-md-3 imgLogo imgLogoLeft">
+</div>
+<div class="col-md-3 links-externos">
+
+<div class="row">
+
+<div class="col-md-12">
+<span>Presidencia de la nación</span>
+</div>
+
+<div class="col-md-12 margin-top-2">
+<span class="footer-version" id="ctl00_pie_lblNombreserver">PRDFINMSAPPB08</span>
+<span class="footer-version" id="ctl00_pie_Label1">
+                                v 1.1.932_COMPRAR</span>
+</div>
+
+<div class="col-md-12 margin-top-2">
+<a href="javascript:__doPostBack('ctl00$pie$LinkButton1','')" id="ctl00_pie_LinkButton1">Avisos sobre Navegadores</a>
+</div>
+<div class="col-md-12 margin-top-2">
+<a href="javascript:__doPostBack('ctl00$pie$LinkButton2','')" id="ctl00_pie_LinkButton2">Términos y Condiciones de Uso</a>
+</div>
+<div class="col-md-12 margin-top-2">
+<a href="javascript:__doPostBack('ctl00$pie$LinkButton3','')" id="ctl00_pie_LinkButton3">Preguntas Frecuentes</a>
+</div>
+<div class="col-md-12 margin-top-2">
+<span class="glyphicon glyphicon-send"></span> 
+                            <span id="ctl00_pie_lblTextIncidencias">Envíenos por favor un ticket</span>
+<a href="https://incidencias.innovacion.gob.ar/servicedesk/customer/portal/6" id="ctl00_pie_linkIncidencias" target="_blank"> aquí</a>
+</div>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</footer>
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" data-backdrop="static" data-keyboard="false" id="modalAvisoNavegadores" role="dialog" tabindex="-2">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header" id="ctl00_pie_div1">
+<button aria-hidden="true" class="close" data-dismiss="modal" type="button">×</button>
+<h4 class="modal-title">Aviso sobre Navegadores</h4>
+</div>
+<div class="modal-body" data-backdrop="static" data-keyboard="false">
+<div class="container-fluid">
+                    Para brindar la mejor calidad y velocidad de navegación nuestro sitio está desarrollado en función de las últimas versiones de los navegadores:
+                    <div class="col-md-6 col-md-offset-3">
+<div class="container-fluid">
+<div class="carousel slide" data-ride="carousel" id="carouselnav">
+<div class="carousel-inner">
+<div class="item active">
+<img alt="Navegadores" id="ctl00_pie_imgCarrousel" src="/App_Themes/bastrap/images/navegadores.jpg" style="border-style:None;"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" data-backdrop="static" data-keyboard="false" id="modalTerminosYCondiciones" role="dialog" tabindex="-2">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<button aria-hidden="true" class="close" data-dismiss="modal" type="button">×</button>
+<p><u>DI-2016-29-E-APN-ONC#MM – ANEXO II</u></p>
+<h4 class="modal-title">POLÍTICAS, TÉRMINOS Y CONDICIONES DE USO DEL SISTEMA (PTCUS) COMUNES A TODOS LOS USUARIOS</h4>
+</div>
+<div class="modal-body" style="height: 500px; overflow-y: auto; text-align: justify;">
+<p>Artículo 1°.- Encuadre Jurídico</p>
+<p>El acceso y/o uso al Sistema Electrónico de Contrataciones de la Administración Nacional denominado COMPR.AR., se efectúa en el marco de lo normado por los artículos 21 y 22 del Decreto Delegado Nº 1023/01, el artículo 33 del reglamento del Régimen de Contrataciones de la Administración Nacional aprobado por el Decreto Nº 893/12, las Políticas, Términos y Condiciones de Uso del Sistema y las Condiciones Particulares que en el futuro puedan complementarlas, sustituirlas o modificarlas. </p>
+<p>Artículo 2°.- Aceptación </p>
+<p>Desde el momento de acceso y/o uso del COMPR.AR, se considera que el usuario acepta plenamente y sin reserva alguna, las Políticas, Términos y Condiciones así como las Condiciones Particulares de uso del sistema que pudieran dictarse, adhiriendo en forma inmediata a todas y cada de una ellas. </p>
+<p>Artículo 3°.- Acceso</p>
+<p>El acceso a COMPR.AR es público y gratuito, y se realiza a través de Internet, en el sitio cuya página principal se encuentra ubicada en <a>https://comprar.gob.ar</a> o aquella que en un futuro la reemplace. El Usuario deberá contar con un equipo y programas informáticos que cumplan con los requisitos mínimos de compatibilidad con el sistema (acceso por internet; navegadores Internet Explorer; Mozilla Firefox o Google Chrome). El Usuario toma conocimiento que cuando su equipo o programas de computación no reúnan tales requisitos mínimos, no podrá tener acceso al sistema y/o se podrá bloquear su acceso. </p>
+<p>Artículo 4°.- Términos </p>
+<p>A los efectos de las presentes Políticas, Términos y Condiciones, se entenderá que:</p>
+<p><u>COMPR.AR</u></p>
+<p>Constituye el Sistema Electrónico de Contrataciones de la Administración Nacional a través del cual las jurisdicciones y entidades de la Administración Pública Nacional comprendidas en el artículo 2º del Decreto Delegado Nº 1023/01 y sus modificaciones efectuarán en forma electrónica todos los procedimientos prescriptos en el Reglamento del Régimen de Contrataciones de la Administración Nacional, aprobado por el Decreto Nº 893/12 y sus modificaciones.</p>
+<p><a>https://comprar.gob.ar</a></p>
+<p>Es el portal sobre el que se gestiona el COMPR.AR y a través del cual se difunden las convocatorias y las restantes etapas de los procedimientos de selección. El acceso a este portal es público y gratuito. </p>
+<p>Asimismo, es medio válido de todas las notificaciones entre la jurisdicción o entidad contratante y los interesados, oferentes, adjudicatarios o cocontratantes que deban realizarse durante los procedimientos de selección. </p>
+<p><u>USUARIOS DEL PROVEEDOR:</u></p>
+<p>Es la persona humana que utiliza el COMPR.AR en representación de la persona humana o jurídica inscripta en el Sistema de Información de Proveedores que administra la OFICINA NACIONAL DE CONTRATACIONES, conforme el procedimiento de autenticación de los usuarios de los proveedores obrante en el Anexo III de la presente medida. </p>
+<p><u>USUARIOS COMPRADORES:</u></p>
+<p>Es la persona humana designada por la Unidad Operativa de Contrataciones, en adelante UOC, como responsable de la utilización del COMPR.AR, de acuerdo a los roles otorgados conforme al procedimiento de Administradores de Perfiles y Usuarios de la Administración obrante en los Anexos IV y V. </p>
+<p><u>SISTEMA DE INFORMACION DE PROVEEDORES:</u></p>
+<p>El Sistema de Información de Proveedores (SIPRO) que administra la OFICINA NACIONAL DE CONTRATACIONES se incorpora también al sistema COMPR.AR. Este sistema tiene por objeto registrar información relativa a los proveedores, sus antecedentes, historial de procedimientos de selección en los que se hubieren presentado como oferentes, historial de contratos, órdenes de compra o venta, incumplimientos contractuales y extra-contractuales, en ambos casos por causas imputables al proveedor, sanciones de apercibimiento, suspensión e inhabilitación y toda otra información que la OFICINA NACIONAL DE CONTRATACIONES considere de utilidad. </p>
+<p><u>PROTECCIÓN DE LA INFORMACIÓN CONTENIDA EN EL PORTAL:</u></p>
+<p>Toda la información elaborada o disponible en, o a través del COMPR.AR, se encuentra protegida como propiedad intelectual. Está prohibido a todos los usuarios modificar, copiar, transmitir, vender, distribuir, exhibir, publicar, licenciar, crear trabajos derivados, o usar, en general, el contenido disponible en o a través del COMPR.AR para fines comerciales y otros. </p>
+<p><u>USO ADECUADO DE COMPR.AR:</u></p>
+<p>El usuario que ingresa al COMPR.AR, se compromete a utilizar el mismo en forma lícita y de acuerdo a las presentes PTCUS. Se encuentra prohibido a los usuarios, la realización de actos maliciosos o que atenten contra el sitio, o que de alguna manera puedan dañar, inutilizar, sobrecargar, deteriorar, impedir o limitar la utilización de todas o algunas de las funcionalidades del mismo.</p>
+<p><u>RESPONSABILIDAD POR CLAVES DE USUARIO:</u></p>
+<p>Los usuarios de COMPR.AR no pueden ceder, transferir o comunicar bajo ninguna circunstancia sus claves y nombres de usuarios, haciéndose plenamente responsables por los actos, documentos, anexos, ofertas, y demás antecedentes que bajo esas claves y nombres de usuario, ingresen al COMPR.AR. Además, los usuarios asumen la obligación de cambiar sus claves frecuentemente, las que se debe evitar que sean evidentes y/o simples. </p>
+<p><u>RESPONSABILIDAD:</u></p>
+<p>El Gobierno Nacional no se responsabiliza por los daños y/o perjuicios derivados del acceso y/o uso de los contenidos publicados en el sitio <a>https://comprar.gob.ar</a> o en el que en un futuro lo reemplace. </p>
+<p>El Gobierno Nacional no se responsabiliza por las interrupciones de este servicio, ni por cualquier inconveniente originado en causas ajenas que impidan el acceso. </p>
+<p>La veracidad e integridad de la totalidad de la información y contenido de los documentos publicados son de exclusiva responsabilidad de los usuarios que los publican y envían, de acuerdo a las claves de acceso bajo las cuales actúen. </p>
+<p>El Gobierno Nacional no es responsable por la interrupción en la recepción de correos electrónicos por parte del usuario-proveedor. </p>
+<p>El Gobierno Nacional no es responsable de los virus que puedan contener los documentos que adjuntan los usuarios del sitio. Es responsabilidad de cada usuario velar por que los archivos que sube al sitio no tengan virus de ninguna especie. </p>
+<p>Las estadísticas e informes disponibles en el COMPR.AR son meramente referenciales y no comprometen a la OFICINA NACIONAL DE CONTRATACIONES, ni al Gobierno Nacional. </p>
+<p><u>SUSPENSIÓN O ELIMINACIÓN DE USUARIOS:</u></p>
+<p>La OFICINA NACIONAL DE CONTRATACIONES se reserva el derecho de suspender y/o eliminar unilateral y automáticamente del COMPR.AR a los usuarios que incumplan las PTCUS. </p>
+<p><u>CENTRO DE CONTACTO. MESA DE AYUDA TELEFÓNICA:</u></p>
+<p>La OFICINA NACIONAL DE CONTRATACIONES establecerá para todos los usuarios del COMPR.AR un centro de contacto que contará con una mesa de ayuda telefónica y vía correo electrónico. Esta mesa de ayuda atenderá las consultas de los usuarios sobre el funcionamiento del COMPR.AR.</p>
+<p>Artículo 5°.- Usuarios de los proveedores </p>
+<p><u>CORREOS ELECTRÓNICOS ENVIADOS POR COMPR.AR. A PROVEEDORES:</u></p>
+<p>Los usuarios proveedores aceptan recibir permanentemente correos electrónicos relativos a procedimientos de selección y demás información relevante, a la dirección de correo informada por ellos en el SIPRO. </p>
+<p>El sitio <a>https://comprar.gob.ar</a> o el que en un futuro lo reemplace es el medio obligatorio de difusión de las convocatorias y de las restantes etapas de los procedimientos de selección, sin perjuicio de las demás formas de difusión y publicidad que la reglamentación vigente determina.</p>
+<p>Los correos electrónicos enviados por el COMPR.AR solo constituyen un medio de aviso. </p>
+<p>Se recomienda a los proveedores, revisar periódicamente el COMPR.AR –en particular Escritorio del Proveedor– para informarse de las novedades vinculadas a las etapas, desarrollo del proceso de contratación electrónica y demás información relevante, como así también consultar las demás formas de difusión y publicidad que la reglamentación vigente determina.</p>
+<p><u>LIBERACIÓN DE RESPONSABILIDAD:</u></p>
+<p>Los usuarios proveedores deben velar por la seriedad de las ofertas ingresadas al COMPR.AR, siendo plenamente responsables por las mismas. </p>
+<p>Los usuarios proveedores deberán aceptar que el Gobierno Nacional carece de toda responsabilidad por los resultados que obtengan en cada uno de los procedimientos de selección electrónicos en que participen. </p>
+<p>Los usuarios proveedores liberan al Gobierno Nacional de cualquier responsabilidad derivada de la dilación o no envío oportuno de correos electrónicos de alerta, declarando conocer que el medio de notificación es la difusión que cada Usuario Comprador efectúa en el portal <a>https://comprar.gob.ar</a> o en el que en un futuro lo reemplace. La no recepción oportuna de correos electrónicos de alerta que envía el COMPR.AR, no justificará, ni se considerará como causal suficiente para eximir a los proponentes de sus cargas y responsabilidades. </p>
+<p><u>POLÍTICAS DE PRIVACIDAD:</u></p>
+<p>Los usuarios de COMPR.AR aceptan, por el sólo hecho de su inscripción o registro en el sitio, que los datos, antecedentes e información aportados en las diversas etapas de los procedimientos en que participan, sean de público conocimiento en el ámbito de las transacciones que se efectúan en él y que sólo están disponibles públicamente para esos efectos. Asimismo, los usuarios de COMPR.AR, por el sólo hecho de su inscripción otorgan su conformidad para que los resultados de los procedimientos de selección en que participen y las respectivas contrataciones, formen parte de las estadísticas e informes, se procesen y se publiquen por parte del Gobierno Nacional.</p>
+<p>Cuando se solicite por parte de terceros acceso a información que pudiese afectar derechos de los usuarios proveedores, tales como los relacionados con su vida privada o derechos de carácter económico o comercial, se procederá en un todo conforme a la Ley Nº 25.326 de “Protección de Datos Personales” modificada por la Ley Nº 26.343 y reglamentada por el Decreto Nº 1558/2001 modificado por el Decreto 1160/2010, el Decreto Nº 1172/2003 de “Acceso a la Información Pública” y el Decreto N° 117/2016 “Plan de Apertura de Datos”. </p>
+<p><u>DECLARACIÓN:</u></p>
+<p>Los usuarios de COMPR.AR declaran conocer y aceptar la circunstancia relativa a que la OFICINA NACIONAL DE CONTRATACIONES, puede en cualquier momento modificar todo o parte de las presentes PTCUS, que serán oportunamente publicadas en el portal de COMPR.AR. </p>
+<p><u>USUARIOS COMPRADORES:</u></p>
+<p>El usuario-comprador es responsable de la información que se difunda y debe procurar que su contenido se adapte a las previsiones contempladas por la normativa vigente. Queda estrictamente prohibido a los usuarios compradores realizar cualquier uso de COMPR.AR ajeno al marco del proceso de contrataciones públicas electrónicas. Los Organismos de Control están autorizados a utilizar el COMPR.AR con el objeto de asegurar el correcto desempeño de los distintos procesos y velar por su transparencia. </p>
+<p><u>LÍMITE DE RESPONSABILIDAD DEL COMPR.AR SOBRE EL PROCESO DE SELECCION:</u></p>
+<p>El COMPR.AR es un medio que facilita la realización de los procedimientos de selección sin garantizar la seriedad e idoneidad de las ofertas recibidas, las que deben ser evaluadas por cada usuario comprador, y en su caso, por la Comisión Evaluadora de Ofertas.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+
+<input name="DXScript" type="hidden" value="1_103,1_100,1_83"/></form>
+</body></html>

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Investigar una licitación · Sobreprecios{% endblock %}
+{% block content %}
+<h1>Investigar una licitación</h1>
+<p class="muted">¿Te pasaron un caso puntual? Pegá lo que tengas y el sistema busca el documento, identifica qué se
+compró, a quién y a qué precio, y lo compara con los precios de mercado de <b>hoy</b> (y, si la compra es vieja,
+con esos precios llevados a la fecha de la compra por inflación).</p>
+
+<div class="card">
+<form method="post" action="/investigar" enctype="multipart/form-data" data-soft="off">
+    <label for="entrada"><b>1. Pegá un link, un número de proceso o el texto de la norma</b></label>
+    <textarea id="entrada" name="entrada" placeholder="Ejemplos:
+https://www.boletinoficial.gob.ar/detalleAviso/primera/245330/20210607
+https://comprar.gob.ar/PLIEGO/VistaPreviaPliegoCiudadano.aspx?qs=...
+80-0014-LPU25
+o el texto completo de la resolución (desde VISTO hasta el final)"></textarea>
+    <label style="margin-top:12px"><b>2. O subí un PDF</b> (acta de adjudicación, dictamen, orden de compra, Boletín Oficial)</label>
+    <input type="file" name="archivo" accept="application/pdf">
+    <div style="margin-top:14px"><button class="btn btn-primary" type="submit">Investigar</button></div>
+</form>
+<div class="help small">Qué acepta: links del Boletín Oficial (cualquier formato, se normalizan solos), links y números de
+proceso de COMPR.AR, texto pegado y PDFs (también escaneados). Tarda entre 30 segundos y unos minutos según el plan de IA.</div>
+</div>
+
+<h2>Investigaciones</h2>
+{% if investigaciones %}
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>Pedido</th><th>Tipo</th><th>Estado</th><th>Resultado</th><th>Fecha</th></tr></thead>
+<tbody>{% for i in investigaciones %}
+<tr data-soft-key="inv:{{ i.id }}"><td>{{ i.id }}</td>
+<td class="small" style="max-width:420px;word-break:break-all">{{ (i.entrada or i.archivo or '')[:160] }}{% if i.archivo %} <span class="tag">PDF {{ i.archivo }}</span>{% endif %}</td>
+<td class="small">{{ i.tipo }}</td>
+<td>{% if i.estado == 'ok' %}<span class="sem sem-verde">listo</span>{% elif i.estado == 'error' %}<span class="sem sem-rojo">error</span>{% else %}<span class="sem sem-gris">{{ i.estado }}</span>{% endif %}</td>
+<td class="small">{% if i.proceso_id %}<a class="btn btn-sm btn-primary" href="/licitacion/{{ i.proceso_id }}">Ver resultado</a> {% endif %}{{ i.mensaje or '' }}</td>
+<td class="small">{{ (i.created_at or '')[:16]|replace('T', ' ') }}</td></tr>
+{% endfor %}</tbody></table></div>
+{% else %}<p class="muted">Todavía no hay investigaciones.</p>{% endif %}
+{% endblock %}

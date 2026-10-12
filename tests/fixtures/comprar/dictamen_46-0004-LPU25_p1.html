@@ -1,0 +1,2782 @@
+
+<!DOCTYPE html>
+
+<!--[if lt IE 7]><html lang="es" class="lt-ie10 lt-ie9 lt-ie8 lt-ie7"><![endif]-->
+<!--[if IE 7]><html lang="es" class="lt-ie10 lt-ie9 lt-ie8"><![endif]-->
+<!--[if IE 8]><html lang="es" class="lt-ie10 lt-ie9"> <![endif]-->
+<!--[if IE 9]><html lang="es" class="lt-ie10"> <![endif]-->
+<!--[if gt IE 9]><!-->
+<html lang="es">
+<!--<![endif]-->
+<head><meta content="IE=edge" http-equiv="X-UA-Compatible"/><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>
+	COMPR.AR - Portal de Compras Públicas de la República Argentina
+</title><meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+
+
+
+<link href="../App_Themes/bastrap/bootstrap.min.css" rel="stylesheet" type="text/css"/><link href="../App_Themes/bastrap/bootstrap-multiselect.css" rel="stylesheet" type="text/css"/><link href="../App_Themes/bastrap/font-awesome.css" rel="stylesheet" type="text/css"/><link href="../App_Themes/bastrap/integracion-bp.css" rel="stylesheet" type="text/css"/><link href="../App_Themes/bastrap/styles-2.min.css" rel="stylesheet" type="text/css"/><link href="../App_Themes/bastrap/styles-seac-2.min.css" rel="stylesheet" type="text/css"/></head>
+<body>
+<!--[if lt IE 9]>
+        <script src="/App_Themes/bastrap/scripts/html5shiv.min.js"></script>
+        <script src="/App_Themes/bastrap/scripts/respond.min.js"></script>
+    <![endif]-->
+<header class="navbar-primary navbar-top">
+<div class="container">
+<div class="row">
+<a class="navbar-brand logoBac" href="/Default.aspx" id="ctl00_CtrlHeader_linkLogoBAC" onclick="" style="margin-top:30px"></a>
+<div id="logoModernizacion">
+</div>
+</div>
+</div>
+</header>
+<form action="./PreAdjudicarVisualizarDictamen.aspx?qs=%7cc3sc8YiU%7crolrc9OrzYVtq60tGYIlP1inIXJk9B6TYc0jawx12aTQc2H%7cw04Il4%2f3FIeU46BaeVojkr0qHnCCq7Ypak9opG4vfvzl3REEZ%2f76efTQy4vQ%2fqt9oTOH0VwBcl3DzgWQS8Dw3zXqkmQKvHmQeePt%2fxx8QXHogwhD4MFsjtl4naU6XHbtYJtVMfh8IOrIa8WUrGvxxe4zIaXmlOZXrKhSqpeLEl18knapJ6Gv0hDVVnUd47kMX7h7i1Qfal%7cSD%7c2CHAcPPRZA3vruM%2fLhjyPqvv5PWhg%2fqT4NnJ%7cYWVmscpXRx5v9mHgaZrLFaxUQrRsqg2DUOxMqsXwSZcH5FRDNBlzcEE87%7cT2DBsF%7ciQwX0GTHLfZ5vwpdfZwoMVlfOLKeY%3d" id="aspnetForm" method="post" onsubmit="javascript:return WebForm_OnSubmit();">
+<div class="aspNetHidden">
+<input id="__EVENTTARGET" name="__EVENTTARGET" type="hidden" value=""/>
+<input id="__EVENTARGUMENT" name="__EVENTARGUMENT" type="hidden" value=""/>
+<input id="__VIEWSTATE" name="__VIEWSTATE" type="hidden" value="x"/>
+</div>
+
+
+
+
+
+
+
+<div class="aspNetHidden">
+<input id="__VIEWSTATEGENERATOR" name="__VIEWSTATEGENERATOR" type="hidden" value="x"/>
+</div>
+
+<nav class="navbar-inverse">
+<div class="navbar-header">
+<button aria-expanded="false" class="navbar-toggle" data-target="#nav" data-toggle="collapse" type="button">
+<span class="sr-only">Toggle navigation</span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+</button>
+</div>
+<div class="collapse navbar-collapse" id="nav">
+<div class="container">
+<div class="row">
+<ul class="nav navbar-nav">
+<li><a href="https://www.argentina.gob.ar/jefatura/innovacion-publica/oficina-nacional-de-contrataciones" target="_blank"><strong>Institucional</strong></a></li>
+<li><a href="http://www.infoleg.gob.ar/?page_id=91" target="_blank"><strong>Normativa</strong></a></li>
+<li><a aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" data-toggle="dropdown" role="button"><strong>Capacitación</strong></a>
+<ul class="dropdown-menu">
+<li><a href="/ComprasElectronicas.aspx?qs=uZmpNBcarZh/t6e8LDmVN|XFAS9B6k9ddqFj4heYwZ4=" id="ctl00_CtrlMenuPortal_lnkProveedoresInstructivos">Proveedores</a></li>
+<li><a href="/capacitacion.aspx">Organismos</a></li>
+</ul>
+</li>
+<li><a href="/contactenos.aspx"><strong>Atención al usuario</strong></a></li>
+<li><a href="/Dictamen/Dictamen/Buscar"><strong>Material de apoyo</strong></a></li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+<a href="../Login.aspx" id="lnkIngresar" style="cursor: pointer">
+<span class="glyphicon glyphicon-log-in"></span>
+<strong>Ingresar</strong>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" data-backdrop="static" data-keyboard="false" id="modalIngresar" role="dialog" tabindex="-2">
+<div class="modal-dialog">
+<div class="modal-content">
+<div id="ctl00_CtrlMenuPortal_logIn_updateModal">
+<div class="modal-header" id="ctl00_CtrlMenuPortal_logIn_divHeaderModal">
+<a aria-hidden="true" class="close" data-dismiss="modal" href="javascript:__doPostBack('ctl00$CtrlMenuPortal$logIn$lnkClose','')" id="ctl00_CtrlMenuPortal_logIn_lnkClose" onclick="CloseModalIngresar();">×</a>
+<h2 class="text-center">
+<span id="ctl00_CtrlMenuPortal_logIn_lblHeader">Bienvenido</span>
+</h2>
+</div>
+<div class="modal-body" data-backdrop="static" data-keyboard="false" id="ctl00_CtrlMenuPortal_logIn_divBodyModal">
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+
+<input class="form-control" id="ctl00_CtrlMenuPortal_logIn_txtUsername_txtTextBox" name="ctl00$CtrlMenuPortal$logIn$txtUsername$txtTextBox" placeholder="CUIL / CUIT / Pasaporte" type="text"/>
+<span class="glyphicon form-control-feedback" id="ctl00_CtrlMenuPortal_logIn_txtUsername_txtTextBoxVG"></span>
+<span class="control-label" id="ctl00_CtrlMenuPortal_logIn_txtUsername_txtTextBoxV" style="display:none;">Verifique que el CUIT haya sido ingresado</span>
+</div>
+</div>
+</div>
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+<span class="text" id="ctl00_CtrlMenuPortal_logIn_Label2">El número de identificación que ingrese debe ser el personal. No el del organismo o empresa.</span>
+</div>
+</div>
+</div>
+</div>
+<div class="modal-footer">
+<div class="row">
+<div class="form-horizontal">
+<div class="col-md-12">
+<a class="btn btn-primary pull-right" data-loading-text="Validando..." href='javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions("ctl00$CtrlMenuPortal$logIn$lnkConfirmar", "", true, "vgLogin", "", false, true))' id="ctl00_CtrlMenuPortal_logIn_lnkConfirmar">Siguiente</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" data-backdrop="static" data-keyboard="false" id="modalRecuperarCuenta" role="dialog" tabindex="-2">
+<div class="modal-dialog">
+<div class="modal-content">
+<div id="ctl00_CtrlMenuPortal_logIn_ctl00">
+<div class="modal-header">
+<a aria-hidden="true" class="close" data-dismiss="modal" href="javascript:__doPostBack('ctl00$CtrlMenuPortal$logIn$ctl03','')" onclick="CloseModalRecuperarCuenta();">×</a>
+<h2 class="text-center">
+<span id="ctl00_CtrlMenuPortal_logIn_Label1">Recuperar contraseña</span>
+</h2>
+</div>
+<div class="modal-body" data-backdrop="static" data-keyboard="false">
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-12">
+<div class="alert alert-info" id="ctl00_CtrlMenuPortal_logIn_divAdvertencia"><strong>Importante:</strong> El correo electrónico debe ser el mismo que ingresó al sistema al momento de registrarse como usuario.</div>
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+<input class="form-control" id="ctl00_CtrlMenuPortal_logIn_textBoxUserRecuperoContrasenia" name="ctl00$CtrlMenuPortal$logIn$textBoxUserRecuperoContrasenia" type="text"/>
+</div>
+</div>
+</div>
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+
+<input class="form-control" id="ctl00_CtrlMenuPortal_logIn_txtMail_txtTextBox" name="ctl00$CtrlMenuPortal$logIn$txtMail$txtTextBox" placeholder="Correo electronico" type="text"/>
+<span class="glyphicon form-control-feedback" id="ctl00_CtrlMenuPortal_logIn_txtMail_txtTextBoxVG"></span>
+<span class="control-label" id="ctl00_CtrlMenuPortal_logIn_txtMail_txtTextBoxV" style="display:none;"></span>
+</div>
+</div>
+</div>
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+
+<input class="form-control" id="ctl00_CtrlMenuPortal_logIn_txtMail2_txtTextBox" name="ctl00$CtrlMenuPortal$logIn$txtMail2$txtTextBox" placeholder="Reingrese correo electronico" type="text"/>
+<span class="glyphicon form-control-feedback" id="ctl00_CtrlMenuPortal_logIn_txtMail2_txtTextBoxVG"></span>
+<span class="control-label" id="ctl00_CtrlMenuPortal_logIn_txtMail2_txtTextBoxV" style="display:none;">Verifique que el correo electrónico haya sido ingresado.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row pull-right">
+<div class="col-md-12">
+<a class="btn btn-success m-l-1 btn-sm" href='javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions("ctl00$CtrlMenuPortal$logIn$btnSolicitar", "", true, "vgRecuperar", "", false, true))' id="ctl00_CtrlMenuPortal_logIn_btnSolicitar">Solicitar</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</nav>
+<div class="bg-white-1" style="padding-top: 5px; padding-bottom: 5px;">
+<div class="container">
+<div class="row">
+
+<div id="date" style="font-size: 11px; text-align: right;">
+<span id="ctl00_CtrlTimeNow_scriptFechaHora"></span>
+<span id="divReloj"></span>
+</div>
+</div>
+</div>
+</div>
+<section>
+<div class="container">
+<div class="container">
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="alert bg-success text-success" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_divExito" style="display:none;">
+<span class="text-success" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_lblExito">La información ha sido almacenada con éxito.</span>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<blockquote>
+<img alt="Logo" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_ControlLogo1_imgLogo" src="/controles/Logo.aspx?qs=\\PRDFINMSAPPB01\e\SHARED\Logos\Escudo_Oficial.png"/><br/>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_ControlLogo1_lblGobierno">Gobierno de la República Argentina</span><br/>
+<footer>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_ControlLogo1_lblLeyenda">Año 2025</span></footer>
+</blockquote>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<span class="text-left h2" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_titulo_principal">Dictamen de Evaluación de Ofertas</span>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="row">
+<div class="col-md-12">
+<span class="pull-right" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblFechaPublicacionTitulo">28/03/2025</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<span class="pull-right" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblUOC"></span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<span class="pull-right" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblUOA">Unidad Operativa de Contrataciones (UOC) 46/000 - Coordinación de Licitaciones y Contrataciones - DNV</span>
+</div>
+</div>
+<br/>
+<br/>
+<div class="panel panel-default">
+<div class="panel-heading">
+<h4 class="panel-title">Procedimiento de selección</h4>
+</div>
+<div class="panel-body">
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblNumeroProcesoCompra">Nº de proceso</label>
+<p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblNumeroProcesoCompra">46-0004-LPU25</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblTipoProcesoCompra">Tipo de proceso</label>
+<p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblTipoProcesoCompra">Licitacion Pública</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblNombreProcesoCompra">Nombre descriptivo del proceso</label>
+<p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblNombreProcesoCompra">Servicio integral de corte de pasto, desmalezado y cortafuego 2025</span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblEjercicio">Ejercicio</label>
+<p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblEjercicio">2025</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblTipoModalidad">Tipo de modalidad</label>
+<p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblTipoModalidad">Orden de compra abierta</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblEncuadreLegal">Encuadre legal</label>
+<p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblEncuadreLegal">Decreto Delegado N° 1023/2001 Art. 25Decreto N°1030/2016 Art.10Decreto N°1030/2016 Art. 25</span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblExpediente">Expediente</label>
+<p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblExpediente">EX-2025-07477937-   -APN-LYC#DNV</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblNumeroOfertasPresentadas">Ofertas presentadas</label>
+<p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblNumeroOfertasPresentadas">34</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblObjetoContrataciob">Objeto de la contratación</label>
+<p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblObjetoContrataciob">Servicio integral de corte de pasto, desmalezado y cortafuego 2025</span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblReparticionSolicitante">Repartición solicitante</label>
+<p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblReparticionSolicitante">46/000 - Coordinación de Licitaciones y Contrataciones - DNV</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblFechaApertuta">Fecha de apertura</label>
+<p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblFechaApertuta">26/02/2025 11:00 Hrs.</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblRubrosyClases">Rubros</label>
+<p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblRubrosyClases">Renglón 1: MANT. REPARACION Y LIMPIEZA<br/>Renglón 2: MANT. REPARACION Y LIMPIEZA<br/>Renglón 3: MANT. REPARACION Y LIMPIEZA<br/>Renglón 4: MANT. REPARACION Y LIMPIEZA<br/>Renglón 5: MANT. REPARACION Y LIMPIEZA<br/>Renglón 6: MANT. REPARACION Y LIMPIEZA<br/>Renglón 7: MANT. REPARACION Y LIMPIEZA<br/>Renglón 8: MANT. REPARACION Y LIMPIEZA<br/>Renglón 9: MANT. REPARACION Y LIMPIEZA<br/>Renglón 10: MANT. REPARACION Y LIMPIEZA<br/>Renglón 11: MANT. REPARACION Y LIMPIEZA<br/>Renglón 12: MANT. REPARACION Y LIMPIEZA<br/>Renglón 13: MANT. REPARACION Y LIMPIEZA<br/>Renglón 14: MANT. REPARACION Y LIMPIEZA<br/>Renglón 15: MANT. REPARACION Y LIMPIEZA<br/>Renglón 16: MANT. REPARACION Y LIMPIEZA<br/>Renglón 17: MANT. REPARACION Y LIMPIEZA<br/>Renglón 18: MANT. REPARACION Y LIMPIEZA<br/>Renglón 19: MANT. REPARACION Y LIMPIEZA<br/>Renglón 20: MANT. REPARACION Y LIMPIEZA<br/>Renglón 21: MANT. REPARACION Y LIMPIEZA<br/>Renglón 22: MANT. REPARACION Y LIMPIEZA<br/>Renglón 23: MANT. REPARACION Y LIMPIEZA<br/>Renglón 24: MANT. REPARACION Y LIMPIEZA<br/>Renglón 25: MANT. REPARACION Y LIMPIEZA<br/>Renglón 26: MANT. REPARACION Y LIMPIEZA<br/>Renglón 27: MANT. REPARACION Y LIMPIEZA<br/>Renglón 28: MANT. REPARACION Y LIMPIEZA<br/>Renglón 29: MANT. REPARACION Y LIMPIEZA<br/>Renglón 30: MANT. REPARACION Y LIMPIEZA<br/>Renglón 31: MANT. REPARACION Y LIMPIEZA<br/>Renglón 32: MANT. REPARACION Y LIMPIEZA<br/>Renglón 33: MANT. REPARACION Y LIMPIEZA<br/>Renglón 34: MANT. REPARACION Y LIMPIEZA<br/>Renglón 35: MANT. REPARACION Y LIMPIEZA<br/>Renglón 36: MANT. REPARACION Y LIMPIEZA<br/>Renglón 37: MANT. REPARACION Y LIMPIEZA<br/>Renglón 38: MANT. REPARACION Y LIMPIEZA<br/>Renglón 39: MANT. REPARACION Y LIMPIEZA<br/>Renglón 40: MANT. REPARACION Y LIMPIEZA<br/>Renglón 41: MANT. REPARACION Y LIMPIEZA<br/>Renglón 42: MANT. REPARACION Y LIMPIEZA<br/>Renglón 43: MANT. REPARACION Y LIMPIEZA<br/>Renglón 44: MANT. REPARACION Y LIMPIEZA<br/>Renglón 45: MANT. REPARACION Y LIMPIEZA<br/>Renglón 46: MANT. REPARACION Y LIMPIEZA<br/>Renglón 47: MANT. REPARACION Y LIMPIEZA<br/>Renglón 48: MANT. REPARACION Y LIMPIEZA<br/>Renglón 49: MANT. REPARACION Y LIMPIEZA<br/>Renglón 50: MANT. REPARACION Y LIMPIEZA<br/>Renglón 51: MANT. REPARACION Y LIMPIEZA<br/>Renglón 52: MANT. REPARACION Y LIMPIEZA<br/>Renglón 53: MANT. REPARACION Y LIMPIEZA<br/>Renglón 54: MANT. REPARACION Y LIMPIEZA<br/>Renglón 55: MANT. REPARACION Y LIMPIEZA<br/>Renglón 56: MANT. REPARACION Y LIMPIEZA<br/>Renglón 57: MANT. REPARACION Y LIMPIEZA<br/>Renglón 58: MANT. REPARACION Y LIMPIEZA<br/>Renglón 59: MANT. REPARACION Y LIMPIEZA</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<p>
+                De acuerdo a lo manifestado en el Acta de Apertura y a lo evaluado del Cuadro Comparativo de precios que ordena la reglamentación en
+                            vigencia
+            , fueron analizadas las ofertas de las firmas:
+            </p>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblListaProveedores"><ul><li>SERVIACAMPO SRL</li><li>COMERCIO INTEGRAL SRL</li><li>SOCSA SRL </li><li>LIMPIOLUX S.A.</li><li>SUELOS Y REDES SRL</li><li>BIOCEANICA SRL</li><li>BUSTAMANTE MIGUEL  ANTONIO</li><li>ANASTACIA S.A.</li><li>Miguel Angel Koller</li><li>Cooperativa de Trabajo Ideal LTDA</li><li>CAMILETTI SA</li><li>Eco Ambiental Ingeniería en Medio Ambiente SA</li><li>GRUB S. A.</li><li>Biga Construcciones SAS</li><li>Diego Strocen</li><li>LA MANTOVANA DE SERVICIOS GENERALES S.A.</li><li>Juan Manuel Grenón</li><li>CRISTIAN ANTONIO VIDELA</li><li>HE VRAS SRL</li><li>EDICOBA S.A.</li><li>ICF s.a.</li><li>GREEN SOLUTION SRL</li><li>MATHIAS HERNAN MUTUBERRIA</li><li>BOMBAY S.R.L.</li><li>ELEPE SERVICIOS SRL</li><li>Samuel horacio platon kwick</li><li>INELCO SRL</li><li>GEOID SRL</li><li>SECURITY EMPRESARIALES SRL</li><li>FLEITAS HERNAN Y CIA CONSTRUCTORA S.R.L.</li><li>JUAN ANDRES VANIOFF</li><li>BROMARQ S.A.S.</li><li>Leonardo Gonzalo Flor</li><li>TRAYECTO VIAL SA.</li></ul></span>
+</div>
+</div>
+<div id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_panRecomendacionEvaluadores">
+<div class="row">
+<div class="col-md-12">
+<p>
+                Se reúnen los evaluadores designados mediante
+                            <span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblTipoDocumento">decreto </span>
+                con el objeto de considerar las propuestas recibidas para la presente contratación
+                            y según surge de lo manifestado precedentemente, han aconsejado adjudicar a favor de:
+            </p>
+</div>
+</div>
+</div>
+<br/>
+<div class="row" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblOfertasRecomendadas">
+<div class="col-md-12">
+<h3>Ofertas recomendadas</h3>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Número renglón</th><th scope="col">Alternativa</th><th scope="col">Oferentes</th><th scope="col">Cantidad</th><th scope="col">Precio unitario</th><th scope="col">Moneda</th><th scope="col">Preferencia Compre Argentino</th><th scope="col">Porcentaje otorgado</th><th scope="col">Precio total renglón</th>
+</tr><tr>
+<td>
+                                
+                                        1
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl02_lblNombreRazonSocial">FLEITAS HERNAN Y CIA CONSTRUCTORA S.R.L.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl02_lblCantidadItem">450,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl02_lblPrecioUnitarioItem">315.115,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl02_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl02$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl02_lblPorcentajeOtorgado"></span>
+</td><td>
+                                141.801.750,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        2
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl03_lblNombreRazonSocial">FLEITAS HERNAN Y CIA CONSTRUCTORA S.R.L.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl03_lblCantidadItem">270,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl03_lblPrecioUnitarioItem">391.623,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl03_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl03$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl03_lblPorcentajeOtorgado"></span>
+</td><td>
+                                105.738.210,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        3
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl04_lblNombreRazonSocial">FLEITAS HERNAN Y CIA CONSTRUCTORA S.R.L.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl04_lblCantidadItem">420,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl04_lblPrecioUnitarioItem">315.115,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl04_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl04$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl04_lblPorcentajeOtorgado"></span>
+</td><td>
+                                132.348.300,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        4
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl05_lblNombreRazonSocial">FLEITAS HERNAN Y CIA CONSTRUCTORA S.R.L.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl05_lblCantidadItem">255,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl05_lblPrecioUnitarioItem">391.623,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl05_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl05$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl05_lblPorcentajeOtorgado"></span>
+</td><td>
+                                99.863.865,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        9
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl06_lblNombreRazonSocial">TRAYECTO VIAL SA.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl06_lblCantidadItem">417,920000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl06_lblPrecioUnitarioItem">231.825,360000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl06_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl06$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl06_lblPorcentajeOtorgado"></span>
+</td><td>
+                                96.884.454,45
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        10
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl07_lblNombreRazonSocial">TRAYECTO VIAL SA.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl07_lblCantidadItem">583,290000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl07_lblPrecioUnitarioItem">213.825,360000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl07_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl07$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl07_lblPorcentajeOtorgado"></span>
+</td><td>
+                                124.722.194,23
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        11
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl08_lblNombreRazonSocial">TRAYECTO VIAL SA.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl08_lblCantidadItem">269,850000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl08_lblPrecioUnitarioItem">213.825,360000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl08_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl08$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl08_lblPorcentajeOtorgado"></span>
+</td><td>
+                                57.700.773,40
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        12
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl09_lblNombreRazonSocial">TRAYECTO VIAL SA.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl09_lblCantidadItem">278,170000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl09_lblPrecioUnitarioItem">231.825,360000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl09_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl09$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl09_lblPorcentajeOtorgado"></span>
+</td><td>
+                                64.486.860,39
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        13
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl10_lblNombreRazonSocial">Juan Manuel Grenón</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl10_lblCantidadItem">1.638,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl10_lblPrecioUnitarioItem">160.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl10_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl10$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl10_lblPorcentajeOtorgado"></span>
+</td><td>
+                                262.080.000,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        14
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl11_lblNombreRazonSocial">Juan Manuel Grenón</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl11_lblCantidadItem">1.290,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl11_lblPrecioUnitarioItem">160.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl11_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl11$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl11_lblPorcentajeOtorgado"></span>
+</td><td>
+                                206.400.000,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        15
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl12_lblNombreRazonSocial">Leonardo Gonzalo Flor</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl12_lblCantidadItem">1.590,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl12_lblPrecioUnitarioItem">170.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl12_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl12$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl12_lblPorcentajeOtorgado"></span>
+</td><td>
+                                270.300.000,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        16
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl13_lblNombreRazonSocial">GRUB S. A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl13_lblCantidadItem">1.620,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl13_lblPrecioUnitarioItem">207.360,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl13_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl13$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl13_lblPorcentajeOtorgado"></span>
+</td><td>
+                                335.923.200,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        17
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl14_lblNombreRazonSocial">GRUB S. A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl14_lblCantidadItem">1.950,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl14_lblPrecioUnitarioItem">207.360,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl14_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl14$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl14_lblPorcentajeOtorgado"></span>
+</td><td>
+                                404.352.000,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        18
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl15_lblNombreRazonSocial">Leonardo Gonzalo Flor</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl15_lblCantidadItem">2.100,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl15_lblPrecioUnitarioItem">175.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl15_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl15$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl15_lblPorcentajeOtorgado"></span>
+</td><td>
+                                367.500.000,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        19
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl16_lblNombreRazonSocial">Leonardo Gonzalo Flor</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl16_lblCantidadItem">1.296,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl16_lblPrecioUnitarioItem">175.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl16_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl16$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl16_lblPorcentajeOtorgado"></span>
+</td><td>
+                                226.800.000,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        20
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl17_lblNombreRazonSocial">Juan Manuel Grenón</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl17_lblCantidadItem">540,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl17_lblPrecioUnitarioItem">160.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl17_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl17$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl17_lblPorcentajeOtorgado"></span>
+</td><td>
+                                86.400.000,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        21
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl18_lblNombreRazonSocial">EDICOBA S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl18_lblCantidadItem">433,750000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl18_lblPrecioUnitarioItem">220.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl18_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl18$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl18_lblPorcentajeOtorgado"></span>
+</td><td>
+                                95.425.000,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        22
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl19_lblNombreRazonSocial">EDICOBA S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl19_lblCantidadItem">4.337,520000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl19_lblPrecioUnitarioItem">200.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl19_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl19$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl19_lblPorcentajeOtorgado"></span>
+</td><td>
+                                867.504.000,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        23
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl20_lblNombreRazonSocial">ELEPE SERVICIOS SRL</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl20_lblCantidadItem">168,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl20_lblPrecioUnitarioItem">237.200,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl20_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl20$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl20_lblPorcentajeOtorgado"></span>
+</td><td>
+                                39.849.600,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        24
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl21_lblNombreRazonSocial">BOMBAY S.R.L.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl21_lblCantidadItem">480,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl21_lblPrecioUnitarioItem">237.888,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl21_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl21$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl21_lblPorcentajeOtorgado"></span>
+</td><td>
+                                114.186.240,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        25
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl22_lblNombreRazonSocial">BOMBAY S.R.L.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl22_lblCantidadItem">432,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl22_lblPrecioUnitarioItem">237.888,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl22_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl22$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl22_lblPorcentajeOtorgado"></span>
+</td><td>
+                                102.767.616,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        26
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl23_lblNombreRazonSocial">BOMBAY S.R.L.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl23_lblCantidadItem">450,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl23_lblPrecioUnitarioItem">237.888,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl23_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl23$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl23_lblPorcentajeOtorgado"></span>
+</td><td>
+                                107.049.600,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        27
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl24_lblNombreRazonSocial">EDICOBA S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl24_lblCantidadItem">242,880000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl24_lblPrecioUnitarioItem">200.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl24_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl24$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl24_lblPorcentajeOtorgado"></span>
+</td><td>
+                                48.576.000,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        28
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl25_lblNombreRazonSocial">EDICOBA S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl25_lblCantidadItem">351,450000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl25_lblPrecioUnitarioItem">200.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl25_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl25$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl25_lblPorcentajeOtorgado"></span>
+</td><td>
+                                70.290.000,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        29
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl26_lblNombreRazonSocial">JUAN ANDRES VANIOFF</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl26_lblCantidadItem">1.965,546000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl26_lblPrecioUnitarioItem">108.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl26_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl26$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl26_lblPorcentajeOtorgado"></span>
+</td><td>
+                                212.278.968,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        30
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl27_lblNombreRazonSocial">JUAN ANDRES VANIOFF</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl27_lblCantidadItem">233,310000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl27_lblPrecioUnitarioItem">108.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl27_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl27$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl27_lblPorcentajeOtorgado"></span>
+</td><td>
+                                25.197.480,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        31
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl28_lblNombreRazonSocial">JUAN ANDRES VANIOFF</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl28_lblCantidadItem">2.350,206000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl28_lblPrecioUnitarioItem">108.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl28_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl28$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl28_lblPorcentajeOtorgado"></span>
+</td><td>
+                                253.822.248,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        32
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl29_lblNombreRazonSocial">JUAN ANDRES VANIOFF</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl29_lblCantidadItem">1.127,412000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl29_lblPrecioUnitarioItem">108.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl29_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl29$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl29_lblPorcentajeOtorgado"></span>
+</td><td>
+                                121.760.496,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        33
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl30_lblNombreRazonSocial">JUAN ANDRES VANIOFF</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl30_lblCantidadItem">1.107,018000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl30_lblPrecioUnitarioItem">108.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl30_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl30$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl30_lblPorcentajeOtorgado"></span>
+</td><td>
+                                119.557.944,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        34
+
+                            </td><td>
+                                1
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl31_lblNombreRazonSocial">JUAN ANDRES VANIOFF</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl31_lblCantidadItem">912,186000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl31_lblPrecioUnitarioItem">108.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl31_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems$ctl31$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvItems_ctl31_lblPorcentajeOtorgado"></span>
+</td><td>
+                                98.516.088,00
+                            </td>
+</tr><tr class="pagination-gv">
+<td colspan="9"><table>
+<tr>
+<td><span>1</span></td><td><a href="javascript:__doPostBack('ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvItems','Page$2')">2</a></td>
+</tr>
+</table></td>
+</tr>
+</table>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<span class="h6" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblCantPrecioTotalPreAdjudicacion">Precio total de la Evaluación: 12.068.646.156,35</span>
+</div>
+</div>
+</div>
+</div><div class="row" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_lblOfertasEvaluadas">
+<div class="col-md-12">
+<h3>Ofertas evaluadas</h3>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Número renglón</th><th scope="col">Alternativa</th><th scope="col">Orden de mérito</th><th scope="col">Oferentes</th><th scope="col">Cantidad</th><th scope="col">Precio unitario</th><th scope="col">Moneda</th><th scope="col">Preferencia Compre Argentino</th><th scope="col">Porcentaje otorgado</th><th scope="col">Precio total renglón</th>
+</tr><tr>
+<td>
+                                
+                                        1
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl02_lblRazonSocialOfertaSecundaria">LA MANTOVANA DE SERVICIOS GENERALES S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl02_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl02_lblPrecioUnitarioOfertaSecundaria">490.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl02_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl02$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl02_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        1
+
+                            </td><td>
+                                1
+                            </td><td>
+                                3
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl03_lblRazonSocialOfertaSecundaria">EDICOBA S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl03_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl03_lblPrecioUnitarioOfertaSecundaria">520.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl03_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl03$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl03_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        1
+
+                            </td><td>
+                                1
+                            </td><td>
+                                4
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl04_lblRazonSocialOfertaSecundaria">GRUB S. A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl04_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl04_lblPrecioUnitarioOfertaSecundaria">534.100,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl04_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl04$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl04_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        2
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl05_lblRazonSocialOfertaSecundaria">LA MANTOVANA DE SERVICIOS GENERALES S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl05_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl05_lblPrecioUnitarioOfertaSecundaria">490.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl05_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl05$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl05_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        2
+
+                            </td><td>
+                                1
+                            </td><td>
+                                3
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl06_lblRazonSocialOfertaSecundaria">EDICOBA S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl06_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl06_lblPrecioUnitarioOfertaSecundaria">520.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl06_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl06$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl06_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        2
+
+                            </td><td>
+                                1
+                            </td><td>
+                                4
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl07_lblRazonSocialOfertaSecundaria">GRUB S. A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl07_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl07_lblPrecioUnitarioOfertaSecundaria">534.100,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl07_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl07$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl07_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        3
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl08_lblRazonSocialOfertaSecundaria">LA MANTOVANA DE SERVICIOS GENERALES S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl08_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl08_lblPrecioUnitarioOfertaSecundaria">490.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl08_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl08$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl08_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        3
+
+                            </td><td>
+                                1
+                            </td><td>
+                                3
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl09_lblRazonSocialOfertaSecundaria">GRUB S. A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl09_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl09_lblPrecioUnitarioOfertaSecundaria">534.100,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl09_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl09$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl09_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        4
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl10_lblRazonSocialOfertaSecundaria">LA MANTOVANA DE SERVICIOS GENERALES S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl10_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl10_lblPrecioUnitarioOfertaSecundaria">490.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl10_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl10$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl10_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        4
+
+                            </td><td>
+                                1
+                            </td><td>
+                                3
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl11_lblRazonSocialOfertaSecundaria">GRUB S. A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl11_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl11_lblPrecioUnitarioOfertaSecundaria">534.100,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl11_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl11$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl11_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        9
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl12_lblRazonSocialOfertaSecundaria">CAMILETTI SA</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl12_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl12_lblPrecioUnitarioOfertaSecundaria">332.100,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl12_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl12$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl12_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        9
+
+                            </td><td>
+                                1
+                            </td><td>
+                                3
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl13_lblRazonSocialOfertaSecundaria">CRISTIAN ANTONIO VIDELA</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl13_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl13_lblPrecioUnitarioOfertaSecundaria">450.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl13_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl13$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl13_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        9
+
+                            </td><td>
+                                1
+                            </td><td>
+                                4
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl14_lblRazonSocialOfertaSecundaria">HE VRAS SRL</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl14_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl14_lblPrecioUnitarioOfertaSecundaria">468.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl14_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl14$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl14_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        10
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl15_lblRazonSocialOfertaSecundaria">CAMILETTI SA</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl15_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl15_lblPrecioUnitarioOfertaSecundaria">308.062,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl15_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl15$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl15_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        10
+
+                            </td><td>
+                                1
+                            </td><td>
+                                3
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl16_lblRazonSocialOfertaSecundaria">CRISTIAN ANTONIO VIDELA</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl16_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl16_lblPrecioUnitarioOfertaSecundaria">450.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl16_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl16$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl16_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        10
+
+                            </td><td>
+                                1
+                            </td><td>
+                                4
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl17_lblRazonSocialOfertaSecundaria">HE VRAS SRL</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl17_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl17_lblPrecioUnitarioOfertaSecundaria">468.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl17_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl17$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl17_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        11
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl18_lblRazonSocialOfertaSecundaria">CAMILETTI SA</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl18_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl18_lblPrecioUnitarioOfertaSecundaria">308.062,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl18_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl18$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl18_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        11
+
+                            </td><td>
+                                1
+                            </td><td>
+                                3
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl19_lblRazonSocialOfertaSecundaria">CRISTIAN ANTONIO VIDELA</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl19_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl19_lblPrecioUnitarioOfertaSecundaria">450.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl19_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl19$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl19_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        11
+
+                            </td><td>
+                                1
+                            </td><td>
+                                4
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl20_lblRazonSocialOfertaSecundaria">HE VRAS SRL</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl20_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl20_lblPrecioUnitarioOfertaSecundaria">468.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl20_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl20$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl20_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        12
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl21_lblRazonSocialOfertaSecundaria">CAMILETTI SA</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl21_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl21_lblPrecioUnitarioOfertaSecundaria">332.100,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl21_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl21$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl21_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        12
+
+                            </td><td>
+                                1
+                            </td><td>
+                                3
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl22_lblRazonSocialOfertaSecundaria">CRISTIAN ANTONIO VIDELA</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl22_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl22_lblPrecioUnitarioOfertaSecundaria">450.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl22_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl22$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl22_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        12
+
+                            </td><td>
+                                1
+                            </td><td>
+                                4
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl23_lblRazonSocialOfertaSecundaria">HE VRAS SRL</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl23_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl23_lblPrecioUnitarioOfertaSecundaria">468.000,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl23_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl23$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl23_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        13
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl24_lblRazonSocialOfertaSecundaria">GRUB S. A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl24_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl24_lblPrecioUnitarioOfertaSecundaria">207.360,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl24_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl24$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl24_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        13
+
+                            </td><td>
+                                1
+                            </td><td>
+                                3
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl25_lblRazonSocialOfertaSecundaria">LA MANTOVANA DE SERVICIOS GENERALES S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl25_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl25_lblPrecioUnitarioOfertaSecundaria">223.948,800000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl25_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl25$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl25_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        14
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl26_lblRazonSocialOfertaSecundaria">GRUB S. A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl26_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl26_lblPrecioUnitarioOfertaSecundaria">207.360,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl26_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl26$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl26_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        14
+
+                            </td><td>
+                                1
+                            </td><td>
+                                3
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl27_lblRazonSocialOfertaSecundaria">LA MANTOVANA DE SERVICIOS GENERALES S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl27_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl27_lblPrecioUnitarioOfertaSecundaria">223.948,800000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl27_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl27$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl27_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        15
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl28_lblRazonSocialOfertaSecundaria">GRUB S. A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl28_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl28_lblPrecioUnitarioOfertaSecundaria">207.360,000000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl28_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl28$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl28_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        15
+
+                            </td><td>
+                                1
+                            </td><td>
+                                3
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl29_lblRazonSocialOfertaSecundaria">LA MANTOVANA DE SERVICIOS GENERALES S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl29_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl29_lblPrecioUnitarioOfertaSecundaria">223.948,800000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl29_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl29$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl29_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        16
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl30_lblRazonSocialOfertaSecundaria">LA MANTOVANA DE SERVICIOS GENERALES S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl30_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl30_lblPrecioUnitarioOfertaSecundaria">223.948,800000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl30_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl30$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl30_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr>
+<td>
+                                
+                                        17
+
+                            </td><td>
+                                1
+                            </td><td>
+                                2
+                            </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl31_lblRazonSocialOfertaSecundaria">LA MANTOVANA DE SERVICIOS GENERALES S.A.</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl31_lblCantidadItemOfertaSecundaria">0,000000 SERVICIO</span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl31_lblPrecioUnitarioOfertaSecundaria">223.948,800000</span>
+</td><td>
+                                Peso Argentino
+                            </td><td>
+<span class="aspNetDisabled"><input disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl31_chkCompre" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias$ctl31$chkCompre" type="checkbox"/></span>
+</td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_gvOfertasSecundarias_ctl31_lblPorcentajeOtorgado"></span>
+</td><td>
+                                0,00
+                            </td>
+</tr><tr class="pagination-gv">
+<td colspan="10"><table>
+<tr>
+<td><span>1</span></td><td><a href="javascript:__doPostBack('ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias','Page$2')">2</a></td><td><a href="javascript:__doPostBack('ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias','Page$3')">3</a></td><td><a href="javascript:__doPostBack('ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias','Page$4')">4</a></td><td><a href="javascript:__doPostBack('ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias','Page$5')">5</a></td><td><a href="javascript:__doPostBack('ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$gvOfertasSecundarias','Page$6')">6</a></td>
+</tr>
+</table></td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h3>Ofertas desestimadas</h3>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl00_UCProveedorRenglonDescartadoBastrap_lblProveedor">Miguel Angel Koller 23292099339</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl00_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl00$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="50297"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl00_UCProveedorRenglonDescartadoBastrap_gvEvaluacionDescartada" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Descripción</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th><th scope="col">Evaluación Administrativa</th>
+</tr><tr>
+<td>
+                    Requisito: Según Pliego.
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Reitero de información
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl01_UCProveedorRenglonDescartadoBastrap_lblProveedor">ANASTACIA S.A. 30712505903</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl01_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl01$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="67693"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl01_UCProveedorRenglonDescartadoBastrap_gvEvaluacionDescartada" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Descripción</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th><th scope="col">Evaluación Administrativa</th>
+</tr><tr>
+<td>
+                    Requisito: Según Pliego.
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr><tr>
+<td>
+                    Garantía: Tipo Garantia: Mantenimiento oferta, Forma: Cheque, Número de Documento: 23408434, Monto: 31.000.000,00, Moneda: Peso Argentino, Entidad Legal: SUPERVIELLE
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl02_UCProveedorRenglonDescartadoBastrap_lblProveedor">LA MANTOVANA DE SERVICIOS GENERALES S.A. 30696051816</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl02_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl02$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="283"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl02_UCProveedorRenglonDescartadoBastrap_gvRenglonesDescartados" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Renglón</th><th scope="col">Alternativa</th><th scope="col">Descripción</th><th scope="col">Tipo</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th>
+</tr><tr>
+<td>
+                    5
+                </td><td>
+                    1
+                </td><td>
+                    MANT. Y REPAR. DE CARRETERA; DESCRIPCION: MANTENIMIENTO DE CARRETERA
+                </td><td>
+                    Especificación
+                </td><td>
+</td><td>
+                    Exclúyase del Orden de mérito la oferta de la firma LA MANTOVANA DE SERVICIOS GENERALES S.A. correspondiente al Renglón 5 por ser su precio excesivo e inconveniente para la Repartición.
+                </td>
+</tr><tr>
+<td>
+                    6
+                </td><td>
+                    1
+                </td><td>
+                    MANT. Y REPAR. DE CARRETERA; DESCRIPCION: MANTENIMIENTO DE CARRETERA
+                </td><td>
+                    Especificación
+                </td><td>
+</td><td>
+                    Exclúyase del Orden de mérito la oferta de la firma LA MANTOVANA DE SERVICIOS GENERALES S.A. correspondiente al Renglón 6 por ser su precio excesivo e inconveniente para la Repartición.
+                </td>
+</tr><tr>
+<td>
+                    7
+                </td><td>
+                    1
+                </td><td>
+                    MANT. Y REPAR. DE CARRETERA; DESCRIPCION: MANTENIMIENTO DE CARRETERA
+                </td><td>
+                    Especificación
+                </td><td>
+</td><td>
+                    Exclúyase del Orden de mérito la oferta de la firma LA MANTOVANA DE SERVICIOS GENERALES S.A. correspondiente al Renglón 7 por ser su precio excesivo e inconveniente para la Repartición.
+                </td>
+</tr><tr>
+<td>
+                    8
+                </td><td>
+                    1
+                </td><td>
+                    MANT. Y REPAR. DE CARRETERA; DESCRIPCION: MANTENIMIENTO DE CARRETERA
+                </td><td>
+                    Especificación
+                </td><td>
+</td><td>
+                    Exclúyase del Orden de mérito la oferta de la firma LA MANTOVANA DE SERVICIOS GENERALES S.A. correspondiente al Renglón 8 por ser su precio excesivo e inconveniente para la Repartición.
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl03_UCProveedorRenglonDescartadoBastrap_lblProveedor">BUSTAMANTE MIGUEL  ANTONIO 20254504808</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl03_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl03$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="55857"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl03_UCProveedorRenglonDescartadoBastrap_gvEvaluacionDescartada" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Descripción</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th><th scope="col">Evaluación Administrativa</th>
+</tr><tr>
+<td>
+                    Requisito: Según Pliego.
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Reitero de información
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Documentación faltante
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl04_UCProveedorRenglonDescartadoBastrap_lblProveedor">HE VRAS SRL 30718312198</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl04_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl04$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="89083"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl04_UCProveedorRenglonDescartadoBastrap_gvRenglonesDescartados" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Renglón</th><th scope="col">Alternativa</th><th scope="col">Descripción</th><th scope="col">Tipo</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th>
+</tr><tr>
+<td>
+                    57
+                </td><td>
+                    1
+                </td><td>
+                    MANT. Y REPAR. DE CARRETERA; DESCRIPCION: MANTENIMIENTO DE CARRETERA
+                </td><td>
+                    Especificación
+                </td><td>
+</td><td>
+                    Exclúyase del Orden de mérito la oferta de la firma 	HE VRAS SRL correspondiente al Renglón 57 por ser su precio excesivo e inconveniente para la Repartición.
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl05_UCProveedorRenglonDescartadoBastrap_lblProveedor">EDICOBA S.A. 33711661889</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl05_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl05$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="82081"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl05_UCProveedorRenglonDescartadoBastrap_gvRenglonesDescartados" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Renglón</th><th scope="col">Alternativa</th><th scope="col">Descripción</th><th scope="col">Tipo</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th>
+</tr><tr>
+<td>
+                    6
+                </td><td>
+                    1
+                </td><td>
+                    MANT. Y REPAR. DE CARRETERA; DESCRIPCION: MANTENIMIENTO DE CARRETERA
+                </td><td>
+                    Especificación
+                </td><td>
+</td><td>
+                    Exclúyase del Orden de mérito la oferta de la firma EDICOBA S.A. correspondiente al Renglón 6 por ser su precio excesivo e inconveniente para la Repartición.
+                </td>
+</tr><tr>
+<td>
+                    7
+                </td><td>
+                    1
+                </td><td>
+                    MANT. Y REPAR. DE CARRETERA; DESCRIPCION: MANTENIMIENTO DE CARRETERA
+                </td><td>
+                    Especificación
+                </td><td>
+</td><td>
+                    Exclúyase del Orden de mérito la oferta de la firma EDICOBA S.A. correspondiente al Renglón 7 por ser su precio excesivo e inconveniente para la Repartición.
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl06_UCProveedorRenglonDescartadoBastrap_lblProveedor">MATHIAS HERNAN MUTUBERRIA 20347109291</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl06_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl06$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="99768"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl06_UCProveedorRenglonDescartadoBastrap_gvRenglonesDescartados" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Renglón</th><th scope="col">Alternativa</th><th scope="col">Descripción</th><th scope="col">Tipo</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th>
+</tr><tr>
+<td>
+                    22
+                </td><td>
+                    1
+                </td><td>
+                    MANT. Y REPAR. DE CARRETERA; DESCRIPCION: MANTENIMIENTO DE CARRETERA
+                </td><td>
+                    Especificación
+                </td><td>
+</td><td>
+                    MATHIAS HERNAN MUTUBERRIA que, conforme al Artículo N° 66 Inc. e del Anexo del Decreto 1030/16 - "Causales de desestimación no subsanables", corresponde desestimar la oferta de MATHIAS HERNAN MUTUBERRIA, para el Renglón 22, dado que no es factible el cumplimiento de lo requerido en el renglón ofertado.
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl07_UCProveedorRenglonDescartadoBastrap_lblProveedor">BIOCEANICA SRL 30717373657</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl07_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl07$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="81616"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl07_UCProveedorRenglonDescartadoBastrap_gvEvaluacionDescartada" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Descripción</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th><th scope="col">Evaluación Administrativa</th>
+</tr><tr>
+<td>
+                    Requisito: Según Pliego.
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr><tr>
+<td>
+                    Estado Registral del Proveedor
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Documentación faltante
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Reitero de información
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl08_UCProveedorRenglonDescartadoBastrap_lblProveedor">LIMPIOLUX S.A. 30540984626</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl08_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl08$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="209"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl08_UCProveedorRenglonDescartadoBastrap_gvEvaluacionDescartada" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Descripción</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th><th scope="col">Evaluación Administrativa</th>
+</tr><tr>
+<td>
+                    Requisito: Según Especificaciones Técnicas.
+                </td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td><td>
+</td><td>
+</td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Documentación 
+                </td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td><td>
+</td><td>
+</td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl09_UCProveedorRenglonDescartadoBastrap_lblProveedor">SUELOS Y REDES SRL 30717118614</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl09_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl09$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="76364"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl09_UCProveedorRenglonDescartadoBastrap_gvEvaluacionDescartada" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Descripción</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th><th scope="col">Evaluación Administrativa</th>
+</tr><tr>
+<td>
+                    Requisito: Según Pliego.
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Documentación faltante
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Reitero de información
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl10_UCProveedorRenglonDescartadoBastrap_lblProveedor">SERVIACAMPO SRL 30715448323</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl10_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl10$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="65640"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl10_UCProveedorRenglonDescartadoBastrap_gvEvaluacionDescartada" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Descripción</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th><th scope="col">Evaluación Administrativa</th>
+</tr><tr>
+<td>
+                    Requisito: Según Pliego.
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Documentación faltante
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl11_UCProveedorRenglonDescartadoBastrap_lblProveedor">SOCSA SRL  30712099263</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl11_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl11$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="58190"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl11_UCProveedorRenglonDescartadoBastrap_gvEvaluacionDescartada" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Descripción</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th><th scope="col">Evaluación Administrativa</th>
+</tr><tr>
+<td>
+                    Requisito: Según Pliego.
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr><tr>
+<td>
+                    Estado Registral del Proveedor
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Documentación faltante
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Reitero de información
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Documentación faltante
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl12_UCProveedorRenglonDescartadoBastrap_lblProveedor">COMERCIO INTEGRAL SRL 30718170121</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl12_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl12$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="85207"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl12_UCProveedorRenglonDescartadoBastrap_gvEvaluacionDescartada" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Descripción</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th><th scope="col">Evaluación Administrativa</th>
+</tr><tr>
+<td>
+                    Requisito: Según Pliego.
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Documentación faltante
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl13_UCProveedorRenglonDescartadoBastrap_lblProveedor">GRUB S. A. 30714647462</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl13_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl13$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="2665"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl13_UCProveedorRenglonDescartadoBastrap_gvRenglonesDescartados" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Renglón</th><th scope="col">Alternativa</th><th scope="col">Descripción</th><th scope="col">Tipo</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th>
+</tr><tr>
+<td>
+                    5
+                </td><td>
+                    1
+                </td><td>
+                    MANT. Y REPAR. DE CARRETERA; DESCRIPCION: MANTENIMIENTO DE CARRETERA
+                </td><td>
+                    Especificación
+                </td><td>
+</td><td>
+                    Exclúyase del Orden de mérito la oferta de la firma GRUB correspondiente al Renglón 5 por ser su precio excesivo e inconveniente para la Repartición.
+                </td>
+</tr><tr>
+<td>
+                    6
+                </td><td>
+                    1
+                </td><td>
+                    MANT. Y REPAR. DE CARRETERA; DESCRIPCION: MANTENIMIENTO DE CARRETERA
+                </td><td>
+                    Especificación
+                </td><td>
+</td><td>
+                    Exclúyase del Orden de mérito la oferta de la firma GRUB correspondiente al Renglón 6 por ser su precio excesivo e inconveniente para la Repartición.
+                </td>
+</tr><tr>
+<td>
+                    7
+                </td><td>
+                    1
+                </td><td>
+                    MANT. Y REPAR. DE CARRETERA; DESCRIPCION: MANTENIMIENTO DE CARRETERA
+                </td><td>
+                    Especificación
+                </td><td>
+</td><td>
+                    Exclúyase del Orden de mérito la oferta de la firma GRUB correspondiente al Renglón 7 por ser su precio excesivo e inconveniente para la Repartición.
+                </td>
+</tr><tr>
+<td>
+                    8
+                </td><td>
+                    1
+                </td><td>
+                    MANT. Y REPAR. DE CARRETERA; DESCRIPCION: MANTENIMIENTO DE CARRETERA
+                </td><td>
+                    Especificación
+                </td><td>
+</td><td>
+                    Exclúyase del Orden de mérito la oferta de la firma GRUB correspondiente al Renglón 8 por ser su precio excesivo e inconveniente para la Repartición.
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<span class="text-primary h4" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl14_UCProveedorRenglonDescartadoBastrap_lblProveedor">Cooperativa de Trabajo Ideal LTDA 30714037923</span>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<input id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl14_UCProveedorRenglonDescartadoBastrap_hdnIdProveedor" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$cabeceraDictamenPreAdjudicacion1$rptOfertasNoCumplieron$ctl14$UCProveedorRenglonDescartadoBastrap$hdnIdProveedor" type="hidden" value="4263"/>
+</div>
+</div>
+<br/>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_cabeceraDictamenPreAdjudicacion1_rptOfertasNoCumplieron_ctl14_UCProveedorRenglonDescartadoBastrap_gvEvaluacionDescartada" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Descripción</th><th scope="col">Evaluación Técnica</th><th scope="col">Evaluación Económica</th><th scope="col">Evaluación Administrativa</th>
+</tr><tr>
+<td>
+                    Requisito: Según Pliego.
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr><tr>
+<td>
+                    Estado Registral del Proveedor
+                </td><td>
+</td><td>
+</td><td>
+                    Artículo N° 67 del Anexo del Decreto 1030/16
+                </td>
+</tr><tr>
+<td>
+                    Documentación complementaria: Reitero de información
+                </td><td>
+</td><td>
+</td><td>
+                    NoCumple
+                </td>
+</tr>
+</table>
+</div>
+<br/>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="form-group">
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_lblEncuadreLegal">Encuadre Legal:</span>
+<textarea class="aspNetDisabled form-control" cols="20" disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_txtEncuadre" maxlength="3000" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$txtEncuadre" placeholder="Complete el encuadre legal..." rows="7" style="resize: none">
+Las firmas en condiciones de adjudicar, se encuentran inscriptas en el Sistema COMPR.AR, sin Deuda Fiscal vigente al momento de la evaluación y con el Certificado del Repsal sin sanciones, se adjuntan documentos probatorios de tal circunstancia</textarea>
+</div>
+<div class="form-group">
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_lblObservaciones">Observaciones:</span>
+<textarea class="form-control" cols="20" disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_txtObservaciones" maxlength="8000" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$txtObservaciones" placeholder="Complete las observaciones..." rows="7" style="resize: none">
+Conclusión final en documento IF-2025-32622627-APN-LYC%DNV Informe de Evaluación</textarea>
+</div>
+<div id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_panImputacion">
+<div class="form-group">
+<div class="row">
+<div class="col-md-12">
+<span>Imputación: </span>
+<input class="aspNetDisabled form-control" disabled="disabled" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_txtImputacion" maxlength="150" name="ctl00$CPH1$UCPreAdjudicarVisualizarDictamen$txtImputacion" type="text" value="El gasto que demande la presente contratación deberá imputarse a la partida presupuestaria del ejercicio correspondiente"/>
+</div>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<h4 class="panel-title">
+<span>Aprobación</span></h4>
+</div>
+<div class="panel-body">
+<div class="row">
+<div class="col-md-12">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_gvItems" style="border-collapse:collapse;">
+<tr class="tr-header">
+<th scope="col">Nombre y apellido</th><th scope="col">Estado</th>
+</tr><tr>
+<td>
+                                            ARIEL PAZ
+                                        </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_gvItems_ctl02_lblEstado">Autorizada</span>
+</td>
+</tr><tr>
+<td>
+                                            LEANDRO CABRAL
+                                        </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_gvItems_ctl03_lblEstado">Autorizada</span>
+</td>
+</tr><tr>
+<td>
+                                            EMILSE SOLEDAD SANCHEZ
+                                        </td><td>
+<span id="ctl00_CPH1_UCPreAdjudicarVisualizarDictamen_gvItems_ctl04_lblEstado">Autorizada</span>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row" id="divAnexos">
+<div class="col-md-12">
+
+<!--Inicio ingreso de anexos-->
+<!--Fin ingreso de anexos-->
+<!--Inicio anexos ingresados -->
+<h5>Anexos ingresados</h5>
+<div id="Anexos">
+<div class="table-responsive">
+<table class="table table-striped table-condensed">
+<thead>
+<tr>
+<th>Nombre</th>
+<th>Acciones</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCAnexo_rptAnexos_ctl01_Label4">IF-2025-32622627-APN-LYC%DNV Informe de Evaluacion.pdf</span>
+</td>
+<td> 
+                            <a href="javascript:__doPostBack('ctl00$CPH1$UCAnexo$rptAnexos$ctl01$btnVerAnexo','')" id="ctl00_CPH1_UCAnexo_rptAnexos_ctl01_btnVerAnexo" style="display:inline-block;border-width:0px;" title="Ver">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+                             
+                            
+                        </td>
+</tr>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCAnexo_rptAnexos_ctl02_Label4">IF-2025-31474535-APN-LYC%DNV.pdf</span>
+</td>
+<td> 
+                            <a href="javascript:__doPostBack('ctl00$CPH1$UCAnexo$rptAnexos$ctl02$btnVerAnexo','')" id="ctl00_CPH1_UCAnexo_rptAnexos_ctl02_btnVerAnexo" style="display:inline-block;border-width:0px;" title="Ver">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+                             
+                            
+                        </td>
+</tr>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCAnexo_rptAnexos_ctl03_Label4">IF-2025-32274446-APN-LYC%DNV.pdf</span>
+</td>
+<td> 
+                            <a href="javascript:__doPostBack('ctl00$CPH1$UCAnexo$rptAnexos$ctl03$btnVerAnexo','')" id="ctl00_CPH1_UCAnexo_rptAnexos_ctl03_btnVerAnexo" style="display:inline-block;border-width:0px;" title="Ver">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+                             
+                            
+                        </td>
+</tr>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCAnexo_rptAnexos_ctl04_Label4">IF-2025-32365380-APN-LYC%DNV.pdf</span>
+</td>
+<td> 
+                            <a href="javascript:__doPostBack('ctl00$CPH1$UCAnexo$rptAnexos$ctl04$btnVerAnexo','')" id="ctl00_CPH1_UCAnexo_rptAnexos_ctl04_btnVerAnexo" style="display:inline-block;border-width:0px;" title="Ver">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+                             
+                            
+                        </td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!--Fin anexos ingresados -->
+<!--Inicio modal de confirmar eliminar anexo-->
+<div class="row">
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" id="ModalBorrarItem" role="dialog" tabindex="-1">
+<div class="modal-dialog modal-sm">
+<div class="modal-content">
+<div class="modal-body">
+<div class="row">
+<div class="col-sm-12" style="text-align: center;">
+<span>¿Está seguro que desea eliminar este anexo?</span>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-sm-4">
+<a class="btn btn-danger pull-right" href="javascript:__doPostBack('ctl00$CPH1$UCAnexo$btnConfirmaBorrar','')" id="ctl00_CPH1_UCAnexo_btnConfirmaBorrar">Sí</a>
+</div>
+<div class="col-sm-4">
+</div>
+<div class="col-sm-4">
+<a class="btn btn-default pull-left" href="javascript:__doPostBack('ctl00$CPH1$UCAnexo$btnCancelaBorrar','')" id="ctl00_CPH1_UCAnexo_btnCancelaBorrar">No</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!--Fin modal confirmar eliminar anexo-->
+<div id="ctl00_CPH1_UCAnexo_updPgsAjaxPanelProgreso" style="display:none;">
+<div class="FondoGrisTransparente" id="divPanelFondoTransparente"></div>
+<div class="PanelProgresoCentroPagina" id="divPanelProgreso">
+<img alt="" src="/App_Themes/styles-viejo/imagenes/iconos/AjaxPanelProgreso.gif" style="width: 75px; height: 75px;"/>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12 form-group">
+<a class="btn btn-default" href="javascript:__doPostBack('ctl00$CPH1$lnkVolver','')" id="ctl00_CPH1_lnkVolver">Volver</a>
+<a class="btn btn-primary pull-right" href="javascript:__doPostBack('ctl00$CPH1$lnkImprimir','')" id="ctl00_CPH1_lnkImprimir" onclick="imprimirDiv();">Imprimir</a>
+</div>
+</div>
+</div>
+<!-- Este campo se utiliza para validar la pantalla al generar el documento GEDO -->
+<input id="ctl00_CPH1_VistaGEDO" name="ctl00$CPH1$VistaGEDO" type="hidden"/>
+</section>
+
+
+
+<footer>
+<div class="footer">
+<div class="container">
+<div class="col-md-2 imgLogo">
+<!-- LOGO COMPRAR -->
+<img alt="Jefatura de Gabinete de Ministros - Argentina" src="../Imagenes/Logos/jefatura.png" style="border-style:None;width:200px;"/>
+</div>
+<div class="col-md-2 lblFooter lblFooterLeft">
+<span id="ctl00_pie_lblSecretaria" style="display:inline-block;width:140px;">Secretaría Ejecutiva</span>
+</div>
+<div class="col-md-2 lblFooter">
+<span id="ctl00_pie_lblContrataciones" style="display:inline-block;width:140px;">Oficina Nacional de Contrataciones</span>
+</div>
+<div class="col-md-3 imgLogo imgLogoLeft">
+</div>
+<div class="col-md-3 links-externos">
+<!-- LINKS EXTERNOS -->
+<div class="row">
+<!-- BOLETIN OFICIAL -->
+<div class="col-md-12">
+<span>Presidencia de la nación</span>
+</div>
+<!-- INSTITUCIONAL -->
+<div class="col-md-12 margin-top-2">
+<span class="footer-version" id="ctl00_pie_lblNombreserver">PRDFINMSAPPB02</span>
+<span class="footer-version" id="ctl00_pie_Label1">
+                                v 1.1.932_COMPRAR</span>
+</div>
+<!-- NORMATIVA -->
+<div class="col-md-12 margin-top-2">
+<a href="javascript:__doPostBack('ctl00$pie$LinkButton1','')" id="ctl00_pie_LinkButton1">Avisos sobre Navegadores</a>
+</div>
+<div class="col-md-12 margin-top-2">
+<a href="javascript:__doPostBack('ctl00$pie$LinkButton2','')" id="ctl00_pie_LinkButton2">Términos y Condiciones de Uso</a>
+</div>
+<div class="col-md-12 margin-top-2">
+<a href="javascript:__doPostBack('ctl00$pie$LinkButton3','')" id="ctl00_pie_LinkButton3">Preguntas Frecuentes</a>
+</div>
+<div class="col-md-12 margin-top-2">
+<span class="glyphicon glyphicon-send"></span> 
+                            <span id="ctl00_pie_lblTextIncidencias">Envíenos por favor un ticket</span>
+<a href="https://incidencias.innovacion.gob.ar/servicedesk/customer/portal/6" id="ctl00_pie_linkIncidencias" target="_blank"> aquí</a>
+</div>
+</div>
+</div>
+</div>
+<!-- LINKS AVISOS -->
+<!-- VERSION -->
+<!--NOMBRE SERVIDOR-->
+</div>
+</footer>
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" data-backdrop="static" data-keyboard="false" id="modalAvisoNavegadores" role="dialog" tabindex="-2">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header" id="ctl00_pie_div1">
+<button aria-hidden="true" class="close" data-dismiss="modal" type="button">×</button>
+<h4 class="modal-title">Aviso sobre Navegadores</h4>
+</div>
+<div class="modal-body" data-backdrop="static" data-keyboard="false">
+<div class="container-fluid">
+                    Para brindar la mejor calidad y velocidad de navegación nuestro sitio está desarrollado en función de las últimas versiones de los navegadores:
+                    <div class="col-md-6 col-md-offset-3">
+<div class="container-fluid">
+<div class="carousel slide" data-ride="carousel" id="carouselnav">
+<div class="carousel-inner">
+<div class="item active">
+<img alt="Navegadores" id="ctl00_pie_imgCarrousel" src="/App_Themes/bastrap/images/navegadores.jpg" style="border-style:None;"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" data-backdrop="static" data-keyboard="false" id="modalTerminosYCondiciones" role="dialog" tabindex="-2">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<button aria-hidden="true" class="close" data-dismiss="modal" type="button">×</button>
+<p><u>DI-2016-29-E-APN-ONC#MM – ANEXO II</u></p>
+<h4 class="modal-title">POLÍTICAS, TÉRMINOS Y CONDICIONES DE USO DEL SISTEMA (PTCUS) COMUNES A TODOS LOS USUARIOS</h4>
+</div>
+<div class="modal-body" style="height: 500px; overflow-y: auto; text-align: justify;">
+<p>Artículo 1°.- Encuadre Jurídico</p>
+<p>El acceso y/o uso al Sistema Electrónico de Contrataciones de la Administración Nacional denominado COMPR.AR., se efectúa en el marco de lo normado por los artículos 21 y 22 del Decreto Delegado Nº 1023/01, el artículo 33 del reglamento del Régimen de Contrataciones de la Administración Nacional aprobado por el Decreto Nº 893/12, las Políticas, Términos y Condiciones de Uso del Sistema y las Condiciones Particulares que en el futuro puedan complementarlas, sustituirlas o modificarlas. </p>
+<p>Artículo 2°.- Aceptación </p>
+<p>Desde el momento de acceso y/o uso del COMPR.AR, se considera que el usuario acepta plenamente y sin reserva alguna, las Políticas, Términos y Condiciones así como las Condiciones Particulares de uso del sistema que pudieran dictarse, adhiriendo en forma inmediata a todas y cada de una ellas. </p>
+<p>Artículo 3°.- Acceso</p>
+<p>El acceso a COMPR.AR es público y gratuito, y se realiza a través de Internet, en el sitio cuya página principal se encuentra ubicada en <a>https://comprar.gob.ar</a> o aquella que en un futuro la reemplace. El Usuario deberá contar con un equipo y programas informáticos que cumplan con los requisitos mínimos de compatibilidad con el sistema (acceso por internet; navegadores Internet Explorer; Mozilla Firefox o Google Chrome). El Usuario toma conocimiento que cuando su equipo o programas de computación no reúnan tales requisitos mínimos, no podrá tener acceso al sistema y/o se podrá bloquear su acceso. </p>
+<p>Artículo 4°.- Términos </p>
+<p>A los efectos de las presentes Políticas, Términos y Condiciones, se entenderá que:</p>
+<p><u>COMPR.AR</u></p>
+<p>Constituye el Sistema Electrónico de Contrataciones de la Administración Nacional a través del cual las jurisdicciones y entidades de la Administración Pública Nacional comprendidas en el artículo 2º del Decreto Delegado Nº 1023/01 y sus modificaciones efectuarán en forma electrónica todos los procedimientos prescriptos en el Reglamento del Régimen de Contrataciones de la Administración Nacional, aprobado por el Decreto Nº 893/12 y sus modificaciones.</p>
+<p><a>https://comprar.gob.ar</a></p>
+<p>Es el portal sobre el que se gestiona el COMPR.AR y a través del cual se difunden las convocatorias y las restantes etapas de los procedimientos de selección. El acceso a este portal es público y gratuito. </p>
+<p>Asimismo, es medio válido de todas las notificaciones entre la jurisdicción o entidad contratante y los interesados, oferentes, adjudicatarios o cocontratantes que deban realizarse durante los procedimientos de selección. </p>
+<p><u>USUARIOS DEL PROVEEDOR:</u></p>
+<p>Es la persona humana que utiliza el COMPR.AR en representación de la persona humana o jurídica inscripta en el Sistema de Información de Proveedores que administra la OFICINA NACIONAL DE CONTRATACIONES, conforme el procedimiento de autenticación de los usuarios de los proveedores obrante en el Anexo III de la presente medida. </p>
+<p><u>USUARIOS COMPRADORES:</u></p>
+<p>Es la persona humana designada por la Unidad Operativa de Contrataciones, en adelante UOC, como responsable de la utilización del COMPR.AR, de acuerdo a los roles otorgados conforme al procedimiento de Administradores de Perfiles y Usuarios de la Administración obrante en los Anexos IV y V. </p>
+<p><u>SISTEMA DE INFORMACION DE PROVEEDORES:</u></p>
+<p>El Sistema de Información de Proveedores (SIPRO) que administra la OFICINA NACIONAL DE CONTRATACIONES se incorpora también al sistema COMPR.AR. Este sistema tiene por objeto registrar información relativa a los proveedores, sus antecedentes, historial de procedimientos de selección en los que se hubieren presentado como oferentes, historial de contratos, órdenes de compra o venta, incumplimientos contractuales y extra-contractuales, en ambos casos por causas imputables al proveedor, sanciones de apercibimiento, suspensión e inhabilitación y toda otra información que la OFICINA NACIONAL DE CONTRATACIONES considere de utilidad. </p>
+<p><u>PROTECCIÓN DE LA INFORMACIÓN CONTENIDA EN EL PORTAL:</u></p>
+<p>Toda la información elaborada o disponible en, o a través del COMPR.AR, se encuentra protegida como propiedad intelectual. Está prohibido a todos los usuarios modificar, copiar, transmitir, vender, distribuir, exhibir, publicar, licenciar, crear trabajos derivados, o usar, en general, el contenido disponible en o a través del COMPR.AR para fines comerciales y otros. </p>
+<p><u>USO ADECUADO DE COMPR.AR:</u></p>
+<p>El usuario que ingresa al COMPR.AR, se compromete a utilizar el mismo en forma lícita y de acuerdo a las presentes PTCUS. Se encuentra prohibido a los usuarios, la realización de actos maliciosos o que atenten contra el sitio, o que de alguna manera puedan dañar, inutilizar, sobrecargar, deteriorar, impedir o limitar la utilización de todas o algunas de las funcionalidades del mismo.</p>
+<p><u>RESPONSABILIDAD POR CLAVES DE USUARIO:</u></p>
+<p>Los usuarios de COMPR.AR no pueden ceder, transferir o comunicar bajo ninguna circunstancia sus claves y nombres de usuarios, haciéndose plenamente responsables por los actos, documentos, anexos, ofertas, y demás antecedentes que bajo esas claves y nombres de usuario, ingresen al COMPR.AR. Además, los usuarios asumen la obligación de cambiar sus claves frecuentemente, las que se debe evitar que sean evidentes y/o simples. </p>
+<p><u>RESPONSABILIDAD:</u></p>
+<p>El Gobierno Nacional no se responsabiliza por los daños y/o perjuicios derivados del acceso y/o uso de los contenidos publicados en el sitio <a>https://comprar.gob.ar</a> o en el que en un futuro lo reemplace. </p>
+<p>El Gobierno Nacional no se responsabiliza por las interrupciones de este servicio, ni por cualquier inconveniente originado en causas ajenas que impidan el acceso. </p>
+<p>La veracidad e integridad de la totalidad de la información y contenido de los documentos publicados son de exclusiva responsabilidad de los usuarios que los publican y envían, de acuerdo a las claves de acceso bajo las cuales actúen. </p>
+<p>El Gobierno Nacional no es responsable por la interrupción en la recepción de correos electrónicos por parte del usuario-proveedor. </p>
+<p>El Gobierno Nacional no es responsable de los virus que puedan contener los documentos que adjuntan los usuarios del sitio. Es responsabilidad de cada usuario velar por que los archivos que sube al sitio no tengan virus de ninguna especie. </p>
+<p>Las estadísticas e informes disponibles en el COMPR.AR son meramente referenciales y no comprometen a la OFICINA NACIONAL DE CONTRATACIONES, ni al Gobierno Nacional. </p>
+<p><u>SUSPENSIÓN O ELIMINACIÓN DE USUARIOS:</u></p>
+<p>La OFICINA NACIONAL DE CONTRATACIONES se reserva el derecho de suspender y/o eliminar unilateral y automáticamente del COMPR.AR a los usuarios que incumplan las PTCUS. </p>
+<p><u>CENTRO DE CONTACTO. MESA DE AYUDA TELEFÓNICA:</u></p>
+<p>La OFICINA NACIONAL DE CONTRATACIONES establecerá para todos los usuarios del COMPR.AR un centro de contacto que contará con una mesa de ayuda telefónica y vía correo electrónico. Esta mesa de ayuda atenderá las consultas de los usuarios sobre el funcionamiento del COMPR.AR.</p>
+<p>Artículo 5°.- Usuarios de los proveedores </p>
+<p><u>CORREOS ELECTRÓNICOS ENVIADOS POR COMPR.AR. A PROVEEDORES:</u></p>
+<p>Los usuarios proveedores aceptan recibir permanentemente correos electrónicos relativos a procedimientos de selección y demás información relevante, a la dirección de correo informada por ellos en el SIPRO. </p>
+<p>El sitio <a>https://comprar.gob.ar</a> o el que en un futuro lo reemplace es el medio obligatorio de difusión de las convocatorias y de las restantes etapas de los procedimientos de selección, sin perjuicio de las demás formas de difusión y publicidad que la reglamentación vigente determina.</p>
+<p>Los correos electrónicos enviados por el COMPR.AR solo constituyen un medio de aviso. </p>
+<p>Se recomienda a los proveedores, revisar periódicamente el COMPR.AR –en particular Escritorio del Proveedor– para informarse de las novedades vinculadas a las etapas, desarrollo del proceso de contratación electrónica y demás información relevante, como así también consultar las demás formas de difusión y publicidad que la reglamentación vigente determina.</p>
+<p><u>LIBERACIÓN DE RESPONSABILIDAD:</u></p>
+<p>Los usuarios proveedores deben velar por la seriedad de las ofertas ingresadas al COMPR.AR, siendo plenamente responsables por las mismas. </p>
+<p>Los usuarios proveedores deberán aceptar que el Gobierno Nacional carece de toda responsabilidad por los resultados que obtengan en cada uno de los procedimientos de selección electrónicos en que participen. </p>
+<p>Los usuarios proveedores liberan al Gobierno Nacional de cualquier responsabilidad derivada de la dilación o no envío oportuno de correos electrónicos de alerta, declarando conocer que el medio de notificación es la difusión que cada Usuario Comprador efectúa en el portal <a>https://comprar.gob.ar</a> o en el que en un futuro lo reemplace. La no recepción oportuna de correos electrónicos de alerta que envía el COMPR.AR, no justificará, ni se considerará como causal suficiente para eximir a los proponentes de sus cargas y responsabilidades. </p>
+<p><u>POLÍTICAS DE PRIVACIDAD:</u></p>
+<p>Los usuarios de COMPR.AR aceptan, por el sólo hecho de su inscripción o registro en el sitio, que los datos, antecedentes e información aportados en las diversas etapas de los procedimientos en que participan, sean de público conocimiento en el ámbito de las transacciones que se efectúan en él y que sólo están disponibles públicamente para esos efectos. Asimismo, los usuarios de COMPR.AR, por el sólo hecho de su inscripción otorgan su conformidad para que los resultados de los procedimientos de selección en que participen y las respectivas contrataciones, formen parte de las estadísticas e informes, se procesen y se publiquen por parte del Gobierno Nacional.</p>
+<p>Cuando se solicite por parte de terceros acceso a información que pudiese afectar derechos de los usuarios proveedores, tales como los relacionados con su vida privada o derechos de carácter económico o comercial, se procederá en un todo conforme a la Ley Nº 25.326 de “Protección de Datos Personales” modificada por la Ley Nº 26.343 y reglamentada por el Decreto Nº 1558/2001 modificado por el Decreto 1160/2010, el Decreto Nº 1172/2003 de “Acceso a la Información Pública” y el Decreto N° 117/2016 “Plan de Apertura de Datos”. </p>
+<p><u>DECLARACIÓN:</u></p>
+<p>Los usuarios de COMPR.AR declaran conocer y aceptar la circunstancia relativa a que la OFICINA NACIONAL DE CONTRATACIONES, puede en cualquier momento modificar todo o parte de las presentes PTCUS, que serán oportunamente publicadas en el portal de COMPR.AR. </p>
+<p><u>USUARIOS COMPRADORES:</u></p>
+<p>El usuario-comprador es responsable de la información que se difunda y debe procurar que su contenido se adapte a las previsiones contempladas por la normativa vigente. Queda estrictamente prohibido a los usuarios compradores realizar cualquier uso de COMPR.AR ajeno al marco del proceso de contrataciones públicas electrónicas. Los Organismos de Control están autorizados a utilizar el COMPR.AR con el objeto de asegurar el correcto desempeño de los distintos procesos y velar por su transparencia. </p>
+<p><u>LÍMITE DE RESPONSABILIDAD DEL COMPR.AR SOBRE EL PROCESO DE SELECCION:</u></p>
+<p>El COMPR.AR es un medio que facilita la realización de los procedimientos de selección sin garantizar la seriedad e idoneidad de las ofertas recibidas, las que deben ser evaluadas por cada usuario comprador, y en su caso, por la Comisión Evaluadora de Ofertas.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+
+</form>
+</body>
+</html>

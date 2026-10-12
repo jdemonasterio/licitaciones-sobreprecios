@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta content="IE=edge" http-equiv="X-UA-Compatible"/><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/><title>
+	COMPR.AR - Portal de Compras Públicas de la República Argentina
+</title><meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+
+
+
+
+</head>
+<body>
+
+
+<form action="./VistaPreviaPliegoCiudadano.aspx?qs=BQoBkoMoEhzk1%7cNgWOYnqwtd5QtPJbjOP65kePF5htiWsFSpQj0as4Iba%2fHzMhVM" id="aspnetForm" method="post" onsubmit="javascript:return WebForm_OnSubmit();">
+
+
+
+
+
+
+
+
+
+
+<nav class="navbar-inverse">
+<div class="navbar-header">
+<button aria-expanded="false" class="navbar-toggle" data-target="#nav" data-toggle="collapse" type="button">
+<span class="sr-only">Toggle navigation</span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+</button>
+</div>
+<div class="collapse navbar-collapse" id="nav">
+<div class="container">
+<div class="row">
+<ul class="nav navbar-nav">
+<li><a href="https://www.argentina.gob.ar/jefatura/innovacion-publica/oficina-nacional-de-contrataciones" target="_blank"><strong>Institucional</strong></a></li>
+<li><a href="http://www.infoleg.gob.ar/?page_id=91" target="_blank"><strong>Normativa</strong></a></li>
+<li><a aria-expanded="false" aria-haspopup="true" class="dropdown-toggle" data-toggle="dropdown" role="button"><strong>Capacitación</strong></a>
+<ul class="dropdown-menu">
+<li><a href="/ComprasElectronicas.aspx?qs=uZmpNBcarZh/t6e8LDmVN|XFAS9B6k9ddqFj4heYwZ4=" id="ctl00_CtrlMenuPortal_lnkProveedoresInstructivos">Proveedores</a></li>
+<li><a href="/capacitacion.aspx">Organismos</a></li>
+</ul>
+</li>
+<li><a href="/contactenos.aspx"><strong>Atención al usuario</strong></a></li>
+<li><a href="/Dictamen/Dictamen/Buscar"><strong>Material de apoyo</strong></a></li>
+</ul>
+<ul class="nav navbar-nav navbar-right">
+<li>
+<a href="../Login.aspx" id="lnkIngresar" style="cursor: pointer">
+<span class="glyphicon glyphicon-log-in"></span>
+<strong>Ingresar</strong>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" data-backdrop="static" data-keyboard="false" id="modalIngresar" role="dialog" tabindex="-2">
+<div class="modal-dialog">
+<div class="modal-content">
+<div id="ctl00_CtrlMenuPortal_logIn_updateModal">
+<div class="modal-header" id="ctl00_CtrlMenuPortal_logIn_divHeaderModal">
+<a aria-hidden="true" class="close" data-dismiss="modal" href="javascript:__doPostBack('ctl00$CtrlMenuPortal$logIn$lnkClose','')" id="ctl00_CtrlMenuPortal_logIn_lnkClose" onclick="CloseModalIngresar();">×</a>
+<h2 class="text-center">
+<span id="ctl00_CtrlMenuPortal_logIn_lblHeader">Bienvenido</span>
+</h2>
+</div>
+<div class="modal-body" data-backdrop="static" data-keyboard="false" id="ctl00_CtrlMenuPortal_logIn_divBodyModal">
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+
+<input class="form-control" id="ctl00_CtrlMenuPortal_logIn_txtUsername_txtTextBox" name="ctl00$CtrlMenuPortal$logIn$txtUsername$txtTextBox" placeholder="CUIL / CUIT / Pasaporte" type="text"/>
+<span class="glyphicon form-control-feedback" id="ctl00_CtrlMenuPortal_logIn_txtUsername_txtTextBoxVG"></span>
+<span class="control-label" id="ctl00_CtrlMenuPortal_logIn_txtUsername_txtTextBoxV" style="display:none;">Verifique que el CUIT haya sido ingresado</span>
+</div>
+</div>
+</div>
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+<span class="text" id="ctl00_CtrlMenuPortal_logIn_Label2">El número de identificación que ingrese debe ser el personal. No el del organismo o empresa.</span>
+</div>
+</div>
+</div>
+</div>
+<div class="modal-footer">
+<div class="row">
+<div class="form-horizontal">
+<div class="col-md-12">
+<a class="btn btn-primary pull-right" data-loading-text="Validando..." href='javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions("ctl00$CtrlMenuPortal$logIn$lnkConfirmar", "", true, "vgLogin", "", false, true))' id="ctl00_CtrlMenuPortal_logIn_lnkConfirmar">Siguiente</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" data-backdrop="static" data-keyboard="false" id="modalRecuperarCuenta" role="dialog" tabindex="-2">
+<div class="modal-dialog">
+<div class="modal-content">
+<div id="ctl00_CtrlMenuPortal_logIn_ctl00">
+<div class="modal-header">
+<a aria-hidden="true" class="close" data-dismiss="modal" href="javascript:__doPostBack('ctl00$CtrlMenuPortal$logIn$ctl03','')" onclick="CloseModalRecuperarCuenta();">×</a>
+<h2 class="text-center">
+<span id="ctl00_CtrlMenuPortal_logIn_Label1">Recuperar contraseña</span>
+</h2>
+</div>
+<div class="modal-body" data-backdrop="static" data-keyboard="false">
+<div class="container-fluid">
+<div class="row">
+<div class="col-md-12">
+<div class="alert alert-info" id="ctl00_CtrlMenuPortal_logIn_divAdvertencia"><strong>Importante:</strong> El correo electrónico debe ser el mismo que ingresó al sistema al momento de registrarse como usuario.</div>
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+<input class="form-control" id="ctl00_CtrlMenuPortal_logIn_textBoxUserRecuperoContrasenia" name="ctl00$CtrlMenuPortal$logIn$textBoxUserRecuperoContrasenia" type="text"/>
+</div>
+</div>
+</div>
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+
+<input class="form-control" id="ctl00_CtrlMenuPortal_logIn_txtMail_txtTextBox" name="ctl00$CtrlMenuPortal$logIn$txtMail$txtTextBox" placeholder="Correo electronico" type="text"/>
+<span class="glyphicon form-control-feedback" id="ctl00_CtrlMenuPortal_logIn_txtMail_txtTextBoxVG"></span>
+<span class="control-label" id="ctl00_CtrlMenuPortal_logIn_txtMail_txtTextBoxV" style="display:none;"></span>
+</div>
+</div>
+</div>
+<div class="row form-group">
+<div class="form-horizontal">
+<div class="col-md-12">
+
+<input class="form-control" id="ctl00_CtrlMenuPortal_logIn_txtMail2_txtTextBox" name="ctl00$CtrlMenuPortal$logIn$txtMail2$txtTextBox" placeholder="Reingrese correo electronico" type="text"/>
+<span class="glyphicon form-control-feedback" id="ctl00_CtrlMenuPortal_logIn_txtMail2_txtTextBoxVG"></span>
+<span class="control-label" id="ctl00_CtrlMenuPortal_logIn_txtMail2_txtTextBoxV" style="display:none;">Verifique que el correo electrónico haya sido ingresado.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row pull-right">
+<div class="col-md-12">
+<a class="btn btn-success m-l-1 btn-sm" href='javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions("ctl00$CtrlMenuPortal$logIn$btnSolicitar", "", true, "vgRecuperar", "", false, true))' id="ctl00_CtrlMenuPortal_logIn_btnSolicitar">Solicitar</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</nav>
+<div class="bg-white-1" style="padding-top: 5px; padding-bottom: 5px;">
+<div class="container">
+<div class="row">
+
+<div id="date" style="font-size: 11px; text-align: right;">
+<span id="ctl00_CtrlTimeNow_scriptFechaHora"></span>
+<span id="divReloj"> Domingo 11 de Octubre, <b class="texto11Azul">18:39:47 </b></span>
+</div>
+</div>
+</div>
+</div>
+<section>
+<div class="container">
+<div id="divImprimir">
+
+
+
+<br/>
+<div class="row">
+<div class="col-md-12">
+<h2>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_lblTitulo">Proceso de compra</span></h2>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="panel panel-default">
+<div class="panel-body bg-info">
+<div class="row">
+<div class="col-md-6">
+<label for="lblNumPliego">Número de proceso</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_usrCabeceraPliego_lblNumPliego">84/99-0651-LPU26</span>
+</p>
+</div>
+<div class="col-md-6">
+<label for="lblNumExpediente">Número de expediente</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_usrCabeceraPliego_lblNumExpediente">EX-2026-89024754-   -APN-HMRM#EA</span>
+</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<label for="lblNomPliego">Nombre descriptivo del proceso</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_usrCabeceraPliego_lblNomPliego">MANTENIMIENTO DE LOS EDIFICIOS NRO.2 Y 3 - SALA DE ESPERA,TURNOS Y PASILLOS DE CONSULTORIOS EXTERNOS</span>
+</p>
+</div>
+<div class="col-md-6">
+<label for="lblUnidadOperativa">Unidad Operativa de Contrataciones</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_usrCabeceraPliego_lblUnidadOperativa">84/99 - Hospital Militar Regional Mendoza</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h4 class="panel-title">Información básica del proceso</h4>
+</div>
+<div class="panel-body">
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblNumeroProceso">Nº de proceso</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblNumeroProceso">84/99-0651-LPU26</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblNombreProceso">Nombre descriptivo de proceso</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblNombreProceso">MANTENIMIENTO DE LOS EDIFICIOS NRO.2 Y 3 - SALA DE ESPERA,TURNOS Y PASILLOS DE CONSULTORIOS EXTERNOS</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblObjetoContratacion">Objeto de la contratación</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblObjetoContratacion">MANTENIMIENTO DE LOS EDIFICIOS NRO.2 Y 3 - SALA DE ESPERA,TURNOS Y PASILLOS DE CONSULTORIOS EXTERNOS</span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblProcedimientoSeleccion">Procedimiento de selección</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblProcedimientoSeleccion">Licitacion Pública</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblEtapa">Etapa</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblEtapa">Única</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblModalidad">Modalidad</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblModalidad">Orden de compra abierta</span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblAlcance">Alcance</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblAlcance">Nacional</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblMoneda">Moneda</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblMoneda">Peso Argentino</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblEncuadreLegal">Encuadre legal</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblEncuadreLegal">Decreto Delegado N° 1023/2001 Art. 25<br/>Decreto N°1030/2016 Art.10<br/>Decreto N°1030/2016 Art. 25<br/></span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblTipoCotizacionCantidad">Tipo de cotización</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblTipoCotizacionCantidad">No admite cotización parcial por renglón</span><br/>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblTipoCotizacionLinea">Deberán cotizar por grupo de renglones</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblTipoAdjudicacionCantidad">Tipo de adjudicación</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblTipoAdjudicacionCantidad">Cada renglón se adjudicará en forma total</span><br/>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblTipoAdjudicacionLinea">Adjudicación por grupo de renglones</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblTipoProcesoGen">Tipo documento que genera el proceso</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblTipoProcesoGen">Orden de compra</span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblLugarRecepcionFisica">Lugar de recepción de documentación física</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblLugarRecepcionFisica">Boulogne Sur Mer 1700</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblPlazoMantenimientoOferta">Plazo mantenimiento de la oferta</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblPlazoMantenimientoOferta">6 Meses Acto de apertura</span>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblRequierePago">Requiere pago</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblRequierePago">No</span>
+</p>
+</div>
+<div class="col-md-4">
+<label for="lblTipoProcesoGen">Otras condiciones</label>
+<p>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<p>
+<br/>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblGeneraRecursos">Genera Recursos</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_GeneraRecursos">No</span><br/>
+</p>
+</div>
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblFinanciamientoExterno">Financiamiento Externo</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_FinanciamientoExterno">No</span><br/>
+</p>
+</div>
+</div>
+<div class="row form-group">
+</div>
+<div class="row form-group">
+<div class="col-md-4">
+<label for="lblAceptaProrroga">Acepta prórroga</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_InformacionBasica_lblAceptaProrroga">No</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4>Solicitudes de contratación asignadas al proceso</h4>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UC_SolicitudesGasto_gvSolicitudesGasto" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col" style="width:20%;">Número solicitud de contratación</th><th scope="col">Estado</th><th scope="col">Unidad Ejecutora</th><th scope="col">Rubro</th><th scope="col">Tipo de urgencia</th><th scope="col">Fecha creación</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_SolicitudesGasto_gvSolicitudesGasto_ctl02_lblSolicitudGasto">84/99-5027-SCO26</span>
+</td><td>Autorizada en Proceso</td><td>84/99 - Hospital Militar Regional Mendoza</td><td>MANT. REPARACION Y LIMPIEZA</td><td>Normal</td><td>07/09/2026</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4>Detalle de productos o servicios</h4>
+<div class="table-responsive">
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_upPa">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Número renglón</th><th scope="col">Objeto del gasto</th><th scope="col">Código del ítem</th><th scope="col">Descripción</th><th scope="col">Cantidad</th><th scope="col">Acciones</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>1</td><td>3.3.1</td><td>3.3.1-2970.1</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl02_lblDescripcion">MANT. Y REPAR. GRAL. DE INSTAL; DESCRIPCION: MANT. GRAL. INST. DE EDIFICIOS</span>
+<u style="color: #0265A1">
+</u>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl02_lblCantidad">1,00 SERVICIO</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_DetalleProductos$gvLineaPliego$ctl02$lnkVerItem','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_gvLineaPliego_ctl02_lnkVerItem" title="Ver informacíón del ítem">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div aria-labelledby="myModalLabel" class="modal" id="ModVerItem" role="dialog" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+<button aria-hidden="true" class="close" data-dismiss="modal" type="button">×</button>
+<h4 class="modal-title">Información del Ítem</h4>
+</div>
+<div class="modal-body">
+<div class="panel panel-default">
+<div class="panel-body bg-info">
+<div class="row">
+<div class="col-md-12">
+<label for="ObservacionesInput">Observaciones</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_ObservacionesInput"></span>
+</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<label for="EspecificacionesInput">Especificaciones</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_EspecificacionesInput"></span>
+</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<label for="AcondicionamientoInput">Acondicionamiento</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_AcondicionamientoInput"></span>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_TituloItem" style="font-weight:bold;">Item Agrupado</span>
+<br/>
+<br/>
+<div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_DetalleProductos_DetEntregaLbl" style="font-weight:bold;">Detalle Entrega</span>
+<br/>
+<br/>
+<div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h4 class="panel-title">Cronograma</h4>
+</div>
+<div class="panel-body">
+<div class="row">
+<div class="col-md-6">
+<label for="lblFechaPublicacion">Fecha y hora estimada de publicación en el portal</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblFechaPublicacion">17/09/2026 00:00 Hrs.</span>
+</p>
+</div>
+<div class="col-md-6">
+<label for="lblFechaPublicacionOficial">Fecha y hora publicación en boletin oficial</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblFechaPublicacionOficial">17/09/2026 00:00 Hrs.</span>
+</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<label for="lblFechaInicioConsultas">Fecha y hora inicio de consultas</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblFechaInicioConsultas">17/09/2026 00:01 Hrs.</span>
+</p>
+</div>
+<div class="col-md-6">
+<label for="lblFechaFinalConsultas">Fecha y hora final de consultas</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblFechaFinalConsultas">09/10/2026 12:00 Hrs.</span>
+</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<label for="lblFechaInicioRecepcionDocumentos">Fecha y hora inicio recepción de documentos en soporte físico</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblFechaInicioRecepcionDocumentos">18/09/2026 07:00 Hrs.</span>
+</p>
+</div>
+<div class="col-md-6">
+<label for="lblFechaFinRecepcionDocumentos">Fecha y hora fin recepción de documentos en soporte físico</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblFechaFinRecepcionDocumentos">09/10/2026 12:00 Hrs.</span>
+</p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<label for="lblCantidadDiasPublicar">Cantidad de días a publicar</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblCantidadDiasPublicar">2</span>
+</p>
+</div>
+<div class="col-md-6">
+<label for="lblFechaActoApertura">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblTitFechaActoApertura">Fecha y hora acto de apertura</span></label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Cronograma_lblFechaActoApertura">13/10/2026 07:00 Hrs.</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_contenedor">
+<h4 id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_titulo">Pliego de bases y condiciones generales</h4>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_gvCondicionesGenerales" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Pliego de Bases y Condiciones Generales</th><th scope="col">Disposición aprobatoria</th><th scope="col">Fecha creación</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<p>
+                            DI-2024-79130471-APN-ONC#JGM
+                            <a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCCondicionesGenerales$gvCondicionesGenerales$ctl02$lnkGEDOByC','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_gvCondicionesGenerales_ctl02_lnkGEDOByC" title="Descargar GEDO">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+</p>
+</td><td>
+<p>
+                            DI-2024-79130471-APN-ONC#JGM
+                            <a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCCondicionesGenerales$gvCondicionesGenerales$ctl02$lnkGEDODisposicion','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_gvCondicionesGenerales_ctl02_lnkGEDODisposicion" title="Descargar GEDO">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+</p>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_gvCondicionesGenerales_ctl02_lblFechaCreacion">31/08/2024</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<input id="ctl00_CPH1_UCVistaPreviaPliego_UCCondicionesGenerales_hdnIdCondicionesGenerales" name="ctl00$CPH1$UCVistaPreviaPliego$UCCondicionesGenerales$hdnIdCondicionesGenerales" type="hidden"/>
+<br/>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<div class="list-group list-group-panel">
+<div class="list-group-item list-heading list-heading-default">
+<h4 class="panel-title">Requisitos mínimos de participación</h4>
+</div>
+<div class="list-group-item">
+<h5>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_Label4">I. Requisitos económicos y financieros</span></h5>
+<div class="table-responsive">
+<table class="table table-striped table-condensed">
+<thead>
+<tr>
+<td>Nº de requisito</td>
+<td>Descripción</td>
+<td>Tipo de documento</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            1
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoEconomico_ctl01_Label1">SEGUN PBYCP</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoEconomico_ctl01_TipoDocumento"> </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="list-group-item">
+<h5>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_lblTitRequisitoTecnico">II. Requisitos técnicos</span></h5>
+<div class="table-responsive">
+<table class="table table-striped table-condensed">
+<thead>
+<tr>
+<td>Nº de requisito</td>
+<td>Descripción</td>
+<td>Tipo de documento</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            1
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoTecnico_ctl01_Label1">SEGUN PBYCP</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoTecnico_ctl01_TipoDocumento"> </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="list-group-item">
+<h5>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_lblTitRequisitoAdministrativo">III. Requisitos administrativos</span></h5>
+<div class="table-responsive">
+<table class="table table-striped table-condensed">
+<thead>
+<tr>
+<td>Nº de requisito</td>
+<td>Descripción</td>
+<td>Tipo de documento</td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="fondoblanco" style="width: 25%;">
+                            1
+                        </td>
+<td class="fondoblanco" style="width: 60%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl01_Label1">SEGUN PBYCP</span>
+</td>
+<td class="fondoblanco" style="width: 15%; vertical-align: top;">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Requistos_rptRequisitoAdministrativo_ctl01_TipoDocumento"> </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="row">
+<div class="col-md-12">
+<h4><span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_lblTitulo">Cláusulas particulares</span></h4>
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_UpdatePanel6">
+<div class="alert bg-danger" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_divMensajeError" style="display: none">
+<span class="text-danger" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_lblMensajeError"></span>
+</div>
+</div>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_gvActosAdministrativos" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Documento</th><th scope="col">Número GDE</th><th scope="col">Número especial</th><th scope="col">Fecha vinculación</th><th scope="col">Opciones</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_gvActosAdministrativos_ctl02_lblDocumento">Clausulas Particulares</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_gvActosAdministrativos_ctl02_lblNumeroSade">PLIEG-2026-89075614-APN-HMRM#EA</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_gvActosAdministrativos_ctl02_lblNumeroEspecial"></span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_gvActosAdministrativos_ctl02_lblFechaVinculacion">16/09/2026</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_Clausulas$gvActosAdministrativos$ctl02$btnVer','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Clausulas_gvActosAdministrativos_ctl02_btnVer" title="Ver">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="list-group list-group-panel">
+<div class="list-group-item list-heading list-heading-default">
+<h4>Garantías</h4>
+</div>
+<div class="list-group-item" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_divGarImpugPreAdj">
+<h5>
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_Label13">Garantía de impugnación a la evaluación</span></strong> </h5>
+<div class="row">
+<div class="col-md-12">
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_lblImpugnacionPread">La garantía de impugnación a la evaluación deber ser del tres por ciento (3%) del monto de la oferta del renglón o los renglones en cuyo favor se hubiere aconsejado adjudicar el contrato.</span></strong>
+</div>
+</div>
+</div>
+<div class="list-group-item" id="divGarMantOferta">
+<h5><strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_lblTituloMantenimientoOferta">Garantía de mantenimiento de oferta</span></strong></h5>
+<div class="row">
+<div class="form-horizontal">
+<div class="col-md-12">
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_AclaracionGarantiaMantenimiento">La garantía de mantenimiento de oferta debe ser del 5,00% sobre el monto total de la oferta</span></strong><br/>
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_divInicioAclaracion">
+<span>Este proceso de compra </span>
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_NoRequiereMant" style="text-decoration:underline;">No requiere</span>
+</strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_lblGarantiaOfertaCompraMenorTexto">incorporar garantía de mantenimiento de oferta para las ofertas menores a 1000 módulos y para aquellas excepciones enumeradas en la normativa vigente.</span>
+</div>
+</div>
+</div>
+</div>
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_divMantOfertaAlt" style="display: none;">
+<div class="row">
+<div class="col-md-12">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_Label14">En el caso de aceptar más de una oferta por proveedor, la garantía se calcula sobre el mayor valor propuesto. En caso de resultar adjudicatario esta garantía se prolongará hasta la constitución de la garantía de cumplimiento del contrato.</span>
+</div>
+</div>
+</div>
+</div>
+<div class="list-group-item" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_divCumpContrato">
+<h5><strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_Label5">Garantía de cumplimiento de contrato</span></strong></h5>
+<div class="row">
+<div class="form-horizontal">
+<div class="col-md-12">
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_AclaracionGarantiaCumplimiento">La garantía de cumplimiento de contrato debe ser del 10,00% del monto del contrato</span></strong><br/>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_asd">Este proceso de compra </span>
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_NoRequiereCump" style="text-decoration:underline;">No requiere</span></strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_lblGarantiaCumplimientoContrato">incorporar garantía de cumplimiento de contrato cuando el monto total del documento contractual no supere los 1000 módulos y para aquellas excepciones enumeradas en la normativa vigente.</span>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="form-horizontal">
+<div class="col-md-12">
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_Label2">Este proceso de compra </span>
+<strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_NoRequiereContra" style="text-decoration:underline;">No requiere</span></strong>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Garantias_lblContragarantia">incorporar contragarantía.</span>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+</div>
+</div>
+<div class="list-group-item">
+<div class="row">
+<div class="col-md-12">
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+<div class="panel panel-default">
+<div class="panel-heading">
+<h4 class="panel-title">Información del contrato</h4>
+</div>
+<div class="panel-body">
+<div class="row">
+<div class="col-md-3">
+</div>
+<div class="col-md-3">
+</div>
+</div>
+<div class="row">
+<div class="col-md-6">
+<label for="lblMontoDuracionFechaInicioContrato">Fecha estimada del inicio del contrato</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_MontoDuracion_lblMontoDuracionFechaInicioContrato">A partir del perfeccionamiento del documento contractual</span>
+</p>
+</div>
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_MontoDuracion_pnlDuracionContrato">
+<div class="col-md-6">
+<label for="lblMontoDuracionDuracionContrato">Duración del contrato</label>
+<p>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_MontoDuracion_lblMontoDuracionDuracionContrato">3 Meses</span>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<div class="row">
+<div class="col-md-12">
+<div>
+<h4>Alcance</h4>
+</div>
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_ucAlcance_gvAlcance" style="border-collapse:collapse;">
+<tbody><tr class="tr-header">
+<th scope="col">Servicio Administrativo Financiero</th><th scope="col">Unidad Operativa de Contrataciones</th><th scope="col">Dirección</th><th scope="col">Teléfono</th>
+</tr><tr>
+<td>374 - Estado Mayor General del Ejercito</td><td>84/99 - Hospital Militar Regional Mendoza</td><td>Boulogne Sur Mer 1700</td><td>2614233226</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4>Penalidades</h4>
+<div class="table-responsive">
+<table class="table table-striped table-condensed">
+<thead>
+<tr>
+<th>Nº penalidad</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+                        1
+                    </td>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Penalidades_rptPenalidades_ctl01_Label1">SEGUN PBYCP</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<br/>
+<h4>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_Label2">Anexos ingresados</span></h4>
+<div class="row">
+<div class="col-md-12">
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos" style="border-collapse:collapse;">
+<tbody><tr class="tr-header">
+<th scope="col">Nombre del Anexo</th><th scope="col">Tipo</th><th scope="col">Descripción</th><th scope="col" style="width:120px;">Acciones</th>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl02_lblNombreAnnexo">ANEXO IIa - SOLICITUD DE MODIFICACIONES, REHABILITACIONES Y REACTIVACIONES DE ENTES.docx</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl02_lblTipoAnexo">Administrativo</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl02_lblDescripcion">ANEXO IIa - SOLICITUD DE MODIFICACIONES, REHABILITACIONES Y REACTIVACIONES DE ENTES</span>
+</td><td>
+<a class="btnDescargarAnexo" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCAnexos$gvAnexos$ctl02$btnVerAnexo','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl02_btnVerAnexo" st="">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+<input class="hdnIdAnexo" type="hidden" value="1q/h/CGX/Q/H8NnE3OF5J/ImVwXf53Ra/rGAU1tJ|1Rt2D1ZNqrC3Vs4JIRHJ8/I"/>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl03_lblNombreAnnexo">ANEXO III - DDJJ INELEGIBILIDAD.doc</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl03_lblTipoAnexo">Administrativo</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl03_lblDescripcion">ANEXO III - DDJJ INELEGIBILIDAD</span>
+</td><td>
+<a class="btnDescargarAnexo" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCAnexos$gvAnexos$ctl03$btnVerAnexo','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl03_btnVerAnexo" st="">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+<input class="hdnIdAnexo" type="hidden" value="1q/h/CGX/Q8B1I1l1JBBlH|AA1ahS|KB|XdBIbQQZ3fH/IPEfJ8O5jUkfxrGirrT"/>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl04_lblNombreAnnexo">ANEXO IV - DATOS DE CUENTA BANCARIA PARA ACREDITACIÓN DE PAGOS.docx</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl04_lblTipoAnexo">Administrativo</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl04_lblDescripcion">ANEXO IV - DATOS DE CUENTA BANCARIA PARA ACREDITACIÓN DE PAGOS</span>
+</td><td>
+<a class="btnDescargarAnexo" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCAnexos$gvAnexos$ctl04$btnVerAnexo','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl04_btnVerAnexo" st="">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+<input class="hdnIdAnexo" type="hidden" value="1q/h/CGX/Q|KmghDK0uvJ6VwUPdGVktSYnslHCxMvovqI0paMLQn25I6G9sYG72W"/>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl05_lblNombreAnnexo">ANEXO V - DDJJ INELEGIBILIDAD.doc</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl05_lblTipoAnexo">Administrativo</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl05_lblDescripcion">ANEXO V - DDJJ INELEGIBILIDAD </span>
+</td><td>
+<a class="btnDescargarAnexo" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCAnexos$gvAnexos$ctl05$btnVerAnexo','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl05_btnVerAnexo" st="">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+<input class="hdnIdAnexo" type="hidden" value="1q/h/CGX/Q9Shg1ODVsjLDNzE|9Hn5qNmJMuNhY5m31CSSOJn0vkoENbk/3IaRCk"/>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl06_lblNombreAnnexo">ANEXO VI - DDJJ CONTRATAR PERSONAS CON DISCAPACIDAD.doc</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl06_lblTipoAnexo">Administrativo</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl06_lblDescripcion">ANEXO VI - DDJJ CONTRATAR PERSONAS CON DISCAPACIDAD</span>
+</td><td>
+<a class="btnDescargarAnexo" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCAnexos$gvAnexos$ctl06$btnVerAnexo','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl06_btnVerAnexo" st="">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+<input class="hdnIdAnexo" type="hidden" value="1q/h/CGX/Q|0zE/fXErX7rPCYPe4/V5E32kL7XjMeikxLYoeRgk|9oCVopLfZDAO"/>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl07_lblNombreAnnexo">ANEXO VII - DDJJ INCUMPLIMIENTOS.doc</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl07_lblTipoAnexo">Administrativo</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl07_lblDescripcion">ANEXO VII - DDJJ INCUMPLIMIENTOS</span>
+</td><td>
+<a class="btnDescargarAnexo" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCAnexos$gvAnexos$ctl07$btnVerAnexo','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl07_btnVerAnexo" st="">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+<input class="hdnIdAnexo" type="hidden" value="1q/h/CGX/Q/Ryt|p/RfVN0ftXBeIUO54pUS22UiCTdGYf2mZ42e3SoNEJmYcyDVV"/>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl08_lblNombreAnnexo">ANEXO VIII. MODALIDAD DEL PROCEDIMIENTO DE SELECCIÓN, FACTURACIÓN Y ELEVACIÓN PARA PAGO.doc</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl08_lblTipoAnexo">Administrativo</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl08_lblDescripcion">ANEXO VIII. MODALIDAD DEL PROCEDIMIENTO DE SELECCIÓN, FACTURACIÓN Y ELEVACIÓN PARA PAGO</span>
+</td><td>
+<a class="btnDescargarAnexo" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCAnexos$gvAnexos$ctl08$btnVerAnexo','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl08_btnVerAnexo" st="">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+<input class="hdnIdAnexo" type="hidden" value="1q/h/CGX/Q9zD1jHAhuateIXHeBmw99Gsk/y5VN1cq|l4fbfViEVzfilSLGm62oD"/>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl09_lblNombreAnnexo">ANEXO XI- PRESENTACIÓN DE MUESTRAS CONST.doc</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl09_lblTipoAnexo">Administrativo</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl09_lblDescripcion">ANEXO XI- PRESENTACIÓN DE MUESTRAS</span>
+</td><td>
+<a class="btnDescargarAnexo" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCAnexos$gvAnexos$ctl09$btnVerAnexo','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl09_btnVerAnexo" st="">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+<input class="hdnIdAnexo" type="hidden" value="1q/h/CGX/Q|nyh8MRgCQ|kSWCVek5NxW5I1DwJfIqU6miw/f7XWTDX4hMIlrJ6Uo"/>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl10_lblNombreAnnexo">ANEXO X-VISITA TECNICA.doc</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl10_lblTipoAnexo">Técnico</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl10_lblDescripcion">ANEXO X-VISITA TECNICA</span>
+</td><td>
+<a class="btnDescargarAnexo" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCAnexos$gvAnexos$ctl10$btnVerAnexo','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl10_btnVerAnexo" st="">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+<input class="hdnIdAnexo" type="hidden" value="1q/h/CGX/Q/f8|tFkB1|DKp58uOF4CMWUVlZ/atAzS5Ncdg7c|J1lbLAh3zwgHOe"/>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl11_lblNombreAnnexo">ESPECIFICACION TECNICA.pdf</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl11_lblTipoAnexo">Técnico</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl11_lblDescripcion">ESPECIFICACIÓN TÉCNICA.</span>
+</td><td>
+<a class="btnDescargarAnexo" href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UCAnexos$gvAnexos$ctl11$btnVerAnexo','')" id="ctl00_CPH1_UCVistaPreviaPliego_UCAnexos_gvAnexos_ctl11_btnVerAnexo" st="">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+<input class="hdnIdAnexo" type="hidden" value="1q/h/CGX/Q/UUTuppaGtgJWDsoIrhW9|XcFe6YFYy0ifL71hnR93rWfs5XJl3RjZ"/>
+</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+</div>
+</div>
+<br/>
+<div class="row">
+<div class="col-md-12">
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4><span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_lblTitulo">Actos administrativos</span></h4>
+<div id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_UpdatePanel6">
+<div class="alert bg-danger" id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_divMensajeError" style="display: none">
+<span class="text-danger" id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_lblMensajeError"></span>
+</div>
+</div>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Documento</th><th scope="col">Número GDE</th><th scope="col">Número especial</th><th scope="col">Fecha vinculación</th><th scope="col">Opciones</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl02_lblDocumento">Autorización pliego</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl02_lblNumeroSade">DI-2026-90162164-APN-HMRM#EA</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl02_lblNumeroEspecial">DI-2026-126-HMRM#EA</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl02_lblFechaVinculacion">16/09/2026</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_ActosAdministrativos$gvActosAdministrativos$ctl02$btnVer','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl02_btnVer" title="Ver">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl03_lblDocumento">Autorización llamado</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl03_lblNumeroSade">DI-2026-90162164-APN-HMRM#EA</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl03_lblNumeroEspecial">DI-2026-126-HMRM#EA</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl03_lblFechaVinculacion">16/09/2026</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_ActosAdministrativos$gvActosAdministrativos$ctl03$btnVer','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_gvActosAdministrativos_ctl03_btnVer" title="Ver">
+<span class="glyphicon glyphicon-download"></span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<h4>Circulares</h4>
+<div class="table-responsive">
+<div>
+<table cellspacing="0" class="table table-hover table-striped table-condensed" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares" style="border-collapse:collapse;">
+<thead>
+<tr class="tr-header">
+<th scope="col">Nº</th><th scope="col">Fecha de publicación</th><th scope="col">Tipo</th><th scope="col">Acciones</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares_ctl02_lblNumero">1</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares_ctl02_lblFechaPublicacion">18/09/2026</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares_ctl02_lblTipo">Con consulta</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_Circulares$gvCirculares$ctl02$btnVerCircular','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares_ctl02_btnVerCircular" onclick="javascript:VerCircularCiudadano('N8jBG/m/v4OlUug2TlzS0J6GWiXK1oY0' );return false;" title="Ver Circular">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr><tr>
+<td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares_ctl03_lblNumero">2</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares_ctl03_lblFechaPublicacion">01/10/2026</span>
+</td><td>
+<span id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares_ctl03_lblTipo">Sin consulta</span>
+</td><td>
+<a href="javascript:__doPostBack('ctl00$CPH1$UCVistaPreviaPliego$UC_Circulares$gvCirculares$ctl03$btnVerCircular','')" id="ctl00_CPH1_UCVistaPreviaPliego_UC_Circulares_gvCirculares_ctl03_btnVerCircular" onclick="javascript:VerCircularCiudadano('N8jBG/m/v4PqY|s5quRzOt|FOnF06fi3' );return false;" title="Ver Circular">
+<span class="glyphicon glyphicon-search"></span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+<div class="pull-right">
+</div>
+</div>
+</div>
+<br/>
+</div>
+<div class="row">
+<div class="col-md-12">
+<a class="btn btn-default" href="javascript:__doPostBack('ctl00$CPH1$lnkVolver','')" id="ctl00_CPH1_lnkVolver">Volver</a>
+<div class="pull-right">
+<a class="btn btn-primary" href="javascript:__doPostBack('ctl00$CPH1$lnkImprimir','')" id="ctl00_CPH1_lnkImprimir" onclick="javascript:printDiv('divImprimir');">Imprimir</a>
+</div>
+</div>
+</div>
+<br/>
+</div>
+<input id="ctl00_CPH1_PopupHistorialWS" name="ctl00_CPH1_PopupHistorialWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+
+
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupHistorial_PW-1" style="border-collapse:collapse;border-collapse:separate;position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupHistorial',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupHistorial',-1)" style="height:575px;width:850px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupHistorial_CLW-1" style="height:575px;width:850px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupHistorial_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupHistorial',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupHistorial_PWH-1T" style="width:100%;"></td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupHistorial_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupHistorial',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupHistorial_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupHistorial_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;">  </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table><div class="dxpcModalBackground" id="ctl00_CPH1_PopupHistorial_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_PopupVistaActAdmWS" name="ctl00_CPH1_PopupVistaActAdmWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupVistaActAdm_PW-1" style="border-collapse:collapse;border-collapse:separate;position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupVistaActAdm',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupVistaActAdm',-1)" style="height:600px;width:920px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupVistaActAdm_CLW-1" style="height:600px;width:920px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupVistaActAdm_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupVistaActAdm',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupVistaActAdm_PWH-1T" style="width:100%;"></td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupVistaActAdm_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupVistaActAdm',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupVistaActAdm_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupVistaActAdm_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;">  </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table><div class="dxpcModalBackground" id="ctl00_CPH1_PopupVistaActAdm_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_PopupVistaCircularWS" name="ctl00_CPH1_PopupVistaCircularWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupVistaCircular_PW-1" style="border-collapse:collapse;border-collapse:separate;position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupVistaCircular',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupVistaCircular',-1)" style="height:750px;width:800px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupVistaCircular_CLW-1" style="height:750px;width:800px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupVistaCircular_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupVistaCircular',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupVistaCircular_PWH-1T" style="width:100%;"></td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupVistaCircular_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupVistaCircular',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupVistaCircular_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupVistaCircular_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;">  </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table><div class="dxpcModalBackground" id="ctl00_CPH1_PopupVistaCircular_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_PopupDictamenPreAdjudicacionWS" name="ctl00_CPH1_PopupDictamenPreAdjudicacionWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_PW-1" style="border-collapse:collapse;border-collapse:separate;position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupDictamenPreAdjudicacion',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupDictamenPreAdjudicacion',-1)" style="height:640px;width:770px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_CLW-1" style="height:640px;width:770px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupDictamenPreAdjudicacion',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_PWH-1T" style="width:100%;">Dictamen de evaluación de ofertas</td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupDictamenPreAdjudicacion',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;"> </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table><div class="dxpcModalBackground" id="ctl00_CPH1_PopupDictamenPreAdjudicacion_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_PopupDictamenPreseleccionWS" name="ctl00_CPH1_PopupDictamenPreseleccionWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupDictamenPreseleccion_PW-1" style="border-collapse:collapse;border-collapse:separate;position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupDictamenPreseleccion',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupDictamenPreseleccion',-1)" style="height:640px;width:770px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupDictamenPreseleccion_CLW-1" style="height:640px;width:770px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupDictamenPreseleccion_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupDictamenPreseleccion',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupDictamenPreseleccion_PWH-1T" style="width:100%;">Dictamen de preselección</td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupDictamenPreseleccion_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupDictamenPreseleccion',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupDictamenPreseleccion_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupDictamenPreseleccion_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;"> </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table><div class="dxpcModalBackground" id="ctl00_CPH1_PopupDictamenPreseleccion_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_PopupCertificadoOfertaWS" name="ctl00_CPH1_PopupCertificadoOfertaWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupCertificadoOferta_PW-1" style="border-collapse:collapse;border-collapse:separate;position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupCertificadoOferta',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupCertificadoOferta',-1)" style="height:640px;width:770px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupCertificadoOferta_CLW-1" style="height:640px;width:770px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupCertificadoOferta_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupCertificadoOferta',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupCertificadoOferta_PWH-1T" style="width:100%;">Certificado de oferta</td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupCertificadoOferta_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupCertificadoOferta',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupCertificadoOferta_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupCertificadoOferta_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;"> </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table><div class="dxpcModalBackground" id="ctl00_CPH1_PopupCertificadoOferta_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_PopupVistaItemWS" name="ctl00_CPH1_PopupVistaItemWS" type="hidden" value="0:0:-1:0:0:0:0:0:"/>
+<div id="ctl00_CPH1_PopupVistaItem_PW-1" style="position:absolute;left:0px;top:0px;z-index:10000;visibility:hidden;display:none;">
+<table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupVistaItem_PWST-1" style="border-collapse:collapse;border-collapse:separate;position:relative;">
+<tbody><tr>
+<td class="dxpcControl" onmousedown="aspxPWMDown(event,'ctl00_CPH1_PopupVistaItem',-1,false)" onmousemove="aspxPWMMove(event,'ctl00_CPH1_PopupVistaItem',-1)" style="height:500px;width:750px;cursor:default;"><table cellpadding="0" cellspacing="0" id="ctl00_CPH1_PopupVistaItem_CLW-1" style="height:500px;width:750px;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcHeader" id="ctl00_CPH1_PopupVistaItem_PWH-1" onmousedown="aspxPWDGMDown(event,'ctl00_CPH1_PopupVistaItem',-1)" style="cursor:move;padding-left:12px;padding-right:2px;padding-top:2px;padding-bottom:2px;-moz-user-select:none;"><table cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpc" id="ctl00_CPH1_PopupVistaItem_PWH-1T" style="width:100%;">Vista Previa Item</td><td style="padding-left:4px;"><table cellpadding="0" cellspacing="0" style="border-collapse:collapse;border-collapse:separate;">
+<tbody><tr>
+<td class="dxpcCloseButton" id="ctl00_CPH1_PopupVistaItem_HCB-1" onclick="aspxPWCBClick('ctl00_CPH1_PopupVistaItem',-1)" onmousedown="return aspxPWCBMDown(event);" style="cursor:pointer;"><img alt="[Close]" id="ctl00_CPH1_PopupVistaItem_HCB-1Img" src="/DXR.axd?r=1_7" style="height:14px;width:15px;"/></td>
+</tr>
+</tbody></table></td>
+</tr>
+</tbody></table></td>
+</tr><tr>
+<td class="dxpcContent" id="ctl00_CPH1_PopupVistaItem_PWC-1" style="height:100%;border-top-width:0px;padding-left:0px;padding-right:0px;padding-top:0px;padding-bottom:0px;"> </td>
+</tr>
+</tbody></table></td><td style="background:url('/DXR.axd?r=1_71') no-repeat left top;"></td>
+</tr><tr>
+<td style="background:url('/DXR.axd?r=1_73') no-repeat left top;"></td><td><img alt="" src="/DXR.axd?r=1_72" style="height:5px;width:5px;"/></td>
+</tr>
+</tbody></table>
+</div><div class="dxpcModalBackground" id="ctl00_CPH1_PopupVistaItem_DXPWMB-1" style="position:absolute;visibility:hidden;left:0px;top:0px;z-index:9999;">
+</div>
+<input id="ctl00_CPH1_hdnPliegoEncriptado" name="ctl00$CPH1$hdnPliegoEncriptado" type="hidden" value="BELEIkO5S6s="/>
+<input id="ctl00_CPH1_hdnActoAdm" name="ctl00$CPH1$hdnActoAdm" type="hidden" value="CJXcO6OOZOUtBvuOvF019Q=="/>
+
+<input id="ctl00_CPH1_VistaGEDO" name="ctl00$CPH1$VistaGEDO" type="hidden"/>
+</section>
+
+
+
+<footer>
+<div class="footer">
+<div class="container">
+<div class="col-md-2 imgLogo">
+
+<img alt="Jefatura de Gabinete de Ministros - Argentina" src="../Imagenes/Logos/jefatura.png" style="border-style:None;width:200px;"/>
+</div>
+<div class="col-md-2 lblFooter lblFooterLeft">
+<span id="ctl00_pie_lblSecretaria" style="display:inline-block;width:140px;">Secretaría Ejecutiva</span>
+</div>
+<div class="col-md-2 lblFooter">
+<span id="ctl00_pie_lblContrataciones" style="display:inline-block;width:140px;">Oficina Nacional de Contrataciones</span>
+</div>
+<div class="col-md-3 imgLogo imgLogoLeft">
+</div>
+<div class="col-md-3 links-externos">
+
+<div class="row">
+
+<div class="col-md-12">
+<span>Presidencia de la nación</span>
+</div>
+
+<div class="col-md-12 margin-top-2">
+<span class="footer-version" id="ctl00_pie_lblNombreserver">PRDFINMSAPPB08</span>
+<span class="footer-version" id="ctl00_pie_Label1">
+                                v 1.1.932_COMPRAR</span>
+</div>
+
+<div class="col-md-12 margin-top-2">
+<a href="javascript:__doPostBack('ctl00$pie$LinkButton1','')" id="ctl00_pie_LinkButton1">Avisos sobre Navegadores</a>
+</div>
+<div class="col-md-12 margin-top-2">
+<a href="javascript:__doPostBack('ctl00$pie$LinkButton2','')" id="ctl00_pie_LinkButton2">Términos y Condiciones de Uso</a>
+</div>
+<div class="col-md-12 margin-top-2">
+<a href="javascript:__doPostBack('ctl00$pie$LinkButton3','')" id="ctl00_pie_LinkButton3">Preguntas Frecuentes</a>
+</div>
+<div class="col-md-12 margin-top-2">
+<span class="glyphicon glyphicon-send"></span> 
+                            <span id="ctl00_pie_lblTextIncidencias">Envíenos por favor un ticket</span>
+<a href="https://incidencias.innovacion.gob.ar/servicedesk/customer/portal/6" id="ctl00_pie_linkIncidencias" target="_blank"> aquí</a>
+</div>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</footer>
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" data-backdrop="static" data-keyboard="false" id="modalAvisoNavegadores" role="dialog" tabindex="-2">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header" id="ctl00_pie_div1">
+<button aria-hidden="true" class="close" data-dismiss="modal" type="button">×</button>
+<h4 class="modal-title">Aviso sobre Navegadores</h4>
+</div>
+<div class="modal-body" data-backdrop="static" data-keyboard="false">
+<div class="container-fluid">
+                    Para brindar la mejor calidad y velocidad de navegación nuestro sitio está desarrollado en función de las últimas versiones de los navegadores:
+                    <div class="col-md-6 col-md-offset-3">
+<div class="container-fluid">
+<div class="carousel slide" data-ride="carousel" id="carouselnav">
+<div class="carousel-inner">
+<div class="item active">
+<img alt="Navegadores" id="ctl00_pie_imgCarrousel" src="/App_Themes/bastrap/images/navegadores.jpg" style="border-style:None;"/>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div aria-hidden="true" aria-labelledby="myModalLabel" class="modal" data-backdrop="static" data-keyboard="false" id="modalTerminosYCondiciones" role="dialog" tabindex="-2">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<button aria-hidden="true" class="close" data-dismiss="modal" type="button">×</button>
+<p><u>DI-2016-29-E-APN-ONC#MM – ANEXO II</u></p>
+<h4 class="modal-title">POLÍTICAS, TÉRMINOS Y CONDICIONES DE USO DEL SISTEMA (PTCUS) COMUNES A TODOS LOS USUARIOS</h4>
+</div>
+<div class="modal-body" style="height: 500px; overflow-y: auto; text-align: justify;">
+<p>Artículo 1°.- Encuadre Jurídico</p>
+<p>El acceso y/o uso al Sistema Electrónico de Contrataciones de la Administración Nacional denominado COMPR.AR., se efectúa en el marco de lo normado por los artículos 21 y 22 del Decreto Delegado Nº 1023/01, el artículo 33 del reglamento del Régimen de Contrataciones de la Administración Nacional aprobado por el Decreto Nº 893/12, las Políticas, Términos y Condiciones de Uso del Sistema y las Condiciones Particulares que en el futuro puedan complementarlas, sustituirlas o modificarlas. </p>
+<p>Artículo 2°.- Aceptación </p>
+<p>Desde el momento de acceso y/o uso del COMPR.AR, se considera que el usuario acepta plenamente y sin reserva alguna, las Políticas, Términos y Condiciones así como las Condiciones Particulares de uso del sistema que pudieran dictarse, adhiriendo en forma inmediata a todas y cada de una ellas. </p>
+<p>Artículo 3°.- Acceso</p>
+<p>El acceso a COMPR.AR es público y gratuito, y se realiza a través de Internet, en el sitio cuya página principal se encuentra ubicada en <a>https://comprar.gob.ar</a> o aquella que en un futuro la reemplace. El Usuario deberá contar con un equipo y programas informáticos que cumplan con los requisitos mínimos de compatibilidad con el sistema (acceso por internet; navegadores Internet Explorer; Mozilla Firefox o Google Chrome). El Usuario toma conocimiento que cuando su equipo o programas de computación no reúnan tales requisitos mínimos, no podrá tener acceso al sistema y/o se podrá bloquear su acceso. </p>
+<p>Artículo 4°.- Términos </p>
+<p>A los efectos de las presentes Políticas, Términos y Condiciones, se entenderá que:</p>
+<p><u>COMPR.AR</u></p>
+<p>Constituye el Sistema Electrónico de Contrataciones de la Administración Nacional a través del cual las jurisdicciones y entidades de la Administración Pública Nacional comprendidas en el artículo 2º del Decreto Delegado Nº 1023/01 y sus modificaciones efectuarán en forma electrónica todos los procedimientos prescriptos en el Reglamento del Régimen de Contrataciones de la Administración Nacional, aprobado por el Decreto Nº 893/12 y sus modificaciones.</p>
+<p><a>https://comprar.gob.ar</a></p>
+<p>Es el portal sobre el que se gestiona el COMPR.AR y a través del cual se difunden las convocatorias y las restantes etapas de los procedimientos de selección. El acceso a este portal es público y gratuito. </p>
+<p>Asimismo, es medio válido de todas las notificaciones entre la jurisdicción o entidad contratante y los interesados, oferentes, adjudicatarios o cocontratantes que deban realizarse durante los procedimientos de selección. </p>
+<p><u>USUARIOS DEL PROVEEDOR:</u></p>
+<p>Es la persona humana que utiliza el COMPR.AR en representación de la persona humana o jurídica inscripta en el Sistema de Información de Proveedores que administra la OFICINA NACIONAL DE CONTRATACIONES, conforme el procedimiento de autenticación de los usuarios de los proveedores obrante en el Anexo III de la presente medida. </p>
+<p><u>USUARIOS COMPRADORES:</u></p>
+<p>Es la persona humana designada por la Unidad Operativa de Contrataciones, en adelante UOC, como responsable de la utilización del COMPR.AR, de acuerdo a los roles otorgados conforme al procedimiento de Administradores de Perfiles y Usuarios de la Administración obrante en los Anexos IV y V. </p>
+<p><u>SISTEMA DE INFORMACION DE PROVEEDORES:</u></p>
+<p>El Sistema de Información de Proveedores (SIPRO) que administra la OFICINA NACIONAL DE CONTRATACIONES se incorpora también al sistema COMPR.AR. Este sistema tiene por objeto registrar información relativa a los proveedores, sus antecedentes, historial de procedimientos de selección en los que se hubieren presentado como oferentes, historial de contratos, órdenes de compra o venta, incumplimientos contractuales y extra-contractuales, en ambos casos por causas imputables al proveedor, sanciones de apercibimiento, suspensión e inhabilitación y toda otra información que la OFICINA NACIONAL DE CONTRATACIONES considere de utilidad. </p>
+<p><u>PROTECCIÓN DE LA INFORMACIÓN CONTENIDA EN EL PORTAL:</u></p>
+<p>Toda la información elaborada o disponible en, o a través del COMPR.AR, se encuentra protegida como propiedad intelectual. Está prohibido a todos los usuarios modificar, copiar, transmitir, vender, distribuir, exhibir, publicar, licenciar, crear trabajos derivados, o usar, en general, el contenido disponible en o a través del COMPR.AR para fines comerciales y otros. </p>
+<p><u>USO ADECUADO DE COMPR.AR:</u></p>
+<p>El usuario que ingresa al COMPR.AR, se compromete a utilizar el mismo en forma lícita y de acuerdo a las presentes PTCUS. Se encuentra prohibido a los usuarios, la realización de actos maliciosos o que atenten contra el sitio, o que de alguna manera puedan dañar, inutilizar, sobrecargar, deteriorar, impedir o limitar la utilización de todas o algunas de las funcionalidades del mismo.</p>
+<p><u>RESPONSABILIDAD POR CLAVES DE USUARIO:</u></p>
+<p>Los usuarios de COMPR.AR no pueden ceder, transferir o comunicar bajo ninguna circunstancia sus claves y nombres de usuarios, haciéndose plenamente responsables por los actos, documentos, anexos, ofertas, y demás antecedentes que bajo esas claves y nombres de usuario, ingresen al COMPR.AR. Además, los usuarios asumen la obligación de cambiar sus claves frecuentemente, las que se debe evitar que sean evidentes y/o simples. </p>
+<p><u>RESPONSABILIDAD:</u></p>
+<p>El Gobierno Nacional no se responsabiliza por los daños y/o perjuicios derivados del acceso y/o uso de los contenidos publicados en el sitio <a>https://comprar.gob.ar</a> o en el que en un futuro lo reemplace. </p>
+<p>El Gobierno Nacional no se responsabiliza por las interrupciones de este servicio, ni por cualquier inconveniente originado en causas ajenas que impidan el acceso. </p>
+<p>La veracidad e integridad de la totalidad de la información y contenido de los documentos publicados son de exclusiva responsabilidad de los usuarios que los publican y envían, de acuerdo a las claves de acceso bajo las cuales actúen. </p>
+<p>El Gobierno Nacional no es responsable por la interrupción en la recepción de correos electrónicos por parte del usuario-proveedor. </p>
+<p>El Gobierno Nacional no es responsable de los virus que puedan contener los documentos que adjuntan los usuarios del sitio. Es responsabilidad de cada usuario velar por que los archivos que sube al sitio no tengan virus de ninguna especie. </p>
+<p>Las estadísticas e informes disponibles en el COMPR.AR son meramente referenciales y no comprometen a la OFICINA NACIONAL DE CONTRATACIONES, ni al Gobierno Nacional. </p>
+<p><u>SUSPENSIÓN O ELIMINACIÓN DE USUARIOS:</u></p>
+<p>La OFICINA NACIONAL DE CONTRATACIONES se reserva el derecho de suspender y/o eliminar unilateral y automáticamente del COMPR.AR a los usuarios que incumplan las PTCUS. </p>
+<p><u>CENTRO DE CONTACTO. MESA DE AYUDA TELEFÓNICA:</u></p>
+<p>La OFICINA NACIONAL DE CONTRATACIONES establecerá para todos los usuarios del COMPR.AR un centro de contacto que contará con una mesa de ayuda telefónica y vía correo electrónico. Esta mesa de ayuda atenderá las consultas de los usuarios sobre el funcionamiento del COMPR.AR.</p>
+<p>Artículo 5°.- Usuarios de los proveedores </p>
+<p><u>CORREOS ELECTRÓNICOS ENVIADOS POR COMPR.AR. A PROVEEDORES:</u></p>
+<p>Los usuarios proveedores aceptan recibir permanentemente correos electrónicos relativos a procedimientos de selección y demás información relevante, a la dirección de correo informada por ellos en el SIPRO. </p>
+<p>El sitio <a>https://comprar.gob.ar</a> o el que en un futuro lo reemplace es el medio obligatorio de difusión de las convocatorias y de las restantes etapas de los procedimientos de selección, sin perjuicio de las demás formas de difusión y publicidad que la reglamentación vigente determina.</p>
+<p>Los correos electrónicos enviados por el COMPR.AR solo constituyen un medio de aviso. </p>
+<p>Se recomienda a los proveedores, revisar periódicamente el COMPR.AR –en particular Escritorio del Proveedor– para informarse de las novedades vinculadas a las etapas, desarrollo del proceso de contratación electrónica y demás información relevante, como así también consultar las demás formas de difusión y publicidad que la reglamentación vigente determina.</p>
+<p><u>LIBERACIÓN DE RESPONSABILIDAD:</u></p>
+<p>Los usuarios proveedores deben velar por la seriedad de las ofertas ingresadas al COMPR.AR, siendo plenamente responsables por las mismas. </p>
+<p>Los usuarios proveedores deberán aceptar que el Gobierno Nacional carece de toda responsabilidad por los resultados que obtengan en cada uno de los procedimientos de selección electrónicos en que participen. </p>
+<p>Los usuarios proveedores liberan al Gobierno Nacional de cualquier responsabilidad derivada de la dilación o no envío oportuno de correos electrónicos de alerta, declarando conocer que el medio de notificación es la difusión que cada Usuario Comprador efectúa en el portal <a>https://comprar.gob.ar</a> o en el que en un futuro lo reemplace. La no recepción oportuna de correos electrónicos de alerta que envía el COMPR.AR, no justificará, ni se considerará como causal suficiente para eximir a los proponentes de sus cargas y responsabilidades. </p>
+<p><u>POLÍTICAS DE PRIVACIDAD:</u></p>
+<p>Los usuarios de COMPR.AR aceptan, por el sólo hecho de su inscripción o registro en el sitio, que los datos, antecedentes e información aportados en las diversas etapas de los procedimientos en que participan, sean de público conocimiento en el ámbito de las transacciones que se efectúan en él y que sólo están disponibles públicamente para esos efectos. Asimismo, los usuarios de COMPR.AR, por el sólo hecho de su inscripción otorgan su conformidad para que los resultados de los procedimientos de selección en que participen y las respectivas contrataciones, formen parte de las estadísticas e informes, se procesen y se publiquen por parte del Gobierno Nacional.</p>
+<p>Cuando se solicite por parte de terceros acceso a información que pudiese afectar derechos de los usuarios proveedores, tales como los relacionados con su vida privada o derechos de carácter económico o comercial, se procederá en un todo conforme a la Ley Nº 25.326 de “Protección de Datos Personales” modificada por la Ley Nº 26.343 y reglamentada por el Decreto Nº 1558/2001 modificado por el Decreto 1160/2010, el Decreto Nº 1172/2003 de “Acceso a la Información Pública” y el Decreto N° 117/2016 “Plan de Apertura de Datos”. </p>
+<p><u>DECLARACIÓN:</u></p>
+<p>Los usuarios de COMPR.AR declaran conocer y aceptar la circunstancia relativa a que la OFICINA NACIONAL DE CONTRATACIONES, puede en cualquier momento modificar todo o parte de las presentes PTCUS, que serán oportunamente publicadas en el portal de COMPR.AR. </p>
+<p><u>USUARIOS COMPRADORES:</u></p>
+<p>El usuario-comprador es responsable de la información que se difunda y debe procurar que su contenido se adapte a las previsiones contempladas por la normativa vigente. Queda estrictamente prohibido a los usuarios compradores realizar cualquier uso de COMPR.AR ajeno al marco del proceso de contrataciones públicas electrónicas. Los Organismos de Control están autorizados a utilizar el COMPR.AR con el objeto de asegurar el correcto desempeño de los distintos procesos y velar por su transparencia. </p>
+<p><u>LÍMITE DE RESPONSABILIDAD DEL COMPR.AR SOBRE EL PROCESO DE SELECCION:</u></p>
+<p>El COMPR.AR es un medio que facilita la realización de los procedimientos de selección sin garantizar la seriedad e idoneidad de las ofertas recibidas, las que deben ser evaluadas por cada usuario comprador, y en su caso, por la Comisión Evaluadora de Ofertas.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+
+<input name="DXScript" type="hidden" value="1_103,1_100,1_83"/></form>
+</body></html>

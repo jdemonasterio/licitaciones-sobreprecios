@@ -1,0 +1,45 @@
+# Clase SIByS (lo que va antes del ";" en las descripciones de COMPR.AR) -> productos del catálogo permitidos.
+#
+# Regla (juez externo 2026-10-11 + decisión del prime P7): una descripción con clase SIByS SOLO puede
+# machear con un producto de su lista. Clase que no está acá = no se compara (atributo crítico desconocido).
+# Casos reales que motivaron esto: "MEDIOS DE CULTIVO Y SUPLEMENTO; ... AGAR HIERRO TRIPLE AZUCAR" caía
+# como azúcar; "FLANES" como dulce de leche; "VERDURAS Y HORTALIZAS" (frescas) como choclo en conserva.
+
+clases:
+  AGUA MINERAL: [agua_mineral, agua_bidon]
+  ARROZ: [arroz_blanco]
+  AZUCAR: [azucar]
+  YERBA MATE: [yerba_mate]
+  YERBAS: [yerba_mate]
+  LEGUMBRES: [arvejas_secas, arvejas_conserva, lentejas, porotos]
+  CONSERVAS PESCADO Y FRUTOS MAR: [atun_conserva, caballa_conserva, merluza_conserva]
+  CONSERVAS DE CARNE: [picadillo_carne, carne_conserva]
+  CONSERVAS DE HORTALIZAS: [choclo_conserva, arvejas_conserva, pure_tomate]
+  CONSERVAS DE VERDURAS: [choclo_conserva, arvejas_conserva, pure_tomate]
+  SALSAS: [pure_tomate]
+  CACAO: [cacao_polvo]
+  LIMPIADORES: [detergente, lavandina]
+  DESINFECTANTES Y DETERGENTES: [detergente, lavandina]
+  LAVANDINA: [lavandina]
+  FIDEOS SECOS: [fideos_secos]
+  PASTAS SECAS: [fideos_secos]
+  GALLETITAS: [galletitas_agua]
+  ARTICULOS DE TOCADOR: [jabon_tocador]
+  JABONES: [jabon_tocador, jabon_polvo]
+  JABON EN POLVO: [jabon_polvo]
+  LECHE: [leche_entera_fluida, leche_polvo_entera]
+  PAN DULCE: [pan_dulce]
+  SAL DE MESA: [sal_fina]
+  HARINAS: [harina_trigo_000, harina_trigo_0000, harina_maiz]
+  HARINA: [harina_trigo_000, harina_trigo_0000, harina_maiz]
+  ACEITES COMESTIBLES: [aceite_girasol, aceite_mezcla]
+  ACEITE COMESTIBLE: [aceite_girasol, aceite_mezcla]
+  DULCES: [dulce_leche]
+  DULCE DE LECHE: [dulce_leche]
+  PAPEL PARA IMPRESORA: [resma_a4]
+  PAPEL OBRA: [resma_a4]
+  RESMAS: [resma_a4]
+  # Sin productos comparables a propósito (frescos, laboratorio, postres):
+  VERDURAS Y HORTALIZAS: []
+  MEDIOS DE CULTIVO Y SUPLEMENTO: []
+  FLANES: []

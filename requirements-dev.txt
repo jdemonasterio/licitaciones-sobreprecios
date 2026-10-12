@@ -1,0 +1,3 @@
+-r requirements.txt
+# Simulador de punta a punta (tests/e2e, scripts/simular.py). Después: python -m playwright install chromium
+playwright>=1.40

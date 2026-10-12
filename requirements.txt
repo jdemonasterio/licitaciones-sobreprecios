@@ -1,0 +1,18 @@
+# Lo que el código importa directamente. Python 3.12.
+fastapi>=0.115
+uvicorn[standard]>=0.30
+jinja2>=3.1
+python-multipart>=0.0.9      # formularios del webui
+httpx>=0.27                  # descargas (BO, COMPR.AR, precios)
+PyYAML>=6.0
+click>=8.1
+python-dotenv>=1.0
+openai>=1.50                 # LLM barato (gpt-6-luna)
+google-genai>=1.0            # LLM para PDFs (gemini flash)
+beautifulsoup4>=4.12         # HTML de avisos y supermercados
+rapidfuzz>=3.5               # matching difuso de descripciones
+pdfplumber>=0.11             # texto de PDFs antes de pagar LLM
+openpyxl>=3.1                # export XLSX de reportes
+xlrd>=2.0                    # planillas .xls de INDEC
+pytest>=8.0
+zstandard>=0.22         # archivo histórico SEPA (.tar.zst)

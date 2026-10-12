@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Sobreprecios en compras del Estado{% endblock %}</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/vendor/chart.umd.min.js"></script>
+    <!-- Regla del webui: una acción del backend nunca recarga
+         la página ni borra lo que estás haciendo. soft-nav.js manda los POST por fetch y
+         refresca <main data-soft-root> en el lugar. -->
+    <script src="/static/soft-nav.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="brand">Sobreprecios</a>
+        <div class="nav-links">
+            {% set path = request.url.path %}
+            <a href="/" class="{% if path == '/' or path.startswith('/licitacion') %}active{% endif %}">Licitaciones</a>
+            <a href="/analitica" class="{% if path.startswith('/analitica') or path.startswith('/producto') %}active{% endif %}">Analítica</a>
+            <a href="/empresas" class="{% if path.startswith('/empresa') %}active{% endif %}">Empresas</a>
+            <a href="/reportes" class="{% if path.startswith('/reportes') %}active{% endif %}">Reportes</a>
+            <a href="/fuentes" class="{% if path.startswith('/fuentes') %}active{% endif %}">Datos y fuentes</a>
+        </div>
+        <a href="/investigar" class="btn btn-primary nav-cta">＋ Investigar una licitación</a>
+    </nav>
+    <main class="container" id="soft-root" data-soft-root>
+        {% block content %}{% endblock %}
+        {# Banner de jobs en background: la página consulta /jobs/<nombre> y se refresca sola al terminar. #}
+        <div id="job-watch" data-jobs="{% block jobs %}datos,investigar,reporte{% endblock %}" hidden></div>
+    </main>
+    <footer class="container no-print" style="padding-top:0">
+        <details id="reportar" class="card">
+            <summary>🐞 Reportar un problema (arma el texto para pegarle a Claude)</summary>
+            <p class="small muted">Contá qué esperabas y qué pasó. El botón copia todo junto con la dirección de esta
+            página. Después pegalo en Claude Code y, si podés, agregá una captura (Win + Shift + S).</p>
+            <label>Qué esperaba</label><textarea id="rep-esperaba" style="min-height:60px" data-soft-skip></textarea>
+            <label style="margin-top:6px">Qué pasó</label><textarea id="rep-paso" style="min-height:60px" data-soft-skip></textarea>
+            <div style="margin-top:8px;display:flex;gap:8px;align-items:center">
+                <button type="button" class="btn btn-primary" id="rep-copiar">Copiar texto para Claude</button>
+                <span class="small muted" id="rep-ok"></span>
+            </div>
+        </details>
+    </footer>
+    <script data-soft-once>
+    (function () {
+        function texto() {
+            const v = id => (document.getElementById(id) || {}).value || '';
+            return ['Problema en la herramienta de sobreprecios',
+                    'Página: ' + location.href,
+                    'Pantalla: ' + document.title,
+                    'Fecha y hora: ' + new Date().toLocaleString('es-AR'),
+                    'Tamaño de ventana: ' + window.innerWidth + 'x' + window.innerHeight,
+                    'Qué esperaba: ' + v('rep-esperaba'),
+                    'Qué pasó: ' + v('rep-paso'),
+                    '',
+                    'Pedido a Claude: revisá este problema, explicame la causa, corregilo y corré `python -m pytest -q` y el simulador (simular.bat).'
+                   ].join('\n');
+        }
+        document.addEventListener('click', async (ev) => {
+            if (!ev.target || ev.target.id !== 'rep-copiar') return;
+            const t = texto();
+            const ok = document.getElementById('rep-ok');
+            try { await navigator.clipboard.writeText(t); ok.textContent = 'Copiado. Pegalo en Claude Code.'; }
+            catch (e) { window.prompt('Copiá este texto (Ctrl+C):', t); }
+        });
+    })();
+    </script>
+    <script data-soft-once>
+    (function () {
+        let lastRunning = {};
+        // Un job puede empezar y terminar entre dos consultas (simulador, 2026-10-11): además del
+        // paso corriendo→terminado, se avisa cualquier job que terminó después de cargar/refrescar la página.
+        // Foto del último 'finished_at' de cada job al cargar/refrescar la página: solo se avisa
+        // un job que termine DESPUÉS (nunca el de otra página que terminó antes).
+        let baseline = {};
+        const notified = {};
+        async function snapshot() {
+            const watch = document.getElementById('job-watch');
+            const names = (watch && watch.dataset.jobs || '').split(',').filter(Boolean);
+            const fresh = {};
+            for (const name of names) {
+                try { const st = await (await fetch('/jobs/' + name)).json(); fresh[name] = st.running ? 'running' : (st.finished_at || null); }
+                catch (e) { fresh[name] = null; }
+            }
+            baseline = fresh;
+        }
+        document.addEventListener('softnav:swapped', () => { snapshot(); });
+        function banner() {
+            let el = document.getElementById('job-banner');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'job-banner';
+                el.className = 'banner no-print';
+                const root = document.querySelector('[data-soft-root]');
+                root.insertBefore(el, root.firstChild);
+            }
+            return el;
+        }
+        async function poll() {
+            const watch = document.getElementById('job-watch');
+            const names = (watch && watch.dataset.jobs || '').split(',').filter(Boolean);
+            let anyRunning = false;
+            for (const name of names) {
+                let st;
+                try { st = await (await fetch('/jobs/' + name)).json(); } catch (e) { continue; }
+                if (st.running) {
+                    anyRunning = true;
+                    const el = banner();
+                    el.className = 'banner no-print';
+                    el.innerHTML = '<span class="spinner"></span><span></span>';
+                    el.lastChild.textContent = 'Trabajando en segundo plano: ' + (st.progress || name) + ' (podés seguir navegando)';
+                    lastRunning[name] = true;
+                } else if (lastRunning[name] || (st.finished_at && name in baseline && baseline[name] !== st.finished_at
+                                                   && !notified[name + st.finished_at])) {
+                    baseline[name] = st.finished_at;
+                    lastRunning[name] = false;
+                    notified[name + st.finished_at] = true;
+                    const msg = st.error ? ('Error: ' + st.error) : (st.message || 'Listo');
+                    const b = document.getElementById('job-banner');
+                    if (b) b.remove();
+                    SoftNav.load(SoftNav.urlWithMessage(msg));
+                }
+            }
+            if (!anyRunning) {
+                const b = document.getElementById('job-banner');
+                if (b && !Object.values(lastRunning).some(Boolean)) b.remove();
+            }
+            setTimeout(poll, anyRunning ? 2000 : 6000);
+        }
+        // Al cargar: foto del estado y a consultar.
+        snapshot().then(() => poll());
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Datos y fuentes · Sobreprecios{% endblock %}
+{% block content %}
+<h1>Datos y fuentes</h1>
+<p class="muted small">Desde acá se actualiza la base. Todo corre en segundo plano: podés seguir usando la página.
+Lo ya bajado queda guardado y no se vuelve a pagar ni a bajar. Modo de IA: <b>{{ perfil_llm }}</b>
+{% if perfil_llm == 'gratis' %}(plan gratis: más lento, sin costo){% endif %}.</p>
+
+<div class="card">
+<form method="post" action="/fuentes/run">
+    <div class="filters" style="border:0;padding:0;background:none">
+        <div class="field"><label>¿Qué hacer?</label>
+            <select name="accion" data-soft-keep>{% for k, t in acciones.items() %}<option value="{{ k }}">{{ t }}</option>{% endfor %}</select></div>
+        <div class="field"><label>Desde (para el Boletín Oficial)</label><input type="date" name="desde" value="{{ desde_default }}" data-soft-keep></div>
+        <div class="field"><label>Hasta</label><input type="date" name="hasta" value="{{ hasta_default }}" data-soft-keep></div>
+        <button class="btn btn-primary" type="submit">Ejecutar</button>
+    </div>
+</form>
+<div class="help small">Rutina recomendada: una vez por día "Bajar precios de hoy" (arma la historia propia de precios,
+porque no existe un archivo público histórico). Una vez por semana "Buscar en el BO + extraer + machear + comparar" para los
+últimos 60 días.</div>
+</div>
+
+<div class="grid-2">
+<div>
+<h2>Documentos bajados</h2>
+<div class="table-wrap"><table class="small">
+<thead><tr><th>Fuente</th><th class="num">Avisos</th><th>Desde</th><th>Hasta</th></tr></thead>
+<tbody>{% for d in resumen.documentos %}<tr><td>{{ d.fuente }}</td><td class="num">{{ d.n }}</td><td>{{ d.desde }}</td><td>{{ d.hasta }}</td></tr>{% endfor %}</tbody>
+</table></div>
+<h2>Uso de IA</h2>
+<p class="small">{{ resumen.llm.llamadas or 0 }} llamadas ({{ resumen.llm.cache or 0 }} desde cache), {{ resumen.llm.errores or 0 }} con error,
+costo acumulado USD {{ resumen.llm.usd or 0 }}.</p>
+</div>
+<div>
+<h2>Precios de mercado</h2>
+<div class="table-wrap"><table class="small">
+<thead><tr><th>Fuente</th><th>Canal</th><th class="num">Observaciones</th><th class="num">Con producto</th><th>Desde</th><th>Hasta</th></tr></thead>
+<tbody>{% for d in resumen.precios %}<tr><td>{{ d.fuente }}</td><td>{{ d.canal }}</td><td class="num">{{ d.n|num }}</td><td class="num">{{ d.macheados|num }}</td><td>{{ d.desde }}</td><td>{{ d.hasta }}</td></tr>{% endfor %}</tbody>
+</table></div>
+</div>
+</div>
+
+<h2>Últimas corridas</h2>
+<div class="table-wrap"><table class="small">
+<thead><tr><th>#</th><th>Tipo</th><th>Inicio</th><th>Estado</th><th>Resultado</th></tr></thead>
+<tbody>{% for c in corridas %}<tr><td>{{ c.id }}</td><td>{{ c.tipo }}</td><td>{{ (c.started_at or '')[:16]|replace('T', ' ') }}</td>
+<td>{% if c.estado == 'ok' %}<span class="sem sem-verde">ok</span>{% elif c.estado == 'error' %}<span class="sem sem-rojo">error</span>{% else %}<span class="sem sem-gris">{{ c.estado }}</span>{% endif %}</td>
+<td>{{ c.mensaje or '' }}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

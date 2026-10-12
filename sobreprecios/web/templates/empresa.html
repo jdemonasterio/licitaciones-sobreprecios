@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ e.razon_social or e.cuit }} · Sobreprecios{% endblock %}
+{% block jobs %}datos,{{ job_name }}{% endblock %}
+{% block content %}
+<p class="small"><a href="/empresas">← Empresas</a></p>
+<h1>{{ e.razon_social or e.cuit }}</h1>
+<p class="muted">CUIT {{ e.cuit }}{% if e.tipo_societario %} · {{ e.tipo_societario }}{% endif %}
+{% if e.fecha_constitucion %} · constituida {{ e.fecha_constitucion }}{% endif %}</p>
+
+{% if e.domicilio_actual %}<p class="small">Domicilio legal: {{ e.domicilio_actual }}</p>{% endif %}
+{% for a in e.alertas %}<div class="banner"><span class="sem sem-amarillo">Para mirar</span> {{ a }}</div>{% endfor %}
+
+<div class="card">
+    <form method="post" action="/empresa/{{ e.cuit }}/contexto" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <button class="btn btn-primary" type="submit">Buscar contexto en el Boletín Oficial</button>
+        <span class="muted small">Busca la empresa en la segunda sección (sociedades): constitución, designación de
+        autoridades, socios, cambios de domicilio o de nombre. Ojo: solo aparecen sociedades con sede legal en CABA.
+        Los datos del Registro Nacional de Sociedades (todas las provincias) se cargan desde Datos y fuentes. {% if e.contexto_actualizado_at %}Última búsqueda: {{ e.contexto_actualizado_at[:10] }}.{% endif %}</span>
+    </form>
+</div>
+
+{% set vigentes = e.hechos|selectattr('vigente_hasta', 'none')|list %}
+{% set historicos = e.hechos|rejectattr('vigente_hasta', 'none')|list %}
+<div class="grid-2">
+<div class="card">
+    <h3>Hoy (último acto publicado)</h3>
+    {% if vigentes %}
+    <table class="small"><thead><tr><th>Dato</th><th>Persona / valor</th><th>Cargo</th><th>Desde</th><th>Fuente</th></tr></thead>
+    <tbody>{% for h in vigentes %}<tr><td>{{ h.tipo|replace('_', ' ') }}</td><td>{{ h.persona or h.valor or '—' }}{% if h.documento %}<div class="muted">{{ h.documento }}</div>{% endif %}{% if h.confianza is not none and h.confianza < 0.5 %} <span class="tag tag-alerta">baja confianza</span>{% endif %}</td>
+    <td>{{ h.cargo or '' }}</td><td>{{ h.vigente_desde or '—' }}</td>
+    <td>{% if h.fuente_url %}<a href="{{ h.fuente_url }}" target="_blank" rel="noopener">aviso ↗</a>{% else %}{{ h.fuente or '' }}{% endif %}</td></tr>{% endfor %}</tbody></table>
+    {% else %}<p class="muted small">Sin datos todavía. Usá el botón de arriba.</p>{% endif %}
+</div>
+<div class="card">
+    <h3>Personas que también aparecen en otras adjudicatarias</h3>
+    {% if e.vinculos %}
+    <table class="small"><thead><tr><th>Persona</th><th>Otra empresa</th><th>Rol</th><th>Desde</th><th>Coincidencia</th></tr></thead>
+    <tbody>{% for v in e.vinculos %}<tr><td>{{ v.persona }}</td><td><a href="/empresa/{{ v.cuit }}">{{ v.razon_social or v.cuit }}</a></td>
+    <td>{{ v.tipo }} {{ v.cargo or '' }}</td><td>{{ v.vigente_desde or '—' }}</td>
+    <td>{% if v.coincidencia == 'mismo DNI' %}<span class="sem sem-amarillo">mismo DNI</span>{% else %}<span class="tag">{{ v.coincidencia }}</span>{% endif %}</td></tr>{% endfor %}</tbody></table>
+    <p class="muted small">Solo "mismo DNI" identifica a la misma persona. "Mismo nombre" puede ser homonimia: verificar en el aviso.</p>
+    {% else %}<p class="muted small">Ninguna coincidencia con los datos cargados.</p>{% endif %}
+</div>
+</div>
+
+{% if historicos %}
+<details class="card"><summary>Historial ({{ historicos|length }} datos anteriores)</summary>
+<table class="small"><thead><tr><th>Dato</th><th>Persona / valor</th><th>Cargo</th><th>Desde</th><th>Hasta</th><th>Fuente</th></tr></thead>
+<tbody>{% for h in historicos %}<tr><td>{{ h.tipo|replace('_', ' ') }}</td><td>{{ h.persona or h.valor or '—' }}{% if h.confianza is not none and h.confianza < 0.5 %} <span class="tag tag-alerta">baja confianza</span>{% endif %}</td><td>{{ h.cargo or '' }}</td>
+<td>{{ h.vigente_desde or '—' }}</td><td>{{ h.vigente_hasta or '—' }}</td>
+<td>{% if h.fuente_url %}<a href="{{ h.fuente_url }}" target="_blank" rel="noopener">aviso ↗</a>{% endif %}</td></tr>{% endfor %}</tbody></table>
+</details>
+{% endif %}
+
+<h2>Adjudicaciones</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Fecha</th><th>Organismo</th><th>Bien</th><th class="num">Cantidad</th><th class="num">Precio unitario</th><th class="num">Monto</th><th class="num">Brecha</th><th>Semáforo</th></tr></thead>
+<tbody>{% for a in e.adjudicaciones %}
+<tr><td>{{ a.fecha }}</td><td><a href="/licitacion/{{ a.proceso_id }}">{{ a.organismo or '—' }}</a><div class="muted small">{{ a.numero or '' }}</div></td>
+<td>{{ a.descripcion }}</td><td class="num">{{ a.cantidad|num }} <span class="muted small">{{ a.unidad_compra or '' }}</span></td>
+<td class="num">{{ a.precio_unitario|ars(2) }}</td><td class="num">{{ a.monto_total|millones }}</td>
+<td class="num {% if a.sobreprecio_ajustado_pct and a.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}">{{ a.sobreprecio_ajustado_pct|pct }}</td>
+<td><span class="sem sem-{{ a.semaforo or 'gris' }}">{{ SEMAFORO_TXT[a.semaforo or 'gris'] }}</span></td></tr>
+{% endfor %}</tbody></table></div>
+{% endblock %}

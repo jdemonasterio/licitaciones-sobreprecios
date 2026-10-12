@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% block title %}{{ p.numero or p.norma or 'Licitación' }} · Sobreprecios{% endblock %}
+{% block content %}
+<p class="small"><a href="/">← Licitaciones</a></p>
+<h1>{{ p.organismo or 'Organismo sin identificar' }}</h1>
+<p class="muted">{{ p.norma or '' }}{% if p.numero %} · {{ p.numero }}{% endif %}</p>
+
+<div class="grid-2">
+<div class="card">
+    <h3>Contexto del proceso</h3>
+    <dl class="meta-grid">
+        <dt>Procedimiento</dt><dd>{{ (p.tipo_procedimiento or 'sin dato')|replace('_', ' ') }}</dd>
+        <dt>Número</dt><dd>{{ p.numero or 'sin dato' }}</dd>
+        <dt>Fecha</dt><dd>{{ p.fecha_adjudicacion or p.fecha_publicacion or 'sin dato' }}</dd>
+        <dt>Objeto</dt><dd>{{ p.objeto or '—' }}</dd>
+        <dt>Categoría</dt><dd>{{ (p.categoria or '—')|replace('_', ' ') }}</dd>
+        <dt>Monto adjudicado</dt><dd>{{ p.monto_total|ars }}</dd>
+        <dt>Fuente</dt><dd>{% if p.url %}<a href="{{ p.url }}" target="_blank" rel="noopener">Aviso en el Boletín Oficial ↗</a>{% else %}carga manual{% endif %}
+            {% if p.numero and '-' in p.numero %} · <a href="https://comprar.gob.ar/BuscarAvanzado.aspx" target="_blank" rel="noopener">Buscar {{ p.numero }} en COMPR.AR ↗</a>{% endif %}</dd>
+    </dl>
+</div>
+<div class="card">
+    <h3>Revisión humana</h3>
+    <p class="muted small">Antes de mandar un caso a un periodista: abrir el aviso, chequear que el producto, la
+    cantidad y el precio estén bien leídos, y mirar de dónde sale la referencia (desplegando cada renglón).</p>
+    <form method="post" action="/licitacion/{{ p.id }}/revision">
+        <label>Estado</label>
+        <select name="estado">
+        {% for s in ['pendiente','revisado','publicable','descartado'] %}<option {% if p.estado_revision == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+        <label style="margin-top:8px">Nota</label>
+        <textarea name="nota" style="min-height:70px" placeholder="Qué verificaste, dudas, contexto">{{ p.nota_revision or '' }}</textarea>
+        <button class="btn btn-primary" type="submit" style="margin-top:8px">Guardar</button>
+    </form>
+</div>
+</div>
+
+{% if p.alertas_proceso %}
+<h2>Para revisar en este proceso</h2>
+{% for a in p.alertas_proceso %}<div class="banner"><span class="sem sem-amarillo">{{ {'oc_sin_recomendacion':'OC sin recomendación', 'oc_supera_dictamen':'OC mayor que el dictamen', 'prorroga_ampliacion':'Prórroga/ampliación', 'dictamen_incompleto':'Dictamen incompleto'}.get(a.tipo, a.tipo) }}</span>
+ {{ a.proveedor or '' }} {{ a.detalle }}</div>{% endfor %}
+<p class="muted small">Son señales para mirar, no conclusiones: el dictamen recomienda, la autoridad adjudica y las órdenes de
+compra registran el contrato (no lo pagado). Una prórroga puede estar prevista en el pliego.</p>
+{% endif %}
+
+{% if p.ordenes %}
+<h2>Órdenes de compra (contrato) — COMPR.AR</h2>
+<div class="table-wrap"><table class="small">
+<thead><tr><th>Número</th><th>Proveedor</th><th>CUIT</th><th>Fecha</th><th>Tipo</th><th>Estado</th><th class="num">Monto</th></tr></thead>
+<tbody>{% for o in p.ordenes %}<tr><td>{{ o.numero_oc }}</td><td>{{ o.proveedor }}</td><td>{{ o.cuit or '' }}</td><td>{{ o.fecha }}</td>
+<td>{{ o.tipo }}</td><td>{{ o.estado }}</td><td class="num">{{ o.monto|ars }}</td></tr>{% endfor %}</tbody></table></div>
+{% endif %}
+
+<h2>Renglones {% if renglones and renglones[0].extraccion_metodo == 'comprar' %}recomendados en el dictamen{% else %}adjudicados{% endif %}</h2>
+<div class="help">Cada precio se lleva a $/kg, $/litro o $/unidad. La referencia es la misma marca si la norma la nombra;
+si no, el <b>mínimo de mercado</b> del mismo producto (envase igual al licitado cuando la norma lo indica).
+Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plazo de pago del Estado.</div>
+<div class="table-wrap">
+<table>
+<thead><tr>
+    <th>Semáforo</th><th>Bien</th><th>Proveedor</th><th class="num">Cantidad</th><th class="num">Precio unitario</th>
+    <th class="num">Pagó por u. base</th><th class="num">Referencia</th><th class="num">Brecha ajustada</th><th class="num">Exceso</th><th class="num" title="Menor oferta presentada en el mismo renglón; su admisibilidad no está verificada">vs menor oferta presentada</th>
+</tr></thead>
+<tbody>
+{% for r in renglones %}
+<tr data-soft-key="reng:{{ r.id }}">
+    <td><span class="sem sem-{{ r.semaforo or 'gris' }}">{{ SEMAFORO_TXT[r.semaforo or 'gris'] }}</span>
+        {% if r.confianza %}<div class="muted small">confianza {{ r.confianza }}</div>{% endif %}</td>
+    <td>{{ r.descripcion }}{% if r.marca %} <span class="tag">marca {{ r.marca }}</span>{% endif %}
+        {% if r.producto_nombre %}<div class="small muted">→ {{ r.producto_nombre }}</div>{% else %}<div class="small muted">sin producto comparable</div>{% endif %}
+        {% for a in r.alertas_list %}<div><span class="tag tag-alerta">{{ a }}</span></div>{% endfor %}</td>
+    <td class="small">{% if r.proveedor_cuit %}<a href="/empresa/{{ r.proveedor_cuit }}">{{ r.proveedor or r.proveedor_cuit }}</a><div class="muted">{{ r.proveedor_cuit }}</div>{% else %}{{ r.proveedor or '—' }}{% endif %}</td>
+    <td class="num">{{ r.cantidad|num }} <span class="muted small">{{ r.unidad_compra or '' }}</span></td>
+    <td class="num">{{ r.precio_unitario|ars(2) }}</td>
+    <td class="num">{{ r.precio_unidad_base|ars(2) }}<span class="muted small">/{{ r.unidad_base or '?' }}</span></td>
+    <td class="num">{{ r.ref_principal_valor|ars(2) }}<div class="muted small">{{ REF_TXT.get(r.ref_principal, r.ref_principal or '—') }}</div></td>
+    <td class="num {% if r.sobreprecio_ajustado_pct and r.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}">{{ r.sobreprecio_ajustado_pct|pct }}</td>
+    <td class="num">{{ r.exceso_ars|ars }}</td>
+    <td class="num {% if r.brecha_oferta_min_pct and r.brecha_oferta_min_pct > 0 %}pos{% endif %}">{% if r.n_ofertas %}{{ r.brecha_oferta_min_pct|pct }}<div class="muted small">{{ r.n_ofertas }} ofertas</div>{% if r.ofertas_implausibles %}<div class="small"><span class="tag tag-alerta">{{ r.ofertas_implausibles }} en otra unidad?</span></div>{% endif %}{% else %}—{% endif %}</td>
+</tr>
+<tr data-soft-key="reng-det:{{ r.id }}"><td colspan="10" style="background:var(--surface)">
+    <details>
+        <summary>Ver cómo se calculó y la evidencia de mercado</summary>
+        <div class="grid-2" style="margin-top:8px">
+            <dl class="meta-grid small">
+                <dt>Motivo</dt><dd>{{ r.motivo or '—' }}</dd>
+                <dt>Mínimo confirmado (2 fuentes)</dt><dd>{{ r.ref_corroborada|ars(2) }}{% if r.sobreprecio_corroborado_pct is not none %} · {{ r.sobreprecio_corroborado_pct|pct }} con plazo largo (decide el rojo){% endif %}</dd>
+                {% if r.estado_atributo %}<dt>Variedad</dt><dd>{{ ATRIBUTO_TXT.get(r.estado_atributo, r.estado_atributo) }}</dd>{% endif %}
+                <dt>Mín. mayorista</dt><dd>{{ r.ref_min_mayorista|ars(2) }} ({{ r.ref_n_mayorista or 0 }} obs.)</dd>
+                <dt>P25 / mediana mayorista</dt><dd>{{ r.ref_p25_mayorista|ars(2) }} / {{ r.ref_mediana_mayorista|ars(2) }}</dd>
+                <dt>Mín. / mediana supermercado</dt><dd>{{ r.ref_min_minorista|ars(2) }} / {{ r.ref_mediana_minorista|ars(2) }} ({{ r.ref_n_minorista or 0 }} obs.)</dd>
+                <dt>Misma marca</dt><dd>{{ r.ref_misma_marca|ars(2) }} ({{ r.ref_n_misma_marca or 0 }} obs.)</dd>
+                <dt>INDEC (promedio minorista)</dt><dd>{{ r.ref_indec|ars(2) }}</dd>
+                <dt>Sin ajustar / ajuste financiero</dt><dd>{{ r.sobreprecio_pct|pct }} / {{ r.ajuste_financiero_pct|num(1) }}%</dd>
+                <dt>Días entre compra y precio</dt><dd>{{ r.gap_dias if r.gap_dias is not none else '—' }}</dd>
+                <dt>Extracción</dt><dd>{{ r.extraccion_metodo or '—' }} · macheo: {{ r.match_metodo or '—' }} ({{ r.match_razon or '' }})</dd>
+            </dl>
+            <div>
+            {% if r.evidencia %}
+            <table class="small">
+                <thead><tr><th>Fuente</th><th>Fecha</th><th>Producto en góndola</th><th class="num">$/u. base</th></tr></thead>
+                <tbody>{% for o in r.evidencia[:25] %}
+                <tr><td>{{ o.fuente }}<div class="muted">{{ o.canal }}</div></td><td>{{ o.fecha }}{% if o.posterior %}<div class="muted">posterior a la compra</div>{% endif %}</td>
+                    <td>{% if o.url %}<a href="{{ o.url }}" target="_blank" rel="noopener">{{ o.descripcion }}</a>{% else %}{{ o.descripcion }}{% endif %}</td>
+                    <td class="num">{{ o.precio_ub|ars(2) }}</td></tr>
+                {% endfor %}</tbody>
+            </table>
+            {% if r.evidencia|length > 25 %}<p class="muted small">y {{ r.evidencia|length - 25 }} observaciones más</p>{% endif %}
+            {% else %}<p class="muted small">Sin observaciones de mercado para este renglón.</p>{% endif %}
+            {% if r.producto_id %}<p class="small"><a href="/producto/{{ r.producto_id }}">Ver la serie de precios de {{ r.producto_nombre }} →</a></p>{% endif %}
+            {% if r.ofertas %}
+            <h3>Ofertas en este renglón ({{ r.ofertas|length }}) — COMPR.AR cuadro comparativo</h3>
+            <table class="small"><thead><tr><th>Oferente</th><th>Marca</th><th class="num">Precio unitario</th><th class="num">Total</th><th></th></tr></thead>
+            <tbody>{% for o in r.ofertas %}<tr><td>{{ o.proveedor }}<div class="muted">{{ o.cuit or '' }}</div></td><td>{{ o.marca or '—' }}</td>
+            <td class="num">{{ o.precio_unitario|ars(2) }}</td><td class="num">{{ o.total|millones }}</td>
+            <td>{% if o.ganadora %}<span class="sem sem-verde">ganó</span>{% endif %}</td></tr>{% endfor %}</tbody></table>
+            <p class="muted small">"Menor oferta presentada": su admisibilidad no está verificada. Pudo haber sido desestimada
+            con razón (no cumplía el pliego, documentación, plazos). Antes de concluir, leé el dictamen.</p>
+            {% endif %}
+            </div>
+        </div>
+    </details>
+</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+{% if texto %}
+<details class="card" id="texto-aviso">
+    <summary>Texto de la norma (parte resolutiva)</summary>
+    <pre class="texto">{{ texto }}</pre>
+</details>
+{% endif %}
+{% endblock %}

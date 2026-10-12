@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Analítica · Sobreprecios{% endblock %}
+{% block content %}
+<h1>Analítica</h1>
+<p class="muted small">¿Qué organismos, productos, proveedores y tipos de procedimiento muestran más sobreprecio?
+"Exceso" suma solo renglones en rojo o amarillo; "brecha promedio" promedia todos los renglones comparados.</p>
+
+<form class="filters" method="get" action="/analitica" data-soft="off">
+    <div class="field"><label>Producto</label>
+        <select name="producto"><option value="">Todos</option>
+        {% for p in opciones.productos %}<option value="{{ p.id }}" {% if filtros.producto == p.id %}selected{% endif %}>{{ p.nombre }}</option>{% endfor %}
+        </select></div>
+    <div class="field"><label>Organismo</label>
+        <select name="organismo" style="max-width:260px"><option value="">Todos</option>
+        {% for o in opciones.organismos %}<option {% if filtros.organismo == o %}selected{% endif %}>{{ o }}</option>{% endfor %}
+        </select></div>
+    <div class="field"><label>Desde</label><input type="date" name="desde" value="{{ filtros.desde }}"></div>
+    <div class="field"><label>Hasta</label><input type="date" name="hasta" value="{{ filtros.hasta }}"></div>
+    <button class="btn btn-primary">Aplicar</button><a class="btn" href="/analitica">Limpiar</a>
+</form>
+
+<div class="kpis">
+    <div class="kpi"><div class="label">Procesos</div><div class="value">{{ kpis.procesos or 0 }}</div></div>
+    <div class="kpi"><div class="label">Renglones comparados</div><div class="value">{{ kpis.comparados or 0 }}</div></div>
+    <div class="kpi"><div class="label">Monto adjudicado</div><div class="value">{{ kpis.monto|millones }}</div></div>
+    <div class="kpi"><div class="label">Exceso estimado</div><div class="value">{{ kpis.exceso|millones }}</div></div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h3>Exceso estimado por organismo</h3>
+        <div class="chart-box" style="height:380px"><canvas id="ch-organismo" aria-label="Exceso estimado por organismo"></canvas></div>
+    </div>
+    <div class="card">
+        <h3>Brecha promedio por mes (renglones comparados)</h3>
+        <div class="chart-box"><canvas id="ch-mes" aria-label="Brecha promedio por mes"></canvas></div>
+    </div>
+</div>
+
+{% macro tabla(rows, titulo, dim) %}
+<h2>{{ titulo }}</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>{{ titulo.split(' ')[-1]|capitalize }}</th><th class="num">Procesos</th><th class="num">Renglones</th>
+<th class="num">Comparados</th><th class="num">Rojo / amarillo</th><th class="num">Monto</th><th class="num">Exceso</th><th class="num">Brecha promedio</th></tr></thead>
+<tbody>{% for r in rows %}
+<tr><td>{% if dim == 'proveedor' and r.cuit %}<a href="/empresa/{{ r.cuit }}">{{ r.clave }}</a>
+    {% elif dim == 'organismo' %}<a href="/?organismo={{ r.clave|urlencode }}">{{ r.clave }}</a>
+    {% else %}{{ r.clave|replace('_', ' ') }}{% endif %}</td>
+<td class="num">{{ r.procesos }}</td><td class="num">{{ r.renglones }}</td><td class="num">{{ r.comparados }}</td>
+<td class="num"><span class="sem sem-rojo">{{ r.rojos }}</span> <span class="sem sem-amarillo">{{ r.amarillos }}</span></td>
+<td class="num">{{ r.monto|millones }}</td><td class="num">{{ r.exceso|millones }}</td>
+<td class="num {% if r.sp_prom and r.sp_prom > 0 %}pos{% else %}neg{% endif %}">{{ r.sp_prom|pct }}</td></tr>
+{% endfor %}</tbody></table></div>
+{% endmacro %}
+
+{{ tabla(data.organismo, 'Por organismo', 'organismo') }}
+{{ tabla(data.producto, 'Por producto', 'producto') }}
+<p class="small">Series de precio por producto:
+{% for p in opciones.productos %}<a class="tag" href="/producto/{{ p.id }}">{{ p.nombre }}</a>{% endfor %}</p>
+{{ tabla(data.proveedor, 'Por proveedor', 'proveedor') }}
+{{ tabla(data.procedimiento, 'Por procedimiento', 'procedimiento') }}
+
+<h2>Renglones con mayor brecha</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Semáforo</th><th>Fecha</th><th>Organismo</th><th>Bien</th><th>Proveedor</th><th class="num">Pagó</th><th class="num">Referencia</th><th class="num">Brecha</th><th class="num">Exceso</th></tr></thead>
+<tbody>{% for r in peores %}
+<tr><td><span class="sem sem-{{ r.semaforo }}">{{ SEMAFORO_TXT[r.semaforo] }}</span></td><td>{{ r.fecha }}</td>
+<td><a href="/licitacion/{{ r.proceso_id }}">{{ r.organismo or '—' }}</a></td><td>{{ r.descripcion }}</td>
+<td class="small">{{ r.proveedor or '—' }}</td>
+<td class="num">{{ r.precio_unidad_base|ars(2) }}/{{ r.unidad_base }}</td>
+<td class="num">{{ r.ref_principal_valor|ars(2) }}<div class="muted small">{{ REF_TXT.get(r.ref_principal, r.ref_principal) }}</div></td>
+<td class="num {% if r.sobreprecio_ajustado_pct and r.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}">{{ r.sobreprecio_ajustado_pct|pct }}</td>
+<td class="num">{{ r.exceso_ars|ars }}</td></tr>
+{% endfor %}</tbody></table></div>
+
+<script>
+(function () {
+    const css = getComputedStyle(document.documentElement);
+    const c1 = css.getPropertyValue('--series-1').trim();
+    const ink = css.getPropertyValue('--text-2').trim();
+    const grid = css.getPropertyValue('--border').trim();
+    const org = {{ data.organismo[:12]|map(attribute='clave')|list|tojson }};
+    const exc = {{ data.organismo[:12]|map(attribute='exceso')|list|tojson }};
+    const meses = {{ data.mes|map(attribute='clave')|list|tojson }};
+    const sp = {{ data.mes|map(attribute='sp_prom')|list|tojson }};
+    const ars = v => '$ ' + Math.round(v).toLocaleString('es-AR');
+    const mill = v => '$ ' + (v / 1e6).toLocaleString('es-AR', {maximumFractionDigits: 1}) + ' M';
+    // Nombres largos en varias líneas (truncar dejaba dos "MINISTERIO DE DESARROLLO SOCIAL …" iguales).
+    const wrap = s => { const out = []; let line = '';
+        for (const w of s.split(' ')) { if ((line + ' ' + w).trim().length > 30) { out.push(line.trim()); line = w; } else line += ' ' + w; }
+        out.push(line.trim()); return out; };
+    function draw(id, cfg) {
+        const el = document.getElementById(id);
+        if (!el || !window.Chart) return;
+        const old = Chart.getChart(el); if (old) old.destroy();
+        new Chart(el, cfg);
+    }
+    const base = {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}},
+                  scales: {x: {ticks: {color: ink}, grid: {color: grid}}, y: {ticks: {color: ink}, grid: {color: grid}}}};
+    draw('ch-organismo', {type: 'bar', data: {labels: org.map(wrap),
+        datasets: [{data: exc, backgroundColor: c1, borderRadius: 4, maxBarThickness: 22}]},
+        options: Object.assign({}, base, {indexAxis: 'y', plugins: {legend: {display: false},
+            tooltip: {callbacks: {label: c => ars(c.parsed.x)}}},
+            scales: {x: {ticks: {color: ink, callback: v => mill(v), maxRotation: 0}, grid: {color: grid}}, y: {ticks: {color: ink}, grid: {display: false}}}})});
+    draw('ch-mes', {type: 'line', data: {labels: meses, datasets: [{data: sp, borderColor: c1, backgroundColor: c1,
+        borderWidth: 2, pointRadius: 4, spanGaps: true, tension: 0.2}]},
+        options: Object.assign({}, base, {plugins: {legend: {display: false},
+            tooltip: {mode: 'index', intersect: false, callbacks: {label: c => (c.parsed.y > 0 ? '+' : '') + c.parsed.y + '%'}}},
+            scales: {x: {ticks: {color: ink}, grid: {display: false}}, y: {ticks: {color: ink, callback: v => v + '%'}, grid: {color: grid}}}})});
+})();
+</script>
+{% endblock %}

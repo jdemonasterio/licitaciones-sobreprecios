@@ -1,0 +1,326 @@
+# Organismos nacionales por código SAF (Servicio Administrativo Financiero).
+# Semilla generada de los CSV de convocatorias de la ONC 2016-2018 (datos abiertos) + ajustes a mano.
+# El código SAF identifica al organismo aunque cambie el nombre del ministerio: `nombres` guarda las
+# variantes vistas (la primera es el nombre a mostrar). `renombres` son cambios posteriores a 2018
+# cargados a mano; los marcados `verificar: true` no están confirmados con una norma.
+
+organismos:
+  "101":
+    nombres:
+      - "Fundación Miguel Lillo"
+  "103":
+    nombres:
+      - "Consejo Nacional de Investigaciones Científicas y Técnicas"
+  "105":
+    nombres:
+      - "Comisión Nacional de Energía Atómica"
+  "106":
+    nombres:
+      - "Comisión Nacional de Actividades Espaciales"
+  "107":
+    nombres:
+      - "Administración de Parques Nacionales"
+  "109":
+    nombres:
+      - "Sindicatura General de la Nación"
+  "112":
+    nombres:
+      - "Autoridad Regulatoria Nuclear"
+  "113":
+    nombres:
+      - "Teatro Nacional Cervantes"
+  "114":
+    nombres:
+      - "Instituto Nacional de Asociativismo y Economía Social"
+  "116":
+    nombres:
+      - "Biblioteca Nacional"
+  "117":
+    nombres:
+      - "Instituto Nacional del Teatro"
+  "200":
+    nombres:
+      - "Registro Nacional de las Personas"
+  "201":
+    nombres:
+      - "Dirección Nacional de Migraciones"
+  "202":
+    nombres:
+      - "Instituto Nacional contra la Discriminación, Xenofobia y el Racismo"
+  "203":
+    nombres:
+      - "Agencia Nacional de Seguridad Vial"
+  "205":
+    nombres:
+      - "Agencia de Administración de Bienes del Estado"
+  "206":
+    nombres:
+      - "Centro Internacional para la Promoción de los Derechos Humanos"
+  "207":
+    nombres:
+      - "Ente Nacional de Comunicaciones"
+  "208":
+    nombres:
+      - "Agencia Nacional de Materiales Controlados"
+  "250":
+    nombres:
+      - "Caja de Retiros Jubilaciones y Pensiones de la Policía Federal"
+  "301":
+    nombres:
+      - "Secretaria General de la Presidencia de la Nación"
+  "303":
+    nombres:
+      - "Secretaría de Políticas Integrales sobre Drogas"
+  "305":
+    nombres:
+      - "Jefatura de Gabinete de Ministros"
+  "307":
+    nombres:
+      - "Ministerio de Relaciones Exteriores y Culto"
+  "310":
+    nombres:
+      - "Ministerio de Salud"
+      - "Secretaría de Gobierno de Salud"
+  "311":
+    nombres:
+      - "Ministerio de Desarrollo Social"
+      - "Ministerio de Salud y Desarrollo Social"
+    renombres:
+      - {nombre: "Ministerio de Capital Humano", desde: "2023-12-10", verificar: true}
+  "317":
+    nombres:
+      - "Ministerio de Ambiente y Desarrollo Sustentable"
+      - "Secretaría de Gobierno de Ambiente y Desarrollo Sustentable"
+  "321":
+    nombres:
+      - "Instituto Nacional de Estadísticas y Censos"
+  "322":
+    nombres:
+      - "Secretaría de Gobierno de Turismo"
+      - "Ministerio de Turismo"
+  "323":
+    nombres:
+      - "Comision Nacional de Comercio Exterior"
+  "325":
+    nombres:
+      - "Ministerio del Interior, Obras Públicas y Vivienda"
+  "326":
+    nombres:
+      - "Super Intendencia de la Administracion de la Policia Federal"
+  "327":
+    nombres:
+      - "Ministerio de Transporte"
+  "328":
+    nombres:
+      - "Ministerio de Energía y Minería"
+      - "Secretaría de Gobierno de Energía"
+  "329":
+    nombres:
+      - "Ministerio de Comunicaciones"
+  "330":
+    nombres:
+      - "Ministerio de Educación, Cultura, Ciencia y Tecnología"
+      - "Ministerio de Educación"
+  "331":
+    nombres:
+      - "Servicio Penitenciario Federal"
+  "332":
+    nombres:
+      - "Ministerio de Justicia y Derechos Humanos"
+  "336":
+    nombres:
+      - "Ministerio de Ciencia, Tecnología e Innovación Productiva"
+      - "Secretaría de Gobierno de Ciencia, Tecnología e Innovación Productiva"
+  "337":
+    nombres:
+      - "Ministerio de Cultura"
+      - "Secretaría de Gobierno de Cultura"
+  "338":
+    nombres:
+      - "Secretaria Legal y Técnica"
+  "341":
+    nombres:
+      - "Secretaría Nacional de Niñez, Adolescencia y Familia"
+  "343":
+    nombres:
+      - "Ministerio de Seguridad"
+    renombres:
+      - {nombre: "Ministerio de Seguridad Nacional", desde: "2025-01-01", verificar: true}
+  "345":
+    nombres:
+      - "Consejo Nacional de Coordinación de Politicas Sociales"
+  "347":
+    nombres:
+      - "Secretaría de Gobierno del Sistema Federal de Medios y Contenidos Públicos"
+      - "Sistema Federal de Medios y Contenidos Públicos"
+  "350":
+    nombres:
+      - "Ministerio de Trabajo, Empleo y Seguridad Social"
+      - "Secretaría de Gobierno de Trabajo y Empleo"
+  "357":
+    nombres:
+      - "Ministerio de Hacienda y Finanzas Públicas"
+      - "Ministerio de Hacienda"
+  "362":
+    nombres:
+      - "Ministerio de Producción"
+      - "Ministerio de Producción y Trabajo"
+  "363":
+    nombres:
+      - "Ministerio de Agroindustria"
+      - "Secretaría de Gobierno de Agroindustria"
+  "366":
+    nombres:
+      - "Ministerio de Modernización"
+      - "Secretaría de Gobierno de Modernización"
+  "367":
+    nombres:
+      - "Ministerio de Finanzas"
+  "370":
+    nombres:
+      - "Ministerio de Defensa"
+  "371":
+    nombres:
+      - "Estado Mayor Conjunto (EMCO)"
+  "372":
+    nombres:
+      - "Instituto de Investigaciones Científicas y Técnicas para la Defensa"
+  "375":
+    nombres:
+      - "Gendarmeria Nacional"
+  "376":
+    nombres:
+      - "Subsecretaría del Servicio Logístico de la Defensa"
+      - "Subsecreataría de Planeamiento Operativo y Servicio Logístico de la Defensa"
+  "379":
+    nombres:
+      - "Estado Mayor General de la Armada"
+  "380":
+    nombres:
+      - "Prefectura Naval Argentina"
+  "381":
+    nombres:
+      - "Estado Mayor General de La Fuerza Aérea"
+  "382":
+    nombres:
+      - "Policia de Seguridad Aeroportuaria"
+  "450":
+    nombres:
+      - "Instituto Geográfico Nacional"
+  "451":
+    nombres:
+      - "Dirección General de Fabricaciones Militares"
+  "452":
+    nombres:
+      - "Servicio Metereológico Nacional"
+  "556":
+    nombres:
+      - "Autoridad de Cuenca Matanza Riachuelo"
+  "602":
+    nombres:
+      - "Comisión Nacional de Valores"
+  "603":
+    nombres:
+      - "Superintendencia de Seguros de la Nación"
+  "604":
+    nombres:
+      - "Dirección Nacional de Vialidad"
+  "607":
+    nombres:
+      - "Instituto Nacional de Investigación y Desarrollo Pesquero"
+  "608":
+    nombres:
+      - "Instituto Nacional de Tecnología Industrial"
+  "609":
+    nombres:
+      - "Instituto Nacional de Vitivinicultura"
+  "612":
+    nombres:
+      - "Tribunal de Tasaciones de la Nación"
+  "613":
+    nombres:
+      - "Ente Nacional de Obras Hídricas de Saneamiento"
+  "614":
+    nombres:
+      - "Instituto Nacional de las Semillas"
+  "620":
+    nombres:
+      - "Tribunal Fiscal de la Nación"
+  "622":
+    nombres:
+      - "Instituto Nacional de la Propiedad Industrial"
+  "623":
+    nombres:
+      - "Servicio Nacional de Sanidad y Calidad Agroalimentaria"
+  "651":
+    nombres:
+      - "Ente Nacional Regulador del Gas"
+  "652":
+    nombres:
+      - "Ente Nacional Regulador de la Electricidad"
+  "656":
+    nombres:
+      - "Organismo Regulador de Seguridad de Presas"
+  "661":
+    nombres:
+      - "Comisión Nacional de Regulación de Transporte"
+  "664":
+    nombres:
+      - "Organismo Regulador del Sistema Nacional de Aeropuertos"
+  "669":
+    nombres:
+      - "Administración Nacional de Aviación Civil"
+  "670":
+    nombres:
+      - "Unidad de Información Financiera"
+  "671":
+    nombres:
+      - "Junta de Investigación de Accidentes de Aviación Civil"
+  "802":
+    nombres:
+      - "Fondo Nacional de las Artes"
+  "804":
+    nombres:
+      - "Comisión Nacional de Evaluación y Acreditación Universitaria"
+  "850":
+    nombres:
+      - "Administración Nacional de la Seguridad Social"
+  "852":
+    nombres:
+      - "Superintendencia de Riesgos de Trabajo"
+  "902":
+    nombres:
+      - "Hospital Nacional en Red Especializado en Salud Mental y Adicciones Licenciada Laura Bonaparte"
+  "903":
+    nombres:
+      - "Hospital Nacional Dr Baldomero Sommer"
+  "904":
+    nombres:
+      - "Administración Nacional de Medicamentos, Alimentos y Tecnología Médica - ANMAT"
+  "905":
+    nombres:
+      - "Instituto Nacional Central Único Coordinador de Ablación e Implante"
+  "906":
+    nombres:
+      - "Administración Nacional de Laboratorios e Institutos de Salud Dr. Carlos Malbrán"
+  "908":
+    nombres:
+      - "Hospital Nacional Dr. Alejandro Posadas"
+  "909":
+    nombres:
+      - "Colonia Nacional Dr. Manuel Montes de Oca"
+  "910":
+    nombres:
+      - "Instituto Nacional de Rehabilitación Psicofísica del Sur DR. Juan otimio Tessone"
+  "914":
+    nombres:
+      - "Superintendecia de Servicios de Salud"
+  "915":
+    nombres:
+      - "Instituto Nacional del Cáncer"
+  "916":
+    nombres:
+      - "Agencia Nacional de Laboratorios Públicos"
+  "917":
+    nombres:
+      - "Agencia Nacional de Discapacidad"

@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía de inicio — Sobreprecios en compras del Estado</title>
+<style>
+  :root{
+    --bg:#f6f4ee; --card:#ffffff; --text:#1c1b18; --muted:#5d5a52; --border:rgba(0,0,0,.12);
+    --accent:#0b5fae; --accent-ink:#ffffff; --green:#1a7f37; --green-bg:#e6f4ea;
+    --yellow:#8a6400; --yellow-bg:#fff6dc; --red:#b42318; --red-bg:#fde8e6;
+    --chip-bg:#eef2f7; --shadow:0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#14151a; --card:#1d1f26; --text:#eceae4; --muted:#a9a6a0; --border:rgba(255,255,255,.14);
+      --accent:#6fb0ff; --accent-ink:#0b1320; --green:#4fd17a; --green-bg:#133a22;
+      --yellow:#e8c25a; --yellow-bg:#3a2f0c; --red:#ff8a80; --red-bg:#3a1512;
+      --chip-bg:#262833; --shadow:0 1px 3px rgba(0,0,0,.4), 0 1px 2px rgba(0,0,0,.3);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text)}
+  body{
+    font-family:-apple-system,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55; font-size:16px; -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent)}
+  .wrap{max-width:780px;margin:0 auto;padding:0 16px 64px}
+  header.top{
+    position:sticky; top:0; z-index:30; background:var(--bg);
+    border-bottom:1px solid var(--border); padding:12px 16px 14px;
+  }
+  header.top .inner{max-width:780px;margin:0 auto}
+  header.top h1{font-size:1.05rem;margin:0 0 8px;font-weight:700}
+  .bar-track{height:10px;border-radius:999px;background:var(--chip-bg);overflow:hidden;border:1px solid var(--border)}
+  .bar-fill{height:100%;width:0%;background:var(--accent);transition:width .25s ease}
+  .bar-label{font-size:.82rem;color:var(--muted);margin-top:6px}
+  .dots{display:flex;gap:6px;margin-top:10px;overflow-x:auto;padding-bottom:2px}
+  .dot{
+    flex:0 0 auto; width:26px;height:26px;border-radius:50%;border:2px solid var(--border);
+    display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;
+    color:var(--muted); text-decoration:none; background:var(--card);
+  }
+  .dot.dot-done{background:var(--green);border-color:var(--green);color:#fff}
+  .hero{padding:28px 0 8px}
+  .hero h2{font-size:1.6rem;margin:0 0 6px}
+  .hero p.lead{color:var(--muted);font-size:1.02rem}
+  .map{display:grid;grid-template-columns:1fr;gap:6px;margin:18px 0 0}
+  .map a{
+    display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;
+    text-decoration:none;color:var(--text);border:1px solid var(--border);background:var(--card);
+  }
+  .map a:hover{border-color:var(--accent)}
+  .map .n{
+    flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--chip-bg);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;color:var(--accent);
+  }
+  section.card{
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:22px 20px 24px; margin:22px 0; box-shadow:var(--shadow); scroll-margin-top:92px;
+  }
+  .stage-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px}
+  .stage-num{
+    flex:0 0 auto; width:48px;height:48px;border-radius:14px;background:var(--accent);color:var(--accent-ink);
+    display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;
+  }
+  .stage-head h3{margin:2px 0 2px;font-size:1.25rem}
+  .stage-head .sub{color:var(--muted);font-size:.92rem}
+  h4.block-title{font-size:.95rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin:18px 0 8px}
+  ol.steps{padding-left:1.3em;margin:0}
+  ol.steps li{margin-bottom:10px}
+  ul.plain{padding-left:1.3em;margin:0}
+  ul.plain li{margin-bottom:6px}
+  .callout{border-radius:12px;padding:12px 14px;margin:12px 0;border:1px solid var(--border);font-size:.95rem}
+  .callout.info{background:var(--chip-bg)}
+  .callout.warn{background:var(--yellow-bg);border-color:var(--yellow);color:var(--text)}
+  .callout.warn strong{color:var(--yellow)}
+  .callout.danger{background:var(--red-bg);border-color:var(--red)}
+  .callout.danger strong{color:var(--red)}
+  .callout.fill{background:var(--yellow-bg);border:1px dashed var(--yellow)}
+  .callout.success{background:var(--green-bg);border-color:var(--green)}
+  .callout.screen{background:var(--chip-bg);font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.86rem;white-space:pre-wrap}
+  .valid{
+    border:1.5px solid var(--green); background:var(--green-bg); border-radius:12px;
+    padding:14px 16px; margin-top:16px;
+  }
+  .valid .vt{font-weight:700;color:var(--green);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .valid label{display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:.95rem}
+  .valid input[type=checkbox]{width:20px;height:20px;margin-top:2px;flex:0 0 auto;accent-color:var(--green)}
+  code, .mono{font-family:ui-monospace,Menlo,Consolas,monospace;background:var(--chip-bg);padding:1px 6px;border-radius:6px;font-size:.88em}
+  pre{background:var(--chip-bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;overflow-x:auto;font-size:.85rem}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.92rem}
+  table th,table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  table th{color:var(--muted);font-weight:700}
+  /* Miniatura + link (no iframe): la guía se manda por mail y se abre como archivo local, y YouTube no
+     reproduce videos embebidos en páginas sin dirección web. El video se abre en YouTube en otra pestaña. */
+  .video-thumb{position:relative;display:block;margin:14px 0 6px;border-radius:12px;overflow:hidden;background:#000;
+    aspect-ratio:16/9;text-decoration:none}
+  .video-thumb img{width:100%;height:100%;object-fit:cover;display:block;opacity:.85}
+  .video-thumb .play{position:absolute;left:12px;right:12px;bottom:12px;background:rgba(0,0,0,.72);color:#fff;
+    border-radius:8px;padding:8px 12px;font-weight:600;font-size:.95rem}
+  .video-thumb:hover img,.video-thumb:focus img{opacity:1}
+  .video-link{font-size:.85rem;color:var(--muted)}
+  .video-link a{color:var(--accent)}
+  .glossary dt{font-weight:700;margin-top:12px}
+  .glossary dd{margin:2px 0 0;color:var(--muted)}
+  footer.page{text-align:center;color:var(--muted);font-size:.85rem;margin-top:40px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+  .chip{background:var(--chip-bg);border-radius:999px;padding:4px 10px;font-size:.8rem;color:var(--muted)}
+  @media (max-width:480px){
+    .stage-num{width:40px;height:40px;font-size:1.1rem;border-radius:12px}
+    .hero h2{font-size:1.35rem}
+    section.card{padding:18px 14px 20px}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="inner">
+    <h1>📋 Guía de inicio — Sobreprecios en compras del Estado</h1>
+    <div class="bar-track"><div class="bar-fill" id="bar-fill"></div></div>
+    <div class="bar-label" id="bar-label">0 de 15 etapas completas (0%)</div>
+    <div class="dots" id="dots-row"></div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="hero">
+    <h2>De "no tengo nada instalado" a tener la herramienta funcionando sola</h2>
+    <p class="lead">
+      Esta guía te lleva, paso a paso y sin saber programar, desde una computadora
+      Windows recién salida de la caja hasta tener la herramienta de sobreprecios andando,
+      actualizándose sola todos los días, y con Claude Code disponible para pedirle mejoras
+      cuando las necesites. Marcá cada casillero ✅ a medida que avanzás: la guía se acuerda
+      de por dónde vas, aunque cierres el navegador.
+    </p>
+    <div class="map" id="mapa"></div>
+  </section>
+
+  <!-- ETAPA 0 -->
+  <section class="card" id="etapa-0">
+    <div class="stage-head">
+      <div class="stage-num">0</div>
+      <div><h3>Qué es esto y qué vas a lograr</h3><div class="sub">1 minuto de lectura</div></div>
+    </div>
+    <p>
+      Esta herramienta compara lo que el Estado argentino pagó en una compra (alimentos,
+      limpieza, librería) contra lo que costaba ese mismo producto en el mercado en esa
+      misma fecha. Corre entera en tu computadora: no hay que subir nada a internet, no
+      hay servidores de terceros, no hay que saber programar para usarla día a día.
+    </p>
+    <p>
+      Al final de esta guía vas a tener: la aplicación abierta en tu navegador, una clave
+      gratis de inteligencia artificial cargada, los datos actualizándose solos todos los
+      días, y un asistente (Claude Code) al que le podés pedir mejoras en español simple.
+    </p>
+    <div class="callout info">
+      <strong>El recorrido completo son 15 etapas</strong> (0 a 14). Las etapas 1 a 7 instalan
+      y usan la herramienta en sí — con eso ya podés trabajar. Las etapas 8 a 13 agregan
+      Claude Code, para seguir mejorando el sistema sin depender de un programador. La
+      etapa 14 es un glosario de consulta.
+    </div>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Entendés qué hace la herramienta y por qué estas 15 etapas existen. Marcá este
+      casillero para arrancar a sumar progreso en la barra de arriba.</p>
+      <label><input type="checkbox" id="chk-0" data-stage-check="0"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 1 -->
+  <section class="card" id="etapa-1">
+    <div class="stage-head">
+      <div class="stage-num">1</div>
+      <div><h3>🖥️ Preparar la computadora</h3><div class="sub">5 minutos</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> dejar la computadora lista: Windows actualizado,
+    una carpeta fija para el proyecto, y saber abrir las dos ventanas que vas a usar todo
+    el tiempo: el Explorador de archivos y la consola (<span class="mono">cmd</span>).</p>
+    <p><strong>Por qué:</strong> si no sabés abrir estas dos cosas rápido, cada paso de
+    acá en adelante te va a costar el triple.</p>
+
+    <h4 class="block-title">Pasos</h4>
+    <ol class="steps">
+      <li><strong>Actualizá Windows.</strong> Tecla Windows → escribí <span class="mono">Buscar actualizaciones</span>
+      → Enter → "Buscar actualizaciones" → instalá lo que haya y reiniciá si lo pide.</li>
+      <li><strong>Creá una carpeta "Proyectos".</strong> Abrí el Explorador de archivos
+      (el ícono de una carpeta amarilla en la barra de tareas, o tecla Windows + E).
+      Entrá a <span class="mono">Escritorio</span> o a <span class="mono">Documentos</span>,
+      click derecho → Nuevo → Carpeta → nombrala <span class="mono">Proyectos</span>.
+      Ahí va a vivir todo este proyecto.</li>
+      <li><strong>Practicá abrir la consola (cmd).</strong> Apretá la tecla Windows, escribí
+      <span class="mono">cmd</span>, apretá Enter. Se abre una ventana negra con letras:
+      esa es la consola. Es el lugar donde vas a hacer doble click en los <span class="mono">.bat</span>
+      más adelante, o donde vas a escribir algún comando puntual.</li>
+    </ol>
+
+    <div class="callout screen">Qué tenés que ver en pantalla: una ventana negra con un
+texto parecido a
+C:\Users\TuNombre&gt;
+y el cursor titilando al lado. Ahí podés escribir comandos.</div>
+
+    <a class="video-thumb" href="https://www.youtube.com/watch?v=TmJyTXZkwCw" target="_blank" rel="noopener" title="5 formas de abrir CMD en Windows 11">
+      <img src="https://i.ytimg.com/vi/TmJyTXZkwCw/hqdefault.jpg" alt="5 formas de abrir CMD en Windows 11" loading="lazy">
+      <span class="play">▶ Ver el video: 5 formas de abrir CMD en Windows 11</span>
+    </a>
+    <div class="video-link">Si no ves el video: <a href="https://www.youtube.com/watch?v=TmJyTXZkwCw" target="_blank" rel="noopener">youtube.com/watch?v=TmJyTXZkwCw</a> — "5 formas de abrir CMD en Windows 11" (Tuto Win10)</div>
+
+    <h4 class="block-title">Problemas comunes</h4>
+    <ul class="plain">
+      <li>Si Windows Update tarda mucho o pide reiniciar varias veces, es normal: dejalo
+      terminar antes de seguir con la Etapa 2.</li>
+      <li>Si no encontrás el ícono del Explorador, usá el atajo <span class="mono">tecla Windows + E</span>,
+      siempre funciona.</li>
+    </ul>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Abriste una ventana de <span class="mono">cmd</span> (fondo negro, texto blanco) y
+      tenés una carpeta <span class="mono">Proyectos</span> creada y vacía, lista para el
+      próximo paso.</p>
+      <label><input type="checkbox" id="chk-1" data-stage-check="1"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 2 -->
+  <section class="card" id="etapa-2">
+    <div class="stage-head">
+      <div class="stage-num">2</div>
+      <div><h3>🐍 Instalar Python 3.12</h3><div class="sub">5-10 minutos</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> instalar Python, el lenguaje en el que está escrita
+    la herramienta. Es gratis y lo instala cualquiera, no hace falta saber programar.</p>
+    <p><strong>Por qué:</strong> sin Python instalado, ninguno de los archivos <span class="mono">.bat</span>
+    del proyecto va a funcionar.</p>
+
+    <h4 class="block-title">Pasos</h4>
+    <ol class="steps">
+      <li>Entrá a <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">python.org/downloads</a>
+      desde el navegador.</li>
+      <li>Hacé click en el botón grande que dice "Download Python 3.12.x" (si te ofrece una
+      versión más nueva como 3.13 también funciona, pero si podés elegir, preferí la 3.12).</li>
+      <li>Abrí el archivo descargado (termina en <span class="mono">.exe</span>, suele quedar
+      en "Descargas").</li>
+      <li><strong>Esto es lo más importante de todo el paso:</strong> en la primera pantalla
+      del instalador, abajo de todo, hay un tilde que dice <strong>"Add python.exe to PATH"</strong>.
+      Tildalo ANTES de tocar cualquier otra cosa.</li>
+      <li>Con el tilde puesto, hacé click en "Install Now" y esperá a que la barra llegue
+      al 100%.</li>
+      <li>Cuando diga "Setup was successful", cerrá el instalador.</li>
+    </ol>
+
+    <div class="callout screen">Qué tenés que ver en pantalla: una ventana gris con el logo
+de Python, un tilde SIN marcar que dice "Add python.exe to PATH" (marcalo),
+y más abajo un botón "Install Now".</div>
+
+    <div class="callout warn"><strong>Si te olvidaste de tildar la casilla</strong>, no pasa
+    nada grave, pero después Windows no va a reconocer el comando <span class="mono">python</span>.
+    El video de abajo explica cómo agregarlo a mano sin tener que reinstalar todo.</div>
+
+    <a class="video-thumb" href="https://www.youtube.com/watch?v=GmTG25Aoqvk" target="_blank" rel="noopener" title="Cómo agregar Python al PATH en Windows 11">
+      <img src="https://i.ytimg.com/vi/GmTG25Aoqvk/hqdefault.jpg" alt="Cómo agregar Python al PATH en Windows 11" loading="lazy">
+      <span class="play">▶ Ver el video: Cómo agregar Python al PATH en Windows 11</span>
+    </a>
+    <div class="video-link">Si no ves el video: <a href="https://www.youtube.com/watch?v=GmTG25Aoqvk" target="_blank" rel="noopener">youtube.com/watch?v=GmTG25Aoqvk</a> — "Cómo agregar Python al PATH en Windows 11 (2026)" (divcode)</div>
+
+    <h4 class="block-title">Cómo saber si ya lo tenés instalado</h4>
+    <ol class="steps">
+      <li>Abrí <span class="mono">cmd</span> (Etapa 1).</li>
+      <li>Escribí <span class="mono">python --version</span> y Enter.</li>
+      <li>Si ves algo como <span class="mono">Python 3.12.7</span>, ya está. Si ves
+      <span class="mono">'python' no se reconoce como un comando...</span>, seguí los pasos de arriba.</li>
+    </ol>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Abrís <span class="mono">cmd</span>, escribís <span class="mono">python --version</span>
+      y Enter. Tiene que decir algo como <span class="mono">Python 3.12.x</span> (no un error).</p>
+      <label><input type="checkbox" id="chk-2" data-stage-check="2"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 3 -->
+  <section class="card" id="etapa-3">
+    <div class="stage-head">
+      <div class="stage-num">3</div>
+      <div><h3>📦 Bajar el proyecto</h3><div class="sub">5 minutos</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> conseguir la carpeta del proyecto en tu computadora,
+    dentro de la carpeta <span class="mono">Proyectos</span> que creaste en la Etapa 1.</p>
+    <p><strong>Por qué:</strong> hay dos caminos. Si más adelante vas a usar Claude Code para
+    pedir mejoras (etapas 8 a 13), conviene el camino con Git, porque después vas a poder
+    actualizar el proyecto con un solo comando. Si no te interesa eso, el ZIP es más simple.</p>
+
+    <div class="callout fill">
+      ✏️ <strong>A completar:</strong> reemplazá <span class="mono">REPO_URL</span> por la
+      dirección real del proyecto en GitHub antes de mandar esta guía (te la tiene que pasar
+      quien te dio acceso).
+    </div>
+
+    <h4 class="block-title">Opción A — Descargar el ZIP (la más simple, recomendada si nunca usaste Git)</h4>
+    <ol class="steps">
+      <li>Entrá a <span class="mono">REPO_URL</span> en el navegador.</li>
+      <li>Hacé click en el botón verde "Code" y después en "Download ZIP".</li>
+      <li>Cuando termine de bajar, click derecho sobre el archivo <span class="mono">.zip</span>
+      → "Extraer todo..." (o "Extract All...").</li>
+      <li>Elegí tu carpeta <span class="mono">Proyectos</span> como destino y confirmá.</li>
+      <li>Abrí esa carpeta: tiene que tener adentro archivos como <span class="mono">instalar.bat</span>,
+      <span class="mono">requirements.txt</span> y una carpeta <span class="mono">sobreprecios</span>.</li>
+    </ol>
+
+    <a class="video-thumb" href="https://www.youtube.com/watch?v=KFKSwTXVbKg" target="_blank" rel="noopener" title="Cómo descomprimir un archivo ZIP en Windows">
+      <img src="https://i.ytimg.com/vi/KFKSwTXVbKg/hqdefault.jpg" alt="Cómo descomprimir un archivo ZIP en Windows" loading="lazy">
+      <span class="play">▶ Ver el video: Cómo descomprimir un archivo ZIP en Windows</span>
+    </a>
+    <div class="video-link">Si no ves el video: <a href="https://www.youtube.com/watch?v=KFKSwTXVbKg" target="_blank" rel="noopener">youtube.com/watch?v=KFKSwTXVbKg</a> — "Cómo descomprimir un archivo ZIP en Windows, Mac, Android y iPhone" (CertificadoElectronico_es)</div>
+
+    <h4 class="block-title">Opción B — Clonar con Git (recomendada si vas a usar Claude Code)</h4>
+    <p class="sub" style="margin-top:-4px">Git es un programa que guarda el historial de
+    cambios de un proyecto. Claude Code lo usa para saber qué fue modificando.</p>
+    <ol class="steps">
+      <li>Instalá Git desde <a href="https://git-scm.com/downloads/win" target="_blank" rel="noopener">git-scm.com/downloads/win</a>
+      (dejá todas las opciones en su valor por defecto: "Next" varias veces, al final "Install" y "Finish").</li>
+      <li>Abrí <span class="mono">cmd</span>, navegá a tu carpeta de proyectos, por ejemplo:
+      <pre>cd Desktop\Proyectos</pre></li>
+      <li>Cloná el proyecto:
+      <pre>git clone REPO_URL</pre></li>
+      <li>Entrá a la carpeta creada:
+      <pre>cd licitaciones-sobreprecios</pre></li>
+    </ol>
+
+    <a class="video-thumb" href="https://www.youtube.com/watch?v=cYLapo1FFmA" target="_blank" rel="noopener" title="Instalación de Git en Windows paso a paso">
+      <img src="https://i.ytimg.com/vi/cYLapo1FFmA/hqdefault.jpg" alt="Instalación de Git en Windows paso a paso" loading="lazy">
+      <span class="play">▶ Ver el video: Instalación de Git en Windows paso a paso</span>
+    </a>
+    <div class="video-link">Si no ves el video: <a href="https://www.youtube.com/watch?v=cYLapo1FFmA" target="_blank" rel="noopener">youtube.com/watch?v=cYLapo1FFmA</a> — "Instalación de Git en Windows paso a paso" (Programmer Not Found - 404 Error)</div>
+
+    <div class="callout warn"><strong>Ojo:</strong> si elegiste la Opción A (ZIP) ahora,
+    de todas formas vas a necesitar instalar Git más adelante en la Etapa 9, porque
+    Claude Code en Windows lo pide para poder editar código. No es trabajo perdido: podés
+    instalarlo en cualquier momento, incluso ahora.</div>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Tenés una carpeta <span class="mono">licitaciones-sobreprecios</span> (o como se
+      llame el proyecto) dentro de <span class="mono">Proyectos</span>, con archivos como
+      <span class="mono">instalar.bat</span> adentro.</p>
+      <label><input type="checkbox" id="chk-3" data-stage-check="3"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 4 -->
+  <section class="card" id="etapa-4">
+    <div class="stage-head">
+      <div class="stage-num">4</div>
+      <div><h3>⚙️ Instalar el proyecto</h3><div class="sub">2-5 minutos</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> correr <span class="mono">instalar.bat</span>, que
+    prepara todo lo que la aplicación necesita para funcionar.</p>
+    <p><strong>Por qué:</strong> esto crea un "entorno" de Python aislado para este proyecto
+    (no toca ningún otro programa de tu computadora), instala sus dependencias y crea la
+    base de datos con el catálogo de productos.</p>
+
+    <h4 class="block-title">Pasos</h4>
+    <ol class="steps">
+      <li>Abrí la carpeta del proyecto en el Explorador de Windows.</li>
+      <li>Hacé doble click en <span class="mono">instalar.bat</span>.</li>
+      <li>Se abre una ventana negra que muestra pasos del 1 al 5. Puede tardar unos minutos.</li>
+      <li>Cuando termine, apretá cualquier tecla para cerrar la ventana.</li>
+    </ol>
+
+    <div class="callout screen">Qué tenés que ver en pantalla: líneas como
+[1/5] Buscando Python 3.12...
+[2/5] Creando entorno virtual...
+[3/5] Instalando dependencias...
+[4/5] Preparando archivo .env...
+[5/5] Creando la base de datos y cargando el catálogo...
+y al final: "Listo! Proximos pasos: ..."</div>
+
+    <div class="callout warn"><strong>Puede aparecer un cartel azul "Windows protegió su PC"</strong>
+    (SmartScreen) antes de dejarte correr el <span class="mono">.bat</span>. Es normal en un
+    script nuevo, no es un virus: hacé click en "Más información" y después en "Ejecutar
+    de todas formas".</div>
+
+    <h4 class="block-title">Problemas comunes</h4>
+    <ul class="plain">
+      <li>Si aparece la palabra <span class="mono">ERROR</span>, leé el mensaje completo: te
+      va a decir qué guía mirar. No cierres la ventana, copiá el texto o sacale una foto.</li>
+      <li>Si tu antivirus corporativo bloquea el <span class="mono">.bat</span> sin darte la
+      opción de "ejecutar igual", pedile a IT que agregue una excepción para esta carpeta.</li>
+    </ul>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>La ventana negra terminó mostrando <span class="mono">"Listo! Proximos pasos:"</span>
+      sin ningún <span class="mono">ERROR</span> arriba, y ahora existe una carpeta
+      <span class="mono">.venv</span> dentro del proyecto.</p>
+      <label><input type="checkbox" id="chk-4" data-stage-check="4"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 5 -->
+  <section class="card" id="etapa-5">
+    <div class="stage-head">
+      <div class="stage-num">5</div>
+      <div><h3>🔑 Clave de IA gratis (Google AI Studio)</h3><div class="sub">5 minutos</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> conseguir una clave gratis de Google para que la
+    aplicación pueda leer textos raros del Boletín Oficial y PDFs con inteligencia artificial.</p>
+    <p><strong>Por qué:</strong> es gratis, la consigue cada persona con su propia cuenta de
+    Google, y todo lo que procesa esta herramienta es información pública (el Boletín
+    Oficial, precios de supermercados): no hay ningún dato personal ni de clientes de por medio.</p>
+
+    <h4 class="block-title">Pasos</h4>
+    <ol class="steps">
+      <li>Entrá a <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>
+      con tu cuenta de Google.</li>
+      <li>Aceptá los términos de servicio si te los pide (solo la primera vez).</li>
+      <li>Click en "Get API key" / "Crear clave de API" (puede estar en inglés, es normal).</li>
+      <li>Si te pide elegir un proyecto de Google Cloud, dejá el que te sugiere por defecto.</li>
+      <li>Copiá la clave larga que te muestra con el botón de copiar.</li>
+    </ol>
+
+    <div class="callout screen">Qué tenés que ver en pantalla: una tabla con una fila nueva
+y, a la derecha, un ícono para copiar la clave.</div>
+
+    <a class="video-thumb" href="https://www.youtube.com/watch?v=mSDU6Ix3b6E" target="_blank" rel="noopener" title="Google AI Studio API Keys: guía completa paso a paso">
+      <img src="https://i.ytimg.com/vi/mSDU6Ix3b6E/hqdefault.jpg" alt="Google AI Studio API Keys: guía completa paso a paso" loading="lazy">
+      <span class="play">▶ Ver el video: Google AI Studio API Keys: guía completa paso a paso</span>
+    </a>
+    <div class="video-link">Si no ves el video: <a href="https://www.youtube.com/watch?v=mSDU6Ix3b6E" target="_blank" rel="noopener">youtube.com/watch?v=mSDU6Ix3b6E</a> — "Google AI Studio API Keys: Guía Completa Paso a Paso (2026)" (Apasoft Training). Alternativa más corta: <a href="https://www.youtube.com/watch?v=3kwKOVYnNrc" target="_blank" rel="noopener">youtube.com/watch?v=3kwKOVYnNrc</a> (AI MAKER COLOMBIA)</div>
+
+    <h4 class="block-title">Ahora guardala en la aplicación</h4>
+    <ol class="steps">
+      <li>Doble click en <span class="mono">configurar_claves.bat</span>.</li>
+      <li>Te va a preguntar la clave de Gemini: pegala (click derecho → Pegar, o Ctrl+V) y Enter.</li>
+      <li>Para las que no tengas (OpenRouter, OpenAI) apretá Enter sin escribir nada.</li>
+    </ol>
+
+    <div class="callout info">
+      <strong>Opcional:</strong> una clave de <a href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter</a>
+      sirve como respaldo si el plan gratis de Gemini se queda sin cuota un día. No es
+      obligatoria para arrancar. Video: <a href="https://www.youtube.com/watch?v=mGsCF1PfPaU" target="_blank" rel="noopener">youtube.com/watch?v=mGsCF1PfPaU</a>.
+    </div>
+
+    <div class="callout danger"><strong>Nunca</strong> compartas tu clave por mail ni WhatsApp,
+    ni la subas a ningún lado. Queda guardada solo en el archivo <span class="mono">.env</span>
+    de tu computadora. Y <strong>nunca</strong> la pegues en un chat de Claude Code (ver Etapa 11):
+    no la necesita para editar código.</div>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p><span class="mono">configurar_claves.bat</span> terminó mostrando que guardó los
+      cambios (con los últimos 4 caracteres de tu clave, no la clave completa, por seguridad).</p>
+      <label><input type="checkbox" id="chk-5" data-stage-check="5"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 6 -->
+  <section class="card" id="etapa-6">
+    <div class="stage-head">
+      <div class="stage-num">6</div>
+      <div><h3>🚀 Usar la aplicación</h3><div class="sub">5 minutos para el primer recorrido</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> abrir la aplicación por primera vez y conocer cada
+    solapa (pestaña).</p>
+
+    <h4 class="block-title">Pasos</h4>
+    <ol class="steps">
+      <li>Doble click en <span class="mono">iniciar.bat</span>.</li>
+      <li>Se abre una ventana negra y, a los pocos segundos, el navegador en
+      <span class="mono">http://127.0.0.1:8000</span>.</li>
+      <li><strong>No cierres la ventana negra</strong> mientras usás la aplicación: es el
+      motor que la hace funcionar. Para apagarla, cerrá esa ventana.</li>
+    </ol>
+
+    <div class="callout screen">Qué tenés que ver en pantalla: la ventana negra dice algo
+como "Uvicorn running on http://127.0.0.1:8000", y el navegador muestra la
+aplicación con una barra de navegación arriba.</div>
+
+    <h4 class="block-title">Recorrido por las solapas</h4>
+    <table>
+      <tr><th>Solapa</th><th>Para qué</th></tr>
+      <tr><td><strong>Licitaciones</strong></td><td>Lista de compras analizadas, ordenadas por exceso estimado, con semáforo (rojo/amarillo/verde/gris).</td></tr>
+      <tr><td><strong>Detalle</strong> (click en una fila)</td><td>Qué se compró, a quién, a qué precio, contra qué referencia, y la evidencia de mercado.</td></tr>
+      <tr><td><strong>Analítica</strong></td><td>Peores organismos, productos, proveedores, procedimientos y meses.</td></tr>
+      <tr><td><strong>Empresas</strong></td><td>Adjudicatarios y su historia societaria.</td></tr>
+      <tr><td><strong>Reportes</strong></td><td>Informe para periodistas: página imprimible, Excel y CSV.</td></tr>
+      <tr><td><strong>Datos y fuentes</strong></td><td>Actualizar la base en segundo plano.</td></tr>
+      <tr><td><strong>＋ Investigar</strong></td><td>Analizar un caso puntual: link del Boletín Oficial o de COMPR.AR, número de proceso, texto o PDF.</td></tr>
+    </table>
+
+    <div class="callout danger">
+      <strong>La regla de oro de este proyecto:</strong> ningún caso sale a periodistas sin
+      marcar "publicable" a mano, después de revisarlo. Una diferencia de precio no prueba
+      una irregularidad por sí sola — logística, plazos de pago o errores de publicación
+      pueden explicarla. Los reportes que todavía no revisaste salen marcados
+      "BORRADOR INTERNO".
+    </div>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>El navegador muestra la solapa <strong>Licitaciones</strong> con una lista de
+      compras y un semáforo de colores al lado de cada una.</p>
+      <label><input type="checkbox" id="chk-6" data-stage-check="6"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 7 -->
+  <section class="card" id="etapa-7">
+    <div class="stage-head">
+      <div class="stage-num">7</div>
+      <div><h3>📅 Actualizar datos todos los días</h3><div class="sub">10 minutos para programarlo (una sola vez)</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> dejar programado que la computadora corra
+    <span class="mono">actualizar_datos.bat</span> sola, todos los días.</p>
+    <p><strong>Por qué:</strong> no existe un archivo histórico público de precios de
+    mercado 2023 en adelante. Cada día que no se corre el relevamiento es un día de
+    precios que se pierde para siempre.</p>
+
+    <h4 class="block-title">Correrlo a mano (para probarlo primero)</h4>
+    <ol class="steps">
+      <li>Doble click en <span class="mono">actualizar_datos.bat</span>.</li>
+      <li>Baja precios de hoy y busca compras nuevas de los últimos 60 días. Puede tardar
+      bastante (descarga del Boletín Oficial + inteligencia artificial): es normal.</li>
+      <li>Si el plan gratis de IA se queda sin cuota, el proceso sigue solo con reglas, no se traba.</li>
+    </ol>
+
+    <h4 class="block-title">Programarlo con el Programador de tareas de Windows</h4>
+    <ol class="steps">
+      <li>Tecla Windows, escribí <span class="mono">Programador de tareas</span>, Enter.</li>
+      <li>Click derecho en "Biblioteca del Programador de tareas" → "Crear tarea básica...".</li>
+      <li>Nombre: por ejemplo <span class="mono">Sobreprecios - actualizar datos</span>. Siguiente.</li>
+      <li>Desencadenador: elegí "Diariamente", y una hora en la que la computadora suela
+      estar prendida (por ejemplo 9:00). Siguiente.</li>
+      <li>Acción: "Iniciar un programa". Siguiente.</li>
+      <li>En "Programa o script" hacé click en "Examinar..." y elegí el archivo
+      <span class="mono">actualizar_datos.bat</span> dentro de la carpeta del proyecto.</li>
+      <li>Siguiente → Finalizar.</li>
+    </ol>
+
+    <div class="callout screen">Qué tenés que ver en pantalla: al terminar, la tarea nueva
+aparece en la lista del "Programador de tareas" con el nombre que le pusiste
+y "Diariamente" en la columna de desencadenadores.</div>
+
+    <a class="video-thumb" href="https://www.youtube.com/watch?v=yFvvAGHrVjY" target="_blank" rel="noopener" title="Cómo usar el Programador de Tareas de Windows">
+      <img src="https://i.ytimg.com/vi/yFvvAGHrVjY/hqdefault.jpg" alt="Cómo usar el Programador de Tareas de Windows" loading="lazy">
+      <span class="play">▶ Ver el video: Cómo usar el Programador de Tareas de Windows</span>
+    </a>
+    <div class="video-link">Si no ves el video: <a href="https://www.youtube.com/watch?v=yFvvAGHrVjY" target="_blank" rel="noopener">youtube.com/watch?v=yFvvAGHrVjY</a> — "Cómo usar el PROGRAMADOR DE TAREAS de WINDOWS" (GabiTUTOS)</div>
+
+    <div class="callout warn">Para que la tarea programada funcione, la computadora tiene
+    que estar prendida (no en hibernación) a la hora que elegiste. Si usás una notebook,
+    revisá que la configuración de energía no la apague sola de noche.</div>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Corriste <span class="mono">actualizar_datos.bat</span> a mano al menos una vez sin
+      <span class="mono">ERROR</span>, y la tarea aparece en el Programador de tareas de
+      Windows con frecuencia "Diariamente".</p>
+      <label><input type="checkbox" id="chk-7" data-stage-check="7"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 8 -->
+  <section class="card" id="etapa-8">
+    <div class="stage-head">
+      <div class="stage-num">8</div>
+      <div><h3>💳 Pagar la suscripción de Claude</h3><div class="sub">5 minutos — a partir de acá es opcional, pero recomendado</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> conseguir una cuenta de Claude con un plan pago
+    (Pro o Max), que es lo que necesitás para usar Claude Code y seguir mejorando el proyecto
+    sin un programador al lado.</p>
+    <p><strong>Por qué:</strong> Claude Code es distinto de la clave de Gemini de la Etapa 5
+    — esa la usa la aplicación para leer el Boletín Oficial; esta otra es para charlar con
+    un asistente que te edita el código. El plan gratis de Claude <strong>no</strong> incluye
+    Claude Code.</p>
+
+    <h4 class="block-title">Planes y precios (verificado en claude.com/pricing)</h4>
+    <table>
+      <tr><th>Plan</th><th>Precio</th><th>¿Incluye Claude Code?</th></tr>
+      <tr><td>Free</td><td>$0/mes</td><td>No</td></tr>
+      <tr><td><strong>Pro</strong> (el que recomendamos para arrancar)</td><td>USD 20/mes (USD 17/mes si pagás el año completo)</td><td>Sí</td></tr>
+      <tr><td>Max 5x</td><td>desde USD 100/mes</td><td>Sí, con mucho más uso</td></tr>
+      <tr><td>Max 20x</td><td>USD 200/mes</td><td>Sí, con aún más uso</td></tr>
+    </table>
+    <p class="sub">Fuente oficial: <a href="https://claude.com/pricing" target="_blank" rel="noopener">claude.com/pricing</a>.
+    Para el uso de este proyecto (pedidos puntuales, no todo el día), el plan <strong>Pro</strong> alcanza de sobra.</p>
+
+    <h4 class="block-title">Pasos</h4>
+    <ol class="steps">
+      <li>Entrá a <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> y
+      creá una cuenta gratis con tu mail o con Google (si todavía no tenés una).</li>
+      <li>Arriba a la derecha, click en tu nombre → "Upgrade plan" (o entrá directo a
+      <a href="https://claude.com/pricing" target="_blank" rel="noopener">claude.com/pricing</a>).</li>
+      <li>Elegí "Pro" → completá el pago con tarjeta de crédito o débito (el cobro es en dólares).</li>
+    </ol>
+
+    <div class="callout info">Anthropic acepta tarjetas internacionales (Visa, Mastercard,
+    American Express). Como el cobro es en dólares, fijate las condiciones de tu tarjeta
+    para compras en moneda extranjera (impuesto PAIS u otros cargos locales, según tu banco
+    y tu país) — eso lo define tu banco, no esta guía.</div>
+
+    <a class="video-thumb" href="https://www.youtube.com/watch?v=aLIcwob6ErU" target="_blank" rel="noopener" title="Cómo comprar Claude Pro: suscripción paso a paso">
+      <img src="https://i.ytimg.com/vi/aLIcwob6ErU/hqdefault.jpg" alt="Cómo comprar Claude Pro: suscripción paso a paso" loading="lazy">
+      <span class="play">▶ Ver el video: Cómo comprar Claude Pro: suscripción paso a paso</span>
+    </a>
+    <div class="video-link">Si no ves el video: <a href="https://www.youtube.com/watch?v=aLIcwob6ErU" target="_blank" rel="noopener">youtube.com/watch?v=aLIcwob6ErU</a> — "Cómo COMPRAR Claude Pro: Suscripción paso a paso (Tutorial 2026)" (Todo en TUTORIALES)</div>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Entrás a <span class="mono">claude.ai</span>, click en tu nombre (arriba a la
+      derecha) y dice <strong>"Pro"</strong> o <strong>"Max"</strong> al lado, no "Free".</p>
+      <label><input type="checkbox" id="chk-8" data-stage-check="8"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 9 -->
+  <section class="card" id="etapa-9">
+    <div class="stage-head">
+      <div class="stage-num">9</div>
+      <div><h3>🤖 Instalar Claude Code en Windows</h3><div class="sub">10 minutos</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> instalar Claude Code. Hay dos caminos; para alguien
+    que recién arranca recomendamos el primero.</p>
+
+    <h4 class="block-title">Camino recomendado — la app de escritorio de Claude</h4>
+    <p>La app de escritorio ya incluye Claude Code adentro (no hace falta instalar nada
+    de programación aparte) y te deja abrir la carpeta del proyecto y editar código con
+    una interfaz visual, parecida a un programa normal de Windows.</p>
+    <ol class="steps">
+      <li>Entrá a <a href="https://claude.ai/download" target="_blank" rel="noopener">claude.ai/download</a>
+      y descargá la app de escritorio para Windows.</li>
+      <li>Instalala y abrila. Iniciá sesión con la misma cuenta de la Etapa 8 (la que tiene Pro o Max).</li>
+      <li>Click en la solapa <strong>"Code"</strong> dentro de la app.</li>
+      <li>La primera vez que abrís "Code" en Windows, te va a pedir tener <strong>Git para
+      Windows</strong> instalado (ver Etapa 3, Opción B, si todavía no lo instalaste) y
+      reiniciar la app después de instalarlo.</li>
+      <li>Elegí "Abrir carpeta" y seleccioná la carpeta del proyecto
+      (<span class="mono">licitaciones-sobreprecios</span>).</li>
+    </ol>
+
+    <h4 class="block-title">Alternativa — instalarlo en la terminal (PowerShell)</h4>
+    <p>Más técnico, pero igual de válido, y es el camino que usa el resto de esta guía
+    cuando habla de "correr un comando". Útil si preferís trabajar siempre desde la consola.</p>
+    <ol class="steps">
+      <li>Tecla Windows, escribí <span class="mono">powershell</span>, Enter (no uses
+      <span class="mono">cmd</span> para este paso).</li>
+      <li>Pegá este comando y Enter:
+      <pre>irm https://claude.ai/install.ps1 | iex</pre></li>
+      <li>Esperá a que termine de descargar e instalar.</li>
+      <li>Cerrá la ventana y abrí una nueva.</li>
+      <li>Escribí <span class="mono">claude --version</span> y Enter: tiene que mostrar un
+      número de versión.</li>
+      <li>Para empezar a usarlo, navegá a la carpeta del proyecto y escribí <span class="mono">claude</span>.</li>
+    </ol>
+
+    <div class="callout info">Documentación oficial en español:
+    <a href="https://code.claude.com/docs/es/setup" target="_blank" rel="noopener">code.claude.com/docs/es/setup</a>
+    (instalación) y
+    <a href="https://code.claude.com/docs/es/desktop-quickstart" target="_blank" rel="noopener">code.claude.com/docs/es/desktop-quickstart</a>
+    (app de escritorio).</div>
+
+    <a class="video-thumb" href="https://www.youtube.com/watch?v=icx7GCL4hdE" target="_blank" rel="noopener" title="Instalar Claude Code para principiantes">
+      <img src="https://i.ytimg.com/vi/icx7GCL4hdE/hqdefault.jpg" alt="Instalar Claude Code para principiantes" loading="lazy">
+      <span class="play">▶ Ver el video: Instalar Claude Code para principiantes</span>
+    </a>
+    <div class="video-link">Si no ves el video: <a href="https://www.youtube.com/watch?v=icx7GCL4hdE" target="_blank" rel="noopener">youtube.com/watch?v=icx7GCL4hdE</a> — "Instalar CLAUDE CODE para Principiantes: Paso a paso en Windows y MacOS" (Facundo Corengia). Alternativa: <a href="https://www.youtube.com/watch?v=Al5xmPAGce4" target="_blank" rel="noopener">youtube.com/watch?v=Al5xmPAGce4</a> (Aquapy)</div>
+
+    <div class="callout info"><strong>Opcional:</strong> si elegís el camino de la terminal y
+    querés ver los archivos al costado mientras charlás con Claude, podés instalar
+    <a href="https://code.visualstudio.com/" target="_blank" rel="noopener">VS Code</a> y
+    correr <span class="mono">claude</span> desde su terminal integrada. Video:
+    <a href="https://www.youtube.com/watch?v=SwKQ96WBIeM" target="_blank" rel="noopener">youtube.com/watch?v=SwKQ96WBIeM</a> (TICnoticos). No es obligatorio.</div>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Si fuiste por la app de escritorio: la solapa "Code" abrió la carpeta del proyecto
+      y ves sus archivos en una lista al costado. Si fuiste por la terminal:
+      <span class="mono">claude --version</span> muestra un número de versión.</p>
+      <label><input type="checkbox" id="chk-9" data-stage-check="9"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 10 -->
+  <section class="card" id="etapa-10">
+    <div class="stage-head">
+      <div class="stage-num">10</div>
+      <div><h3>🔒 Configurar los permisos de Claude Code</h3><div class="sub">2 minutos (ya casi está hecho)</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> entender cómo Claude Code pide permiso antes de
+    tocar archivos o correr comandos, y confirmar que este proyecto ya viene configurado
+    con valores seguros para que no te pregunte lo mismo todo el tiempo.</p>
+
+    <h4 class="block-title">Los 4 modos de permisos (en criollo)</h4>
+    <table>
+      <tr><th>Modo</th><th>Qué hace</th></tr>
+      <tr><td><strong>Normal</strong></td><td>Te pregunta antes de cada cambio o comando. El más seguro, pero el más lento de usar.</td></tr>
+      <tr><td><strong>Plan</strong></td><td>Primero te muestra un plan de lo que va a hacer, vos lo aprobás, después lo ejecuta.</td></tr>
+      <tr><td><strong>Aceptar ediciones (acceptEdits)</strong></td><td>Acepta automáticamente los cambios de archivo, pero sigue preguntando para comandos del sistema que no estén en la lista permitida. <strong>Este es el que ya viene configurado en este proyecto.</strong></td></tr>
+      <tr><td><strong>Saltar todo (bypassPermissions)</strong></td><td>No pregunta NUNCA, ni para borrar archivos ni para mandar nada a internet.</td></tr>
+    </table>
+
+    <div class="callout danger">
+      <strong>Nunca uses el modo "Saltar todo" (bypassPermissions).</strong> Ese modo le da
+      a Claude Code vía libre para hacer cualquier cosa sin preguntarte, incluyendo borrar
+      archivos o mandar datos afuera. Para este proyecto no hace falta jamás: el modo
+      "Aceptar ediciones" ya es cómodo y sigue siendo seguro.
+    </div>
+
+    <h4 class="block-title">Ya está configurado para vos</h4>
+    <p>Cuando corriste <span class="mono">instalar.bat</span> se creó el archivo
+    <span class="mono">.claude/settings.json</span> (copia de
+    <span class="mono">docs/claude_settings_recomendado.json</span>) con valores seguros ya puestos:</p>
+    <ul class="plain">
+      <li><strong>Modo por defecto:</strong> "Aceptar ediciones" — no te va a preguntar por
+      cada línea de código que cambie.</li>
+      <li><strong>Permitido sin preguntar:</strong> leer archivos del proyecto, correr los
+      tests (<span class="mono">pytest</span>), correr los comandos propios de la herramienta
+      (<span class="mono">sobreprecios.cli</span>), y los <span class="mono">.bat</span> del
+      proyecto.</li>
+      <li><strong>Bloqueado siempre</strong> (ni preguntando te lo deja hacer): leer tu
+      archivo <span class="mono">.env</span> (ahí están tus claves), borrar la carpeta
+      <span class="mono">data</span> completa, o mandar cambios a internet
+      (<span class="mono">git push</span>).</li>
+    </ul>
+    <p>No tenés que tocar nada de este archivo. Si en algún momento ves que Claude Code te
+    pregunta antes de correr algo que no esperabas, está bien: significa que ese comando no
+    estaba en la lista permitida, y es una decisión tuya aprobarlo o no.</p>
+
+    <div class="callout info">En la terminal, podés cambiar de modo en cualquier momento
+    apretando <span class="mono">Shift+Tab</span>. En la app de escritorio, el modo se elige
+    desde un menú visible en la ventana de chat.</div>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Entendés que "Aceptar ediciones" es normal y seguro para este proyecto, y que
+      "Saltar todo" (bypassPermissions) no se usa nunca. El archivo
+      <span class="mono">.claude/settings.json</span> existe en la carpeta del proyecto (si no está, volvé a correr
+      <span class="mono">instalar.bat</span>).</p>
+      <label><input type="checkbox" id="chk-10" data-stage-check="10"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 11 -->
+  <section class="card" id="etapa-11">
+    <div class="stage-head">
+      <div class="stage-num">11</div>
+      <div><h3>💬 Cómo pedirle mejoras a Claude</h3><div class="sub">lectura + práctica</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> abrir el proyecto en Claude Code y aprender a
+    escribir un buen pedido.</p>
+
+    <h4 class="block-title">Cómo escribir un buen pedido</h4>
+    <ul class="plain">
+      <li><strong>Dale contexto.</strong> Si es sobre una compra puntual, pegá el link de esa
+      página (ej. <span class="mono">http://127.0.0.1:8000/licitacion/12</span>).</li>
+      <li><strong>Decí exactamente qué querés</strong>, no solo que "algo está mal".</li>
+      <li><strong>Decile cómo vas a revisar que quedó bien</strong> (ver Etapa 13).</li>
+    </ul>
+
+    <h4 class="block-title">10 pedidos de ejemplo para copiar y pegar (para ESTE proyecto)</h4>
+    <ol class="steps">
+      <li><span class="mono">Leé MEJORAS.md y hacé la mejora #19 (ampliar el catálogo de limpieza).</span></li>
+      <li><span class="mono">Agregá el producto 'lentejas 500 g' al catálogo, en el rubro alimentos.</span></li>
+      <li><span class="mono">Agregá un mayorista nuevo a la lista de fuentes de precios, se llama '&lt;nombre&gt;' y su página es '&lt;url&gt;'.</span></li>
+      <li><span class="mono">La licitación de http://127.0.0.1:8000/licitacion/12 tiene mal el precio del renglón 2: dice $450 pero en el documento original dice $45. Arreglalo.</span></li>
+      <li><span class="mono">Armame un reporte en texto de todas las compras de yerba mate del 2026, con el proveedor y el sobreprecio de cada una.</span></li>
+      <li><span class="mono">¿Por qué esta compra de leche en polvo aparece en rojo? Explicame el cálculo paso a paso, como si fuera para alguien que nunca usó la herramienta.</span></li>
+      <li><span class="mono">El filtro de fecha en el webui no me deja poner un rango de más de un año, ¿lo podés arreglar?</span></li>
+      <li><span class="mono">Revisá si hay algún producto del catálogo que nunca matchea con ninguna compra, y decime cuáles son.</span></li>
+      <li><span class="mono">Bajame la última versión del proyecto desde GitHub.</span> (esto corre <span class="mono">git pull</span>, solo funciona si bajaste el proyecto con Git en la Etapa 3, Opción B)</li>
+      <li><span class="mono">Leé MEJORAS.md y hacé la mejora #8 (arreglar las rutas que ignoran LIC_DB_PATH/LIC_CACHE_DIR).</span></li>
+    </ol>
+
+    <div class="callout success"><strong>Siempre terminá cualquier pedido que toque código
+    con:</strong> "corré los tests (<span class="mono">python -m pytest -q</span>) y el
+    simulador (<span class="mono">simular.bat</span>)". Así Claude confirma que no rompió
+    nada antes de darte el cambio por terminado.</div>
+
+    <h4 class="block-title">Revisá siempre lo que te muestra</h4>
+    <p>Claude Code te muestra qué archivo va a modificar y qué líneas cambian antes de
+    guardarlo. Leelo, aunque sea por arriba. Si algo no te cierra, preguntale
+    <em>"¿por qué hiciste este cambio?"</em> antes de aceptar. Si no entendés algo, pedile
+    que te lo explique más simple.</p>
+
+    <div class="callout warn"><strong>Hacé un backup de la base antes de pedir cambios
+    grandes.</strong> La base de datos está en <span class="mono">data\sobreprecios.db</span>.
+    Copiala a otra carpeta con la fecha en el nombre antes de pedir cambios relacionados a
+    datos (ver Etapa 13).</div>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Le mandaste a Claude Code al menos un pedido de la lista de arriba (o parecido) y
+      viste que te mostró los archivos que iba a cambiar antes de aplicarlos.</p>
+      <label><input type="checkbox" id="chk-11" data-stage-check="11"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 12 -->
+  <section class="card" id="etapa-12">
+    <div class="stage-head">
+      <div class="stage-num">12</div>
+      <div><h3>🐞 Cómo reportar un error a Claude</h3><div class="sub">2 minutos</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> aprender las dos formas de juntar la información de
+    un error para que Claude lo pueda entender y arreglar rápido.</p>
+
+    <h4 class="block-title">Si el error pasó DENTRO de la aplicación (el navegador)</h4>
+    <p>Esta aplicación ya tiene un botón pensado exactamente para esto, abajo de todo en
+    cualquier pantalla.</p>
+    <ol class="steps">
+      <li>Abajo de la página, abrí <strong>"🐞 Reportar un problema (arma el texto para
+      pegarle a Claude)"</strong>.</li>
+      <li>Completá "Qué esperaba" y "Qué pasó" con tus palabras, sin apuro.</li>
+      <li>Click en "Copiar texto para Claude". Ya junta sola la dirección de la página,
+      la fecha y hora, y lo que escribiste.</li>
+      <li>Pegalo en el chat de Claude Code (Ctrl+V).</li>
+    </ol>
+
+    <h4 class="block-title">Si el error pasó en una ventana negra (instalar.bat, actualizar_datos.bat, etc.)</h4>
+    <ol class="steps">
+      <li>Seleccioná el texto del error con el mouse (click y arrastrar) dentro de la ventana negra.</li>
+      <li>Ctrl+C para copiarlo.</li>
+      <li>Pegalo en el chat de Claude Code junto con una frase corta: qué esperabas que pasara
+      y qué paso en cambio.</li>
+    </ol>
+
+    <h4 class="block-title">Siempre ayuda: una captura de pantalla</h4>
+    <ol class="steps">
+      <li>Apretá <span class="mono">Win + Shift + S</span> (las 3 teclas juntas).</li>
+      <li>La pantalla se oscurece un poco: marcá con el mouse la zona que querés capturar.</li>
+      <li>Se copia sola al portapapeles: pegala en el chat de Claude Code con Ctrl+V.</li>
+    </ol>
+
+    <a class="video-thumb" href="https://www.youtube.com/watch?v=lZ-_g5VAYVM" target="_blank" rel="noopener" title="Captura tu pantalla de Windows con Win+Shift+S">
+      <img src="https://i.ytimg.com/vi/lZ-_g5VAYVM/hqdefault.jpg" alt="Captura tu pantalla de Windows con Win+Shift+S" loading="lazy">
+      <span class="play">▶ Ver el video: Captura tu pantalla de Windows con Win+Shift+S</span>
+    </a>
+    <div class="video-link">Si no ves el video: <a href="https://www.youtube.com/watch?v=lZ-_g5VAYVM" target="_blank" rel="noopener">youtube.com/watch?v=lZ-_g5VAYVM</a> — "Captura tu pantalla de Windows y compártela con Windows + Shift + S" (Comarca Digital)</div>
+
+    <h4 class="block-title">Otro dato útil: la dirección exacta de la página</h4>
+    <p>Hacé click una vez en la barra de direcciones del navegador (arriba de todo, donde
+    dice <span class="mono">http://127.0.0.1:8000/...</span>), Ctrl+C para copiarla, y
+    pegala junto con tu pedido. Así Claude sabe exactamente en qué pantalla pasó el problema.</p>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Sabés dónde está el botón "Reportar un problema" en la aplicación, y cómo sacar una
+      captura con <span class="mono">Win + Shift + S</span>.</p>
+      <label><input type="checkbox" id="chk-12" data-stage-check="12"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 13 -->
+  <section class="card" id="etapa-13">
+    <div class="stage-head">
+      <div class="stage-num">13</div>
+      <div><h3>🧪 Cómo saber que una mejora quedó bien</h3><div class="sub">5 minutos por cambio</div></div>
+    </div>
+    <p><strong>Qué vas a hacer:</strong> correr el simulador después de cualquier cambio
+    importante, antes de confiar en él.</p>
+
+    <h4 class="block-title">Pasos</h4>
+    <ol class="steps">
+      <li>Doble click en <span class="mono">simular.bat</span> (o pedile a Claude que lo corra por vos).</li>
+      <li>Abre un navegador invisible y recorre la aplicación como lo haría una persona real:
+      filtra licitaciones, marca una revisión, arma un reporte, investiga un caso. No toca tu
+      base de datos real.</li>
+      <li>Al final te dice <strong>"Todo verde. OK para entregar esta versión."</strong> o te
+      marca qué escenario falló.</li>
+      <li>Si querés, abrí también <span class="mono">iniciar.bat</span> y mirá con tus propios
+      ojos la pantalla donde se hizo el cambio.</li>
+    </ol>
+
+    <div class="callout screen">Qué tenés que ver en pantalla: una tabla con una fila por
+escenario (Inicio, Detalle de licitación, Marcar revisión, Reportes...) y al
+final "Todo verde" o la lista de qué falló.</div>
+
+    <h4 class="block-title">Si algo se rompió</h4>
+    <ul class="plain">
+      <li>Decile a Claude Code: <em>"volvé al estado anterior"</em>. Si bajaste el proyecto
+      con Git (Etapa 3, Opción B), puede deshacer el último cambio con precisión.</li>
+      <li>Si bajaste el ZIP (sin Git), el deshacer depende de que Claude recuerde el cambio
+      anterior en la conversación — por eso conviene pedir cambios de a uno, no todos juntos.</li>
+    </ul>
+
+    <div class="callout warn"><strong>Antes de un cambio grande relacionado a datos</strong>,
+    copiá el archivo <span class="mono">data\sobreprecios.db</span> a otra carpeta con la
+    fecha en el nombre (ej. <span class="mono">sobreprecios_backup_2026-10-11.db</span>).
+    Si algo sale mal, cerrás la aplicación, reemplazás el archivo por tu copia, y la volvés a abrir.</div>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Corriste <span class="mono">simular.bat</span> al menos una vez y vio
+      <strong>"Todo verde"</strong> al final.</p>
+      <label><input type="checkbox" id="chk-13" data-stage-check="13"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 14 -->
+  <section class="card" id="etapa-14">
+    <div class="stage-head">
+      <div class="stage-num">14</div>
+      <div><h3>📖 Glosario mini</h3><div class="sub">de consulta, no hace falta memorizarlo</div></div>
+    </div>
+    <dl class="glossary">
+      <dt>Python</dt>
+      <dd>El lenguaje de programación en el que está escrita esta herramienta. Se instala una
+      sola vez (Etapa 2) y después queda funcionando solo.</dd>
+
+      <dt>Terminal / consola / cmd</dt>
+      <dd>Una ventana negra donde se escriben comandos en vez de hacer click con el mouse.
+      En Windows se abre escribiendo <span class="mono">cmd</span> después de apretar la tecla Windows.</dd>
+
+      <dt>Carpeta del proyecto</dt>
+      <dd>La carpeta que bajaste en la Etapa 3 (se llama algo como
+      <span class="mono">licitaciones-sobreprecios</span>). Todo pasa adentro de ella.</dd>
+
+      <dt>Servidor local</dt>
+      <dd>El "motor" que hace funcionar la página web de la aplicación en tu propia
+      computadora, sin internet. Se prende con <span class="mono">iniciar.bat</span> y se ve
+      como una ventana negra que hay que dejar abierta.</dd>
+
+      <dt>Clave de API</dt>
+      <dd>Una contraseña larga que identifica tus consultas ante un proveedor (Google,
+      OpenAI). La de este proyecto (Gemini) es gratis y se consigue con tu cuenta de Google.</dd>
+
+      <dt>Claude Code</dt>
+      <dd>Un asistente que puede leer y modificar el código del proyecto charlando en
+      español normal, sin que necesites saber programar.</dd>
+
+      <dt>Test</dt>
+      <dd>Una verificación automática chiquita que confirma que una parte del programa sigue
+      funcionando como se espera. Se corren todos juntos con <span class="mono">python -m pytest -q</span>.</dd>
+
+      <dt>Simulador</dt>
+      <dd>Un programa que abre un navegador invisible y usa la aplicación como lo haría una
+      persona real, para avisar si algo se rompió antes de confiar en una versión nueva. Se
+      corre con <span class="mono">simular.bat</span>.</dd>
+    </dl>
+
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Leíste el glosario. No hace falta memorizarlo: volvé acá cuando una palabra no te cierre.</p>
+      <label><input type="checkbox" id="chk-14" data-stage-check="14"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <footer class="page">
+    <p>Guía de inicio — Sobreprecios en compras del Estado. Todos los videos fueron
+    verificados antes de publicar esta guía. Si algún link deja de funcionar, avisale a
+    quien te dio acceso al proyecto.</p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var KEY = 'guia_sobreprecios_checklist_v1';
+  var STAGES = [
+    {n:0, t:'Qué es esto'},
+    {n:1, t:'Preparar la PC'},
+    {n:2, t:'Instalar Python'},
+    {n:3, t:'Bajar el proyecto'},
+    {n:4, t:'Instalar el proyecto'},
+    {n:5, t:'Clave de IA gratis'},
+    {n:6, t:'Usar la aplicación'},
+    {n:7, t:'Actualizar datos'},
+    {n:8, t:'Pagar Claude'},
+    {n:9, t:'Instalar Claude Code'},
+    {n:10, t:'Configurar permisos'},
+    {n:11, t:'Pedir mejoras'},
+    {n:12, t:'Reportar un error'},
+    {n:13, t:'Verificar una mejora'},
+    {n:14, t:'Glosario'}
+  ];
+  var TOTAL = STAGES.length;
+
+  function safeGet(){
+    try {
+      var raw = localStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch (e) { return {}; }
+  }
+  function safeSet(state){
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* sin localStorage, no pasa nada */ }
+  }
+
+  var state = safeGet();
+
+  function buildDots(){
+    var row = document.getElementById('dots-row');
+    var mapa = document.getElementById('mapa');
+    if (!row || !mapa) return;
+    var htmlDots = '';
+    var htmlMap = '';
+    for (var i = 0; i < TOTAL; i++){
+      htmlDots += '<a class="dot" id="dot-' + i + '" href="#etapa-' + i + '" title="Etapa ' + i + ': ' + STAGES[i].t + '">' + i + '</a>';
+      htmlMap += '<a href="#etapa-' + i + '"><span class="n">' + i + '</span><span>' + STAGES[i].t + '</span></a>';
+    }
+    row.innerHTML = htmlDots;
+    mapa.innerHTML = htmlMap;
+  }
+
+  function renderProgress(){
+    var done = 0;
+    for (var i = 0; i < TOTAL; i++){ if (state[i]) done++; }
+    var pct = Math.round((done / TOTAL) * 100);
+    var fill = document.getElementById('bar-fill');
+    if (fill) fill.style.width = pct + '%';
+    var label = document.getElementById('bar-label');
+    if (label) label.textContent = done + ' de ' + TOTAL + ' etapas completas (' + pct + '%)';
+    for (var j = 0; j < TOTAL; j++){
+      var dot = document.getElementById('dot-' + j);
+      if (dot) { if (state[j]) dot.classList.add('dot-done'); else dot.classList.remove('dot-done'); }
+      var chk = document.getElementById('chk-' + j);
+      if (chk) chk.checked = !!state[j];
+    }
+  }
+
+  document.addEventListener('change', function(ev){
+    var t = ev.target;
+    if (!t || !t.matches || !t.matches('input[data-stage-check]')) return;
+    var idx = parseInt(t.getAttribute('data-stage-check'), 10);
+    state[idx] = t.checked;
+    safeSet(state);
+    renderProgress();
+  });
+
+  buildDots();
+  renderProgress();
+})();
+</script>
+
+</body>
+</html>

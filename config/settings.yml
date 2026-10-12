@@ -1,0 +1,87 @@
+# Configuración general. Se relee en cada corrida: editar y volver a correr.
+
+db_path: data/sobreprecios.db
+cache_dir: data/cache
+
+llm:
+  # Todo lo que se procesa es información pública: el plan GRATIS de los proveedores
+  # alcanza (más lento, con cuotas). Override por corrida: LIC_LLM_PERFIL=pago
+  perfil: gratis
+  perfiles:
+    gratis:
+      # Alias "latest" de Google: siguen al Flash vigente aunque Google deprecie versiones.
+      roles:
+        cheap: gemini-flash-lite-latest   # clasificar renglones, machear productos
+        pdf: gemini-flash-latest          # leer PDFs de actas / anexos
+      # Pedidos por minuto (por debajo del límite del plan gratis, para no comer 429).
+      rpm:
+        gemini-flash-lite-latest: 10
+        gemini-flash-latest: 5
+      # Ante "429 demasiados pedidos": esperar y reintentar con paciencia.
+      reintentos: 8
+      espera_maxima_s: 300
+    pago:
+      roles:
+        cheap: gpt-6-luna          # ~USD 0.001 por aviso
+        pdf: gemini-3.6-flash
+      reintentos: 3
+      espera_maxima_s: 60
+  # Alternativa gratis de respaldo: un modelo ':free' de OpenRouter, por ejemplo
+  #   LIC_LLM_ROLE_CHEAP=openrouter/<modelo>:free   (requiere OPENROUTER_API_KEY)
+  # Corte duro de gasto por corrida (USD), solo perfil pago. Al llegar, sigue con reglas.
+  max_usd_por_corrida: 2.0
+
+comparacion:
+  # Observaciones de mercado a <= N días de la fecha de la compra se usan tal cual.
+  ventana_directa_dias: 15
+  # Más lejos que esto no se compara (ni ajustando por IPC).
+  gap_maximo_dias: 120
+  # Un envase de mercado entra si su contenido está entre tamaño/banda y tamaño*banda
+  # (los bultos grandes son más baratos por kg; los chicos, más caros).
+  banda_tamano: 2.5
+  # Outliers por canal respecto de la mediana (promos, productos mal macheados).
+  outlier_bajo: 0.4
+  outlier_alto: 2.5
+  # Plazo de pago típico del Estado. Con inflación mensual m, se descuenta m*plazo
+  # del sobreprecio ("costo financiero", Grupo Quijote §8).
+  plazo_pago_meses: 1.0
+  # Contra qué se calcula el semáforo y el exceso en $ (Mateo 2026-10-11):
+  #   1. si la licitación nombra la MARCA y está en el mercado -> esa marca;
+  #   2. si no, el MÍNIMO de mercado normalizado por kg/l/u, sin importar la marca;
+  #      si la licitación dice el envase ("envases de 1 kg") se usa solo ese envase.
+  # Opciones: min_mayorista (default) | p25_mayorista | mediana_mayorista |
+  #           min_minorista | mediana_minorista | indec
+  # Ojo: con "mínimo", un precio mal cargado en la fuente se vuelve la referencia. Por eso
+  # los outliers (< outlier_bajo x mediana) se descartan antes y el webui muestra de dónde
+  # sale el mínimo para verificarlo.
+  # Decisión del LLM prime P16 (2026-10-11): mínimo de AMBOS canales (el pool mayorista es delgado y
+  # 1-2 observaciones raras escondían sobreprecio). El rojo se mide contra el mínimo CORROBORADO.
+  referencia_principal: min_mercado
+  # Rojo exige que el mínimo (o la misma marca) esté confirmado por >= N familias de fuentes
+  # independientes dentro de ±tolerancia (SEPA y su espejo son UNA familia). Decisión del LLM prime P1.
+  rojo_min_fuentes: 2
+  corroboracion_tolerancia: 0.02
+  umbral_rojo_pct: 20
+  umbral_amarillo_pct: 8
+  # Si precio_estado / referencia > N (o < 1/N) casi seguro es un error de unidad
+  # (bulto vs unidad, kg vs g): se marca "revisar_unidad", nunca "rojo".
+  plausibilidad_max_ratio: 4.0
+  # ── Decisiones del LLM prime P17-P21 (2026-10-11). Cada flag se puede revertir acá.
+  # El rojo tiene que sobrevivir con este plazo de pago (factor compuesto); si un plazo plausible
+  # cambia la alerta, queda en amarillo.
+  plazo_escenarios_rojo_meses: 2
+  # Si la compra exige el envase y el mercado no lo tiene en la fecha: gris (no se relaja a la banda).
+  presentacion_exigida_estricta: true
+  # "Mismo envase" = contenido a ±3% (juez casos 2026-10-11: 4,5 L no es 5 L, 85 g no es 90 g, 350 g no es 380 g).
+  tolerancia_presentacion: 0.03
+  # Atributo crítico (variante) desconocido o ambiguo en la compra: gris | sin_rojo
+  atributo_desconocido: gris
+  # Variante exigida sin mercado de esa variante en la fecha: gris | sin_rojo
+  variante_sin_mercado: gris
+  # El promedio INDEC como única referencia nunca da rojo (máximo amarillo).
+  indec_solo_habilita_rojo: false
+
+indices:
+  # apis.datos.gob.ar/series — IPC base dic 2016, mensual.
+  ipc_alimentos: 146.3_IALIMENNAL_DICI_M_45
+  ipc_general: 148.3_INIVELNAL_DICI_M_26

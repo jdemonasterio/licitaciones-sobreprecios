@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Licitaciones · Sobreprecios{% endblock %}
+{% block content %}
+<h1>Licitaciones analizadas</h1>
+<p class="muted small">Compras del Estado con renglones comparables contra precios de mercado a la misma fecha.
+Ordenadas por el exceso estimado (lo que se pagó por encima de la referencia, ya descontado el costo financiero).</p>
+
+<div class="kpis">
+    <div class="kpi"><div class="label">Procesos</div><div class="value">{{ kpis.procesos or 0 }}</div>
+        <div class="sub">{{ kpis.desde or '—' }} a {{ kpis.hasta or '—' }}</div></div>
+    <div class="kpi"><div class="label">Renglones comparados</div><div class="value">{{ kpis.comparados or 0 }}</div>
+        <div class="sub">de {{ kpis.renglones or 0 }} renglones</div></div>
+    <div class="kpi"><div class="label">Con sobreprecio alto / moderado</div>
+        <div class="value"><span class="sem sem-rojo">{{ kpis.rojos or 0 }}</span> <span class="sem sem-amarillo">{{ kpis.amarillos or 0 }}</span></div></div>
+    <div class="kpi"><div class="label">Monto adjudicado</div><div class="value">{{ kpis.monto|millones }}</div></div>
+    <div class="kpi"><div class="label">Exceso estimado</div><div class="value">{{ kpis.exceso|millones }}</div>
+        <div class="sub">solo renglones en rojo o amarillo</div></div>
+</div>
+
+<form class="filters" method="get" action="/" data-soft="off">
+    <div class="field" style="flex:1;min-width:220px"><label>Buscar</label>
+        <input type="search" name="q" value="{{ filtros.q }}" placeholder="organismo, proveedor, CUIT, producto, número"></div>
+    <div class="field"><label>Producto</label>
+        <select name="producto"><option value="">Todos</option>
+        {% for p in opciones.productos %}<option value="{{ p.id }}" {% if filtros.producto == p.id %}selected{% endif %}>{{ p.nombre }}</option>{% endfor %}
+        </select></div>
+    <div class="field"><label>Organismo</label>
+        <select name="organismo" style="max-width:260px"><option value="">Todos</option>
+        {% for o in opciones.organismos %}<option {% if filtros.organismo == o %}selected{% endif %}>{{ o }}</option>{% endfor %}
+        </select></div>
+    <div class="field"><label>Semáforo</label>
+        <select name="semaforo"><option value="">Todos</option>
+        {% for s in ['rojo','amarillo','verde','gris'] %}<option value="{{ s }}" {% if filtros.semaforo == s %}selected{% endif %}>{{ SEMAFORO_TXT[s] }}</option>{% endfor %}
+        </select></div>
+    <div class="field"><label>Desde</label><input type="date" name="desde" value="{{ filtros.desde }}"></div>
+    <div class="field"><label>Hasta</label><input type="date" name="hasta" value="{{ filtros.hasta }}"></div>
+    <div class="field"><label>Revisión</label>
+        <select name="revision"><option value="">Todas</option>
+        {% for s in ['pendiente','revisado','publicable','descartado'] %}<option {% if filtros.revision == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select></div>
+    <div class="field"><label>Ordenar por</label>
+        <select name="orden">
+        {% for k, t in [('exceso','Exceso estimado'),('sobreprecio','% sobreprecio'),('ofertas','Ganó más cara que la oferta más baja'),('fecha','Más recientes'),('monto','Monto')] %}
+        <option value="{{ k }}" {% if orden == k %}selected{% endif %}>{{ t }}</option>{% endfor %}
+        </select></div>
+    <button class="btn btn-primary" type="submit">Filtrar</button>
+    <a class="btn" href="/">Limpiar</a>
+</form>
+
+{% if not procesos %}
+<div class="help">Todavía no hay licitaciones con estos filtros. Andá a <a href="/fuentes">Datos y fuentes</a> para buscar
+adjudicaciones en el Boletín Oficial, o usá <a href="/investigar">＋ Investigar una licitación</a> para analizar un caso puntual.</div>
+{% else %}
+<div class="table-wrap">
+<table>
+    <thead><tr>
+        <th>Semáforo</th><th>Fecha</th><th>Organismo</th><th>Proceso / norma</th><th>Proveedores</th>
+        <th>Productos</th><th class="num">Monto</th><th class="num">Peor brecha</th><th class="num">Exceso estimado</th><th class="num">vs oferta más baja</th><th>Revisión</th>
+    </tr></thead>
+    <tbody>
+    {% for p in procesos %}
+    <tr data-soft-key="proc:{{ p.id }}" class="row-link" onclick="location.href='/licitacion/{{ p.id }}'">
+        <td><span class="sem sem-{{ p.peor_semaforo }}">{{ SEMAFORO_TXT[p.peor_semaforo] }}</span></td>
+        <td>{{ p.fecha or '—' }}</td>
+        <td>{{ p.organismo or '—' }}</td>
+        <td><a href="/licitacion/{{ p.id }}">{{ p.numero or (p.norma or 'ver detalle') }}</a>
+            {% if p.norma and p.numero %}<div class="muted small">{{ p.norma }}</div>{% endif %}</td>
+        <td class="small">{{ p.proveedores[:3]|join(', ') }}{% if p.proveedores|length > 3 %} y {{ p.proveedores|length - 3 }} más{% endif %}</td>
+        <td>{% for pr in p.productos[:4] %}<span class="tag">{{ pr.replace('_', ' ') }}</span>{% endfor %}</td>
+        <td class="num">{{ p.monto|millones }}</td>
+        <td class="num {% if p.max_sobreprecio and p.max_sobreprecio > 0 %}pos{% else %}neg{% endif %}">{{ p.max_sobreprecio|pct }}</td>
+        <td class="num">{{ p.exceso|millones }}</td>
+        <td class="num {% if p.max_brecha_ofertas and p.max_brecha_ofertas > 0 %}pos{% endif %}">{{ p.max_brecha_ofertas|pct }}</td>
+        <td class="small">{{ p.estado_revision or 'pendiente' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+<p class="muted small">Mostrando {{ procesos|length }} procesos. "Peor brecha" es el mayor sobreprecio ajustado entre sus renglones.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,45 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Read(./**)",
+      "Bash(python -m pytest:*)",
+      "Bash(python3 -m pytest:*)",
+      "Bash(python3.12 -m pytest:*)",
+      "Bash(.venv/bin/python -m pytest:*)",
+      "Bash(.venv\\Scripts\\python.exe -m pytest:*)",
+      "Bash(python -m sobreprecios.cli:*)",
+      "Bash(python3 -m sobreprecios.cli:*)",
+      "Bash(python3.12 -m sobreprecios.cli:*)",
+      "Bash(.venv/bin/python -m sobreprecios.cli:*)",
+      "Bash(.venv\\Scripts\\python.exe -m sobreprecios.cli:*)",
+      "Bash(.venv/bin/python scripts/simular.py:*)",
+      "Bash(.venv\\Scripts\\python.exe scripts\\simular.py:*)",
+      "Bash(instalar.bat:*)",
+      "Bash(configurar_claves.bat:*)",
+      "Bash(iniciar.bat:*)",
+      "Bash(actualizar_datos.bat:*)",
+      "Bash(simular.bat:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git pull:*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./**/token*.json)",
+      "Bash(rm -rf ./data/**)",
+      "Bash(rm -rf ./data)",
+      "Bash(del /s ./data/**)",
+      "Bash(del /s ./data)",
+      "Bash(rmdir /s ./data)",
+      "Bash(rm -rf:*)",
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)"
+    ]
+  }
+}

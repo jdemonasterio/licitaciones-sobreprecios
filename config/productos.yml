@@ -1,0 +1,379 @@
+# Catálogo canónico: la unidad de comparación "peras con peras".
+#
+# Un renglón de licitación y una observación de mercado se comparan SOLO si caen
+# en el mismo producto. Todo se lleva a precio por unidad_base (kg, l o u).
+#
+# Reglas (sobre el texto normalizado: minúsculas, sin tildes, sin puntuación):
+#   incluye: alguna frase cuyas palabras estén TODAS presentes (en cualquier orden)
+#   excluye: si aparece CUALQUIERA de estas frases, no es este producto
+# Si dos productos empatan, nadie gana: decide el LLM (o queda para revisión).
+#
+# busqueda: términos para buscar el producto en supermercados y mayoristas (relevamiento diario).
+# variantes: sub-tipos que no se comparan entre sí (fideos largos vs cortos, leche fortificada vs común).
+#   Si la licitación dice la variante y el mercado la tiene, se compara solo contra esa. Si no se puede
+#   verificar, se compara contra el producto entero pero SIN rojo (juez externo 2026-10-11).
+# indec.serie: serie mensual de precio promedio al consumidor (apis.datos.gob.ar).
+# indec.presentacion: contenido al que corresponde ese precio.
+# indec.verificado: oficial (dice la presentación en el nombre de la serie) |
+#   inferido (deducido del nivel de precios vs mayoristas 2021) | desconocido (no se usa).
+
+# Frases que descartan CUALQUIER producto (alimento para mascotas, juguetes, etc.).
+# Encontrado en el golden de precios 2026-10-11: el "mínimo" de atún era comida para gatos.
+exclusiones_globales: [gato, gatos, perro, perros, mascota, mascotas, whiskas, pedigree, "cat chow", "dog chow",
+                       felino, canino, juguete, sticker, llavero,
+                       # platos preparados (archivo SEPA: "SC BIFE CRIOLL ARROZ" caía como arroz)
+                       bife, crioll, criollo, milanesa, milanesas, empanada, empanadas, tarta, tartas, ensalada,
+                       sandwich, hamburguesa, hamburguesas, "listo para", rotiseria, vianda,
+                       medallon, medallones]   # juez 2026-10-11: "Medallones de Quinoa NUTREE Lentejas" caía como lentejas
+
+productos:
+
+  # ── Alimentos secos ──────────────────────────────────────────────────────
+  leche_polvo_entera:
+    nombre: Leche en polvo entera
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["leche en polvo entera"]
+    tamano_referencia: 800 g
+    incluye: ["leche polvo"]
+    excluye: [descremada, maternizada, infantil, formula, deslactosada, "sin lactosa",
+              chocolatada, cacao, modificada, "parcialmente", queso, coco, almendras, bebe, meses,
+              nutrilon, profutura, nutribaby, etapa, vegetal]
+    indec: {serie: 105.1_I2LPE_2016_M_27, presentacion: 800 g, verificado: inferido}
+    # El Estado suele pedir leche fortificada (Ley 25.459): se compara con fortificada si el mercado la tiene.
+    variantes:
+      fortificada: [fortificada, hierro, zinc, vitamina, "cal nut", calcio]
+    variante_default: comun
+
+  leche_entera_fluida:
+    nombre: Leche entera fluida (larga vida / sachet)
+    rubro: alimentos
+    unidad_base: l
+    busqueda: ["leche entera larga vida", "leche entera sachet"]
+    tamano_referencia: 1 l
+    incluye: ["leche entera", "leche larga vida", "leche fluida", "leche uat", "leche ultrapasteurizada"]
+    excluye: [polvo, descremada, parcialmente, chocolatada, condensada, dulce, cacao, queso, deslactosada]
+    indec: {serie: 348.1_GBA_LECHE_TRO__36, presentacion: 1 l, verificado: oficial,
+            nota: "INDEC releva leche fresca en sachet; la larga vida suele costar algo más"}
+
+  yerba_mate:
+    nombre: Yerba mate
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["yerba mate"]
+    tamano_referencia: 1 kg
+    incluye: ["yerba mate", "yerba"]
+    excluye: [compuesta, hierbas, saborizada, "mate cocido", saquitos, saquito, cocido, "en saquitos",
+              naranja, limon, menta, boldo, burrito, sabores, fusion, organica, organico]
+    indec: {serie: 105.1_I2YM_2016_M_19, presentacion: 500 g, verificado: inferido}
+
+  fideos_secos:
+    nombre: Fideos secos (guiseros / largos / sémola)
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["fideos guiseros", "fideos spaghetti"]
+    tamano_referencia: 500 g
+    incluye: [fideos, fideo, tallarin, tallarines, spaghetti, spaghettis, tirabuzon, tirabuzones,
+              mostachol, mostacholes, codito, coditos, guiseros, moños, "pasta seca", "pastas secas",
+              dedalitos, "fideos semola", moñito, moñitos]
+    excluye: [huevo, integral, integrales, "sin tacc", rellenos, frescos, ñoquis, ravioles, arroz, lasagna,
+              sopa, instantaneos, vegetales, espinaca, organica, organico, tomate, legumbres, garbanzos]
+    indec: {serie: 348.1_GBA_FIDEOS_GR__36, presentacion: 500 g, verificado: oficial}
+    variantes:
+      largos: [spaghetti, spaghettis, spaguetti, tallarin, tallarines, "fideo largo", "fideos largos", cinta, cintas,
+               linguine, fettuccine, fetuccini, vermicelli, bucatini, largos]
+      cortos: [guisero, guiseros, tirabuzon, tirabuzones, mostachol, mostacholes, moños, moñito, moñitos, codito,
+               coditos, dedalitos, penne, rigati, fusilli, caracol, caracoles, municion, cortos, dobladitos]
+
+  arroz_blanco:
+    nombre: Arroz blanco (largo fino / doble carolina)
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["arroz largo fino"]
+    tamano_referencia: 1 kg
+    incluye: [arroz]
+    excluye: [integral, yamani, parboil, parboiled, preparado, galleta, galletas, galletitas, inflado,
+              harina, fideos, "con leche", risotto, yamaní, "arroz con", primavera, salvaje, sushi]
+    indec: {serie: 348.1_GBA_ARROZ_KG__26, presentacion: 1 kg, verificado: oficial}
+    variantes:
+      largo_fino: ["largo fino", "00000", "0000", "grano largo fino"]
+      doble_carolina: ["doble carolina", carolina]
+      grano_largo: ["grano largo"]
+
+  harina_trigo_000:
+    nombre: Harina de trigo 000
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["harina 000"]
+    tamano_referencia: 1 kg
+    incluye: ["harina trigo", "harina 000", "harina comun", "harina fortificada"]
+    excluye: ["0000", maiz, leudante, integral, mandioca, arroz, garbanzo, soja, pizza, preparado,
+              premezcla, bizcochuelo, "sin tacc", almendra, avena, centeno]
+    indec: {serie: 348.1_GBA_HARINA_KG__32, presentacion: 1 kg, verificado: oficial}
+
+  harina_trigo_0000:
+    nombre: Harina de trigo 0000
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["harina 0000"]
+    tamano_referencia: 1 kg
+    incluye: ["harina 0000", "harina trigo 0000"]
+    excluye: [leudante, integral, preparado, premezcla, pizza, "sin tacc"]
+
+  harina_maiz:
+    nombre: Harina de maíz (polenta)
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["polenta"]
+    tamano_referencia: 1 kg
+    incluye: ["harina maiz", polenta]
+    excluye: [arepa, arepas, almidon, maicena, fecula, pochoclo, "pan de maiz", tortillas]
+
+  azucar:
+    nombre: Azúcar blanca común
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["azucar"]
+    tamano_referencia: 1 kg
+    incluye: [azucar]
+    excluye: [impalpable, mascabo, negra, organica, edulcorante, "sin azucar", glas, glass, cacao,
+              dulce, mermelada, bebida, gaseosa, jugo, "bajo en", light, stevia, "con azucar", rubia,
+              sobres, sobrecitos]
+    indec: {serie: 348.1_GBA_AZUCAR_KG__13, presentacion: 1 kg, verificado: oficial}
+
+  aceite_girasol:
+    nombre: Aceite de girasol
+    rubro: alimentos
+    unidad_base: l
+    busqueda: ["aceite de girasol"]
+    tamano_referencia: 1.5 l
+    incluye: ["aceite girasol"]
+    excluye: [oliva, mezcla, oleico, olei, spray, aerosol, blend, maiz, soja, canola, organico, organica]
+    indec: {serie: 348.1_GBA_ACEITEDIO__35, presentacion: 1.5 l, verificado: inferido,
+            nota: "la serie dice '1 litro medio': se interpreta litro y medio"}
+
+  aceite_mezcla:
+    nombre: Aceite mezcla (girasol-soja)
+    rubro: alimentos
+    unidad_base: l
+    busqueda: ["aceite mezcla"]
+    tamano_referencia: 900 ml
+    incluye: ["aceite mezcla", "aceite comestible mezcla"]
+    excluye: [oliva, spray, aerosol]
+
+  pure_tomate:
+    nombre: Puré de tomate
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["pure de tomate"]
+    tamano_referencia: 520 g
+    incluye: ["pure tomate"]
+    excluye: [ketchup, salsa, extracto, pulpa, triturado, perita, concentrado]
+
+  arvejas_secas:
+    nombre: Arvejas secas partidas
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["arvejas partidas"]
+    tamano_referencia: 400 g
+    incluye: ["arvejas secas", "arvejas partidas", "arveja partida", "arveja seca", "arvejas secas partidas"]
+    excluye: [lata, conserva, remojadas, "en lata"]
+
+  lentejas:
+    nombre: Lentejas secas
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["lentejas"]
+    tamano_referencia: 400 g
+    incluye: [lentejas, lenteja]
+    excluye: [lata, conserva, remojadas, sopa, harina, "listas", hamburguesa]
+
+  porotos:
+    nombre: Porotos secos
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["porotos alubia"]
+    tamano_referencia: 400 g
+    incluye: [porotos, poroto]
+    excluye: [lata, conserva, remojados, soja, chauchas, "listos"]
+
+  choclo_conserva:
+    nombre: Choclo en conserva
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["choclo"]
+    tamano_referencia: 350 g
+    incluye: ["choclo conserva", "choclo lata", "choclo amarillo", "choclo crema", "choclo grano",
+              "choclo cremoso", "choclo en granos"]
+    excluye: [congelado, fresco, harina, sopa]
+
+  arvejas_conserva:
+    nombre: Arvejas en conserva
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["arvejas en lata"]
+    tamano_referencia: 350 g
+    incluye: ["arvejas conserva", "arvejas lata", "arvejas remojadas", "arveja conserva", "arvejas en lata"]
+    excluye: [partidas, congeladas]
+
+  picadillo_carne:
+    nombre: Picadillo de carne
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["picadillo"]
+    tamano_referencia: 90 g
+    incluye: [picadillo]
+    excluye: [pollo, vegetal]
+
+  carne_conserva:
+    nombre: Carne vacuna en conserva
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["corned beef"]
+    tamano_referencia: 320 g
+    incluye: ["carne conserva", "corned beef", "carne vacuna conserva", "carne lata", "carne en lata",
+              "carne envasada"]
+    excluye: [picadillo, pate, pollo]
+
+  merluza_conserva:
+    nombre: Merluza en conserva
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["merluza al natural"]
+    tamano_referencia: 380 g
+    incluye: ["merluza conserva", "merluza lata", "merluza natural", "merluza al natural"]
+    excluye: [congelada, filet, filete, rebozada, fresca]
+
+  atun_conserva:
+    nombre: Atún en conserva
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["atun"]
+    tamano_referencia: 170 g
+    incluye: [atun]
+    excluye: [congelado, fresco, ensalada, pate]
+
+  caballa_conserva:
+    nombre: Caballa en conserva
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["caballa"]
+    tamano_referencia: 300 g
+    incluye: [caballa]
+    excluye: [congelada, fresca]
+
+  dulce_leche:
+    nombre: Dulce de leche
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["dulce de leche"]
+    tamano_referencia: 400 g
+    incluye: ["dulce leche"]
+    excluye: [alfajor, alfajores, galletitas, helado, "dulce de leche repostero"]
+    indec: {serie: 105.1_I2DL_2016_M_20, presentacion: 400 g, verificado: desconocido}
+
+  cacao_polvo:
+    nombre: Cacao en polvo
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["cacao en polvo"]
+    tamano_referencia: 360 g
+    incluye: ["cacao polvo", "cacao azucarado", "cacao soluble", "cacao instantaneo", "cacao"]
+    excluye: [manteca, "leche chocolatada", galletitas, alfajor, barra, tableta, "chocolate taza"]
+
+  galletitas_agua:
+    nombre: Galletitas de agua
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["galletitas de agua"]
+    tamano_referencia: 300 g
+    incluye: ["galletitas agua", "galletas agua", "galletitas crackers", "crackers"]
+    excluye: [dulces, rellenas, chocolate, "sin sal", arroz]
+
+  pan_dulce:
+    nombre: Pan dulce
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["pan dulce"]
+    tamano_referencia: 700 g
+    incluye: ["pan dulce"]
+    excluye: [budin]
+
+  sal_fina:
+    nombre: Sal fina
+    rubro: alimentos
+    unidad_base: kg
+    busqueda: ["sal fina"]
+    tamano_referencia: 500 g
+    incluye: ["sal fina", "sal comun", "sal de mesa"]
+    excluye: [dietetica, light, "bajo sodio", parrilla, gruesa, saborizada, condimento]
+
+  agua_mineral:
+    nombre: Agua mineral sin gas (botella)
+    rubro: bebidas
+    unidad_base: l
+    busqueda: ["agua mineral sin gas"]
+    tamano_referencia: 2 l
+    incluye: ["agua mineral", "agua sin gas", "agua de mesa", "agua natural"]
+    excluye: ["con gas", gasificada, saborizada, bidon, dispenser, lavandina, oxigenada, destilada,
+              tonica, "agua de colonia"]
+
+  agua_bidon:
+    nombre: Agua en bidón
+    rubro: bebidas
+    unidad_base: l
+    busqueda: ["agua bidon"]
+    tamano_referencia: 20 l
+    incluye: ["agua bidon", "bidon agua", "bidones agua"]
+    excluye: [dispenser, alquiler, comodato, lavandina, destilada]
+
+  # ── Limpieza ─────────────────────────────────────────────────────────────
+  lavandina:
+    nombre: Lavandina (hipoclorito)
+    rubro: limpieza
+    unidad_base: l
+    busqueda: ["lavandina"]
+    tamano_referencia: 1 l
+    incluye: [lavandina, "hipoclorito sodio", "agua lavandina"]
+    excluye: [gel, aditivada, perfumada, ropa, "ropa color"]
+    indec: {serie: 348.1_GBA_LAVAND_CC__21, presentacion: 1 l, verificado: oficial,
+            nota: "la concentración (g Cl/l) cambia mucho el precio: revisar en licitaciones industriales"}
+
+  detergente:
+    nombre: Detergente lavavajillas
+    rubro: limpieza
+    unidad_base: l
+    busqueda: ["detergente"]
+    tamano_referencia: 750 ml
+    incluye: [detergente]
+    excluye: [polvo, ropa, lavarropas, "jabon liquido", desengrasante]
+    indec: {serie: 348.1_GBA_DETERG_CC__29, presentacion: 750 ml, verificado: oficial}
+
+  jabon_polvo:
+    nombre: Jabón en polvo para ropa
+    rubro: limpieza
+    unidad_base: kg
+    busqueda: ["jabon en polvo"]
+    tamano_referencia: 800 g
+    incluye: ["jabon polvo"]
+    excluye: [liquido, "jabon de tocador"]
+
+  jabon_tocador:
+    nombre: Jabón de tocador
+    rubro: limpieza
+    unidad_base: kg
+    busqueda: ["jabon de tocador"]
+    tamano_referencia: 125 g
+    incluye: ["jabon tocador"]
+    excluye: [liquido, polvo]
+    indec: {serie: 348.1_GBA_JABON_GR__27, presentacion: 125 g, verificado: oficial}
+
+  # ── Oficina ──────────────────────────────────────────────────────────────
+  resma_a4:
+    nombre: Resma papel A4 (precio por hoja)
+    rubro: oficina
+    unidad_base: u
+    busqueda: ["resma a4"]
+    tamano_referencia: 500 hojas
+    incluye: ["resma a4", "papel a4", "resmas a4", "papel obra a4", "papel fotocopia a4"]
+    excluye: [oficio, carta, a3, fotografico, color, cartulina, autoadhesivo, "papel madera"]

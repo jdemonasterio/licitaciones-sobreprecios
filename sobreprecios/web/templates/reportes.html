@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Reportes · Sobreprecios{% endblock %}
+{% block content %}
+<h1>Reportes</h1>
+<p class="muted small">Armá un informe para compartir: una página imprimible (Archivo → Imprimir → Guardar como PDF),
+un Excel y un CSV. Incluye la metodología y las limitaciones. Conviene filtrar por licitaciones marcadas como
+"publicable" después de revisarlas.</p>
+
+<div class="card">
+<form method="post" action="/reportes">
+    <div class="filters" style="border:0;padding:0;background:none">
+        <div class="field" style="flex:1;min-width:260px"><label>Título</label>
+            <input type="text" name="titulo" required placeholder="Ej.: Compras de leche en polvo 2021" value="" data-soft-keep></div>
+        <div class="field"><label>Desde</label><input type="date" name="desde" data-soft-keep></div>
+        <div class="field"><label>Hasta</label><input type="date" name="hasta" data-soft-keep></div>
+        <div class="field"><label>Organismo</label>
+            <select name="organismo" style="max-width:240px" data-soft-keep><option value="">Todos</option>
+            {% for o in opciones.organismos %}<option>{{ o }}</option>{% endfor %}</select></div>
+        <div class="field"><label>Producto</label>
+            <select name="producto" data-soft-keep><option value="">Todos</option>
+            {% for p in opciones.productos %}<option value="{{ p.id }}">{{ p.nombre }}</option>{% endfor %}</select></div>
+        <div class="field"><label>Semáforo</label>
+            <select name="semaforo" data-soft-keep><option value="">Todos</option>
+            {% for s in ['rojo','amarillo','verde','gris'] %}<option value="{{ s }}">{{ SEMAFORO_TXT[s] }}</option>{% endfor %}</select></div>
+        <div class="field"><label>Revisión</label>
+            <select name="revision" data-soft-keep><option value="">Todas</option>
+            {% for s in ['publicable','revisado','pendiente'] %}<option>{{ s }}</option>{% endfor %}</select></div>
+    </div>
+    <label style="display:flex;gap:6px;align-items:center;margin:8px 0"><input type="checkbox" name="con_resumen" value="1" data-soft-keep>
+        Agregar un resumen redactado por IA (lenguaje prudente; revisarlo antes de enviar)</label>
+    <button class="btn btn-primary" type="submit">Armar reporte</button>
+</form>
+</div>
+
+<h2>Reportes armados</h2>
+{% if reportes %}
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>Título</th><th>Filtros</th><th>Fecha</th><th>Descargar</th></tr></thead>
+<tbody>{% for r in reportes %}
+<tr data-soft-key="rep:{{ r.id }}"><td>{{ r.id }}</td><td>{{ r.titulo }}</td><td class="small muted">{{ r.filtros_json }}</td><td class="small">{{ (r.created_at or '')[:16]|replace('T', ' ') }}</td>
+<td>{% if r.html_path %}<a class="btn btn-sm" href="/reportes/{{ r.id }}/html" target="_blank">Ver / imprimir</a>
+<a class="btn btn-sm" href="/reportes/{{ r.id }}/xlsx">Excel</a> <a class="btn btn-sm" href="/reportes/{{ r.id }}/csv">CSV</a>{% else %}<span class="muted small">armándose…</span>{% endif %}</td></tr>
+{% endfor %}</tbody></table></div>
+{% else %}<p class="muted">Todavía no hay reportes.</p>{% endif %}
+{% endblock %}
