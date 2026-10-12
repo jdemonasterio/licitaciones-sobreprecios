@@ -14,6 +14,7 @@
         <dt>Fecha</dt><dd>{{ p.fecha_adjudicacion or p.fecha_publicacion or 'sin dato' }}</dd>
         <dt>Objeto</dt><dd>{{ p.objeto or '—' }}</dd>
         <dt>Categoría</dt><dd>{{ (p.categoria or '—')|replace('_', ' ') }}</dd>
+        <dt>Plazo de pago (pliego)</dt><dd>{% if p.plazo_pago_dias is not none %}{{ p.plazo_pago_dias }} días corridos<div class="muted small">{{ p.plazo_pago_texto }}</div>{% else %}sin dato <span class="muted small">(no se encontró como texto en COMPR.AR; se usa el supuesto general de {{ cfg.plazo_pago_meses|num(0) }} mes/es)</span>{% endif %}</dd>
         <dt>Monto adjudicado</dt><dd>{{ p.monto_total|ars }}{% if p.monto_total and (equiv.usd or equiv.real) %}
             <div class="muted small">{% if equiv.usd %}≈ {{ equiv.usd|millones('usd') }} en {{ equiv.usd_txt }} a {{ equiv.tasa|ars(2) }}{% endif %}{% if equiv.real %}{% if equiv.usd %} · {% endif %}≈ {{ equiv.real|millones }} en {{ equiv.real_txt }}{% endif %}</div>{% endif %}</dd>
         <dt>Fuente</dt><dd>{% if p.url %}<a href="{{ p.url }}" target="_blank" rel="noopener">Aviso en el Boletín Oficial ↗</a>{% else %}carga manual{% endif %}
@@ -42,6 +43,16 @@
  {{ a.proveedor or '' }} {{ a.detalle }}</div>{% endfor %}
 <p class="muted small">Son señales para mirar, no conclusiones: el dictamen recomienda, la autoridad adjudica y las órdenes de
 compra registran el contrato (no lo pagado). Una prórroga puede estar prevista en el pliego.</p>
+{% endif %}
+
+{% if p.actos %}
+<h2>Actos administrativos — COMPR.AR</h2>
+<div class="table-wrap"><table class="small">
+<thead><tr><th>Acto</th><th>Número</th><th>Fecha</th><th></th></tr></thead>
+<tbody>{% for a in p.actos %}<tr><td>{{ a.descripcion or a.tipo }}</td><td>{{ a.numero }}</td><td>{{ a.fecha or '—' }}</td>
+<td>{% if a.url %}<a href="{{ a.url }}" target="_blank" rel="noopener">Ver documento ↗</a>{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+<p class="muted small">El link abre el proceso en COMPR.AR en la sección "Actos administrativos": no hay PDF
+descargable sin iniciar sesión (el botón "Ver" del sitio abre un visor de GDE que lo requiere).</p>
 {% endif %}
 
 {% if p.ordenes %}
@@ -77,7 +88,7 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
     <td class="num">{{ r.ref_principal_valor|ars(2) }}<div class="muted small">{{ REF_TXT.get(r.ref_principal, r.ref_principal or '—') }}</div></td>
     <td class="num {% if r.sobreprecio_ajustado_pct and r.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}">{{ r.sobreprecio_ajustado_pct|pct }}</td>
     <td class="num">{{ r.exceso_ars|ars }}</td>
-    <td class="num {% if r.brecha_oferta_min_pct and r.brecha_oferta_min_pct > 0 %}pos{% endif %}">{% if r.n_ofertas %}{{ r.brecha_oferta_min_pct|pct }}<div class="muted small">{{ r.n_ofertas }} ofertas</div>{% if r.ofertas_implausibles %}<div class="small"><span class="tag tag-alerta">{{ r.ofertas_implausibles }} en otra unidad?</span></div>{% endif %}{% else %}—{% endif %}</td>
+    <td class="num {% if r.brecha_oferta_min_pct and r.brecha_oferta_min_pct > 0 %}pos{% endif %}">{% if r.n_ofertas %}{{ r.brecha_oferta_min_pct|pct }}<div class="muted small">{{ r.n_ofertas }} ofertas</div>{% if r.oferta_min_desestimada %}<div class="small"><span class="tag tag-alerta" title="{{ r.oferta_min_causa }}">la más baja fue desestimada</span></div>{% elif r.ofertas_implausibles %}<div class="small"><span class="tag tag-alerta">{{ r.ofertas_implausibles }} en otra unidad?</span></div>{% endif %}{% else %}—{% endif %}</td>
 </tr>
 <tr data-soft-key="reng-det:{{ r.id }}"><td colspan="10" style="background:var(--surface)">
     <details>
@@ -111,10 +122,10 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
             {% if r.producto_id %}<p class="small"><a href="/producto/{{ r.producto_id }}">Ver la serie de precios de {{ r.producto_nombre }} →</a></p>{% endif %}
             {% if r.ofertas %}
             <h3>Ofertas en este renglón ({{ r.ofertas|length }}) — COMPR.AR cuadro comparativo</h3>
-            <table class="small"><thead><tr><th>Oferente</th><th>Marca</th><th class="num">Precio unitario</th><th class="num">Total</th><th></th></tr></thead>
+            <table class="small"><thead><tr><th>Oferente</th><th>Marca</th><th class="num">Precio unitario</th><th class="num">Total</th><th>Estado</th></tr></thead>
             <tbody>{% for o in r.ofertas %}<tr><td>{{ o.proveedor }}<div class="muted">{{ o.cuit or '' }}</div></td><td>{{ o.marca or '—' }}</td>
             <td class="num">{{ o.precio_unitario|ars(2) }}</td><td class="num">{{ o.total|millones }}</td>
-            <td>{% if o.ganadora %}<span class="sem sem-verde">ganó</span>{% endif %}</td></tr>{% endfor %}</tbody></table>
+            <td>{% if o.ganadora %}<span class="sem sem-verde">ganó</span>{% elif o.estado == 'desestimada' %}<span class="sem sem-gris" title="{{ o.causa_desestimacion }}">desestimada</span><div class="muted small" style="max-width:360px">{{ o.causa_desestimacion }}</div>{% endif %}</td></tr>{% endfor %}</tbody></table>
             <p class="muted small">"Menor oferta presentada": su admisibilidad no está verificada. Pudo haber sido desestimada
             con razón (no cumplía el pliego, documentación, plazos). Antes de concluir, leé el dictamen.</p>
             {% endif %}

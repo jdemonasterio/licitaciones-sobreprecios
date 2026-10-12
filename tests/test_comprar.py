@@ -49,6 +49,11 @@ def adjudicaciones_80_0014():
     return comprar.parse_dictamen_html(_read("dictamen_80-0014-LPU25.html"))
 
 
+@pytest.fixture(scope="module")
+def desestimadas_80_0014():
+    return comprar.parse_ofertas_desestimadas_html(_read("dictamen_80-0014-LPU25.html"))
+
+
 # --- parse_detalle_html ------------------------------------------------
 
 def test_parse_detalle_extrae_metadata_del_proceso(detalle_80_0014):
@@ -79,6 +84,43 @@ def test_parse_detalle_extrae_45_renglones_con_codigo_y_cantidad(detalle_80_0014
     assert primero["cantidad"] == 480.0
     assert primero["unidad"] == "UNIDAD"
     assert "ZOLEDRONICO" in primero["descripcion"]
+
+
+def test_parse_detalle_expone_actos_administrativos(detalle_80_0014):
+    """Pedido de jdemonasterio 2026-10-12: autorización de pliego/llamado y adjudicación
+    tienen que verse (con número y fecha), sin importar si es un proceso viejo o nuevo."""
+    actos = detalle_80_0014["actos_administrativos"]
+    assert len(actos) == 3
+    tipos = {a["documento"] for a in actos}
+    assert tipos == {"Autorización pliego", "Autorización llamado", "Adjudicación y OC"}
+    adjudicacion = next(a for a in actos if a["documento"] == "Adjudicación y OC")
+    assert adjudicacion["numero_especial"] == "RESOL-2026-346-MS"
+    assert adjudicacion["numero_gde"] == "RS-2026-21322988-APN-MS"
+    assert adjudicacion["fecha"] == "04/03/2026"
+
+
+def test_parse_detalle_actos_administrativos_en_proceso_viejo_2018_2020():
+    """Mismo parser contra un proceso viejo de verdad (14/1-0424-CDI18, CNEA, pliego
+    autorizado en 2019 y adjudicado en 2020): el control `UC_ActosAdministrativos` es
+    estable entre versiones del sitio, no autonumerado (verificado en vivo 2026-10-12 contra
+    6 procesos 2018-2026, ver DESIGN_sobreprecios.md)."""
+    d = comprar.parse_detalle_html(_read("detalle_14_1-0424-CDI18.html"))
+    actos = d["actos_administrativos"]
+    assert len(actos) == 3
+    adjudicacion = next(a for a in actos if a["documento"] == "Adjudicación y OC")
+    assert adjudicacion["fecha"] == "20/03/2020"
+    assert adjudicacion["numero_especial"] == "DI-2020-116-GAYF#CNEA"
+    assert d["plazo_pago_dias"] is None   # tampoco en el proceso viejo: mismo límite conocido
+
+
+def test_parse_detalle_sin_plazo_de_pago_estructurado(detalle_80_0014):
+    """Regresión 2026-10-12: el texto plano de la página pone "Plazo mantenimiento de la
+    oferta: 60 Días corridos" justo antes de la label (no relacionada) "Requiere pago", y una
+    ventana de proximidad simétrica los confundía (falso "plazo de pago: 60 días"). En los
+    procesos de COMPR.AR probados no hay campo de plazo de pago estructurado: tiene que dar
+    "sin dato", nunca inventar 60."""
+    assert detalle_80_0014["plazo_pago_dias"] is None
+    assert detalle_80_0014["plazo_pago_texto"] is None
 
 
 def test_parse_detalle_resuelve_links_de_acta_y_dictamen(detalle_80_0014):
@@ -177,6 +219,82 @@ def test_cruce_de_cuit_por_nombre_resuelve_todas_las_adjudicaciones(
     resueltas = [cuit_by_proveedor.get(a["proveedor"].strip().upper(), "")
                  for a in adjudicaciones_80_0014]
     assert all(resueltas)   # ninguna quedó sin CUIT
+
+
+# --- parse_ofertas_desestimadas_html -------------------------------------
+
+def test_parse_desestimadas_trae_causa_por_renglon_y_proveedor(desestimadas_80_0014):
+    """80-0014-LPU25 tiene 5 oferentes desestimados, 21 filas renglón+causa en total (contado
+    a mano contra el fixture, pedido de jdemonasterio 2026-10-12: 'parsear las desestimadas
+    con su causa')."""
+    assert len(desestimadas_80_0014) == 21
+    por_proveedor = {}
+    for d in desestimadas_80_0014:
+        por_proveedor.setdefault(d["proveedor"], []).append(d["renglon"])
+    assert por_proveedor["MICROSULES ARGENTINA SA de SCIIA"] == [25]
+    assert sorted(por_proveedor["DROGUERIA GENESIS S.A"]) == [4, 23, 33, 34, 37, 39]
+    assert all(d["cuit"].isdigit() for d in desestimadas_80_0014)
+
+
+def test_parse_desestimadas_renglon_25_microsules_causa_economica(desestimadas_80_0014):
+    """Renglón 25: la grilla del dictamen da la causa económica completa (cita el informe
+    de precios), no un texto vacío ni truncado."""
+    fila = next(d for d in desestimadas_80_0014 if d["renglon"] == 25
+                and d["proveedor"].startswith("MICROSULES"))
+    assert "informe de precios" in fila["causa"].lower()
+    assert fila["cuit"] == "30519887335"
+
+
+def test_parse_desestimadas_sin_seccion_devuelve_vacio():
+    assert comprar.parse_ofertas_desestimadas_html("<html><body>sin dictamen</body></html>") == []
+
+
+def test_parse_desestimadas_usa_evaluacion_administrativa_cuando_el_renglon_no_tiene_causa_propia():
+    """Cuando la causa de un renglón puntual viene vacía en la grilla (ambas columnas de
+    evaluación en blanco), tiene que caer a la evaluación administrativa de TODA la oferta
+    (gvEvaluacionDescartada) en vez de quedar sin motivo."""
+    html = """
+    <h3>Ofertas desestimadas</h3>
+    <span id="x_rptOfertasNoCumplieron_ctl00_UCProveedorRenglonDescartadoBastrap_lblProveedor">ACME SA 30111111118</span>
+    <table id="x_rptOfertasNoCumplieron_ctl00_UCProveedorRenglonDescartadoBastrap_gvEvaluacionDescartada">
+    <tbody><tr><th>Descripción</th><th>Evaluación Técnica</th><th>Evaluación Económica</th><th>Evaluación Administrativa</th></tr>
+    <tr><td>Requisito: Declaración jurada</td><td></td><td></td><td>No presenta la declaración jurada exigida.</td></tr>
+    </tbody></table>
+    <table id="x_rptOfertasNoCumplieron_ctl00_UCProveedorRenglonDescartadoBastrap_gvRenglonesDescartados">
+    <tbody><tr><th>Renglón</th><th>Alternativa</th><th>Descripción</th><th>Tipo</th><th>Evaluación Técnica</th><th>Evaluación Económica</th></tr>
+    <tr><td>3</td><td>1</td><td>producto X</td><td>Especificación</td><td></td><td></td></tr>
+    </tbody></table>
+    """
+    out = comprar.parse_ofertas_desestimadas_html(html)
+    assert len(out) == 1
+    assert out[0]["renglon"] == 3 and out[0]["proveedor"] == "ACME SA" and out[0]["cuit"] == "30111111118"
+    assert "declaración jurada" in out[0]["causa"].lower()
+
+
+# --- parse_plazo_pago (sin red: texto libre, no hay campo estructurado en COMPR.AR) ----
+
+@pytest.mark.parametrize("texto,dias,contiene", [
+    ("El pago se efectuara dentro de los treinta (30) dias corridos de la conformidad "
+     "definitiva de la factura.", 30, "30 dias corridos"),
+    ("La Administracion abonara dentro de los 15 dias habiles de recibida la factura "
+     "conformada.", 21, "15 dias habiles"),   # 15 * 1.4 = 21, convertido a corridos
+    ("El pago sera contra entrega de la mercaderia en el domicilio indicado.", 0, "contra entrega"),
+    ("Esta licitacion no menciona nada sobre el pago.", None, None),
+    ("Plazo mantenimiento de la oferta 60 Dias corridos Acto de apertura Requiere pago No "
+     "Otras condiciones Genera Recursos No", None, None),   # regresión: no es plazo de pago
+])
+def test_parse_plazo_pago(texto, dias, contiene):
+    resultado_dias, resultado_texto = comprar.parse_plazo_pago(texto)
+    assert resultado_dias == dias
+    if contiene is None:
+        assert resultado_texto is None
+    else:
+        assert contiene in resultado_texto
+
+
+def test_parse_plazo_pago_vacio_no_rompe():
+    assert comprar.parse_plazo_pago("") == (None, None)
+    assert comprar.parse_plazo_pago(None) == (None, None)
 
 
 # --- parse_busqueda_html -------------------------------------------------

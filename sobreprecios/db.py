@@ -326,6 +326,15 @@ MIGRATIONS = [
     ("comparaciones", "estado_atributo", "TEXT"),
     # Precio de mercado sospechoso (placeholder $1, precio viejo sin actualizar): no se borra, se aparta con motivo.
     ("precios_mercado", "cuarentena", "TEXT"),
+    # Plazo de pago del pliego (sources/comprar.parse_plazo_pago) y ofertas desestimadas con causa
+    # (pedido de jdemonasterio 2026-10-12, ver DESIGN_sobreprecios.md).
+    ("procesos", "plazo_pago_dias", "INTEGER"),
+    ("procesos", "plazo_pago_texto", "TEXT"),
+    ("procesos", "ofertas_desestimadas_n", "INTEGER"),
+    ("ofertas", "estado", "TEXT"),
+    ("ofertas", "causa_desestimacion", "TEXT"),
+    ("comparaciones", "oferta_min_desestimada", "INTEGER"),
+    ("comparaciones", "oferta_min_causa", "TEXT"),
 ]
 
 

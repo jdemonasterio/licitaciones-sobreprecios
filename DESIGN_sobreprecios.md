@@ -14,7 +14,7 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | LLM | `sobreprecios/llm.py` | JSON con schema, cache, perfiles gratis/pago, RPM, tope de gasto |
 | BO 1ª secc. | `sources/boletin_oficial.py` | Búsqueda por texto + descarga de avisos (cache inmutable) |
 | BO 2ª secc. | `sources/bo_sociedades.py` | Avisos societarios: autoridades, socios, domicilios |
-| COMPR.AR | `sources/comprar.py`, `pipeline/comprar_import.py` | Procesos, renglones, ofertas (cuadro comparativo) y adjudicación (dictamen); público, httpx puro |
+| COMPR.AR | `sources/comprar.py`, `pipeline/comprar_import.py` | Procesos, renglones, ofertas (cuadro comparativo), adjudicación (dictamen), actos administrativos, ofertas desestimadas con causa y plazo de pago del pliego (regex, casi siempre sin dato); público, httpx puro |
 | Registro de Sociedades | `sources/registro_sociedades.py` | CUIT, constitución, domicilios, actividades (todas las provincias) |
 | Precios | `sources/indec.py`, `sources/precios_hoy.py`, `sources/legacy_quijotes.py` | INDEC/IPC, foto diaria, dataset 2021 |
 | Extracción | `pipeline/extract.py` | Renglones adjudicados: regex → LLM, validación de montos |
@@ -113,6 +113,50 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   respaldo Bluelytics) en `indices` como `usd_<casa>`; se actualizan con `cotizaciones`, `indec`, `setup` y
   `pipeline`. El semáforo NO cambia (ya compara a la misma fecha). Validación: `validation_moneda_*.tsv`.
 
+- **2026-10-12 · Actos administrativos, ofertas desestimadas y plazo de pago (COMPR.AR)**
+  (pedido de jdemonasterio — backlog #37). Verificado EN VIVO contra 6 procesos 2018-2026
+  (14/2-0001-LPR19, 14/1-0424-CDI18, 132/61-0010-CDI19, 21-0001-LPU22, 14/2-0031-LPU22,
+  80-0014-LPU25), viejos y nuevos por igual:
+  - **Actos administrativos** (autorización de pliego, autorización de llamado, adjudicación y
+    OC) SÍ aparecen en VistaPreviaPliegoCiudadano en los 6 procesos, con número y fecha, en una
+    tabla con un id de control DECLARADO (`UC_ActosAdministrativos`, no autonumerado por
+    DevExpress: estable entre versiones del sitio y entre procesos viejos/nuevos). Van a
+    `comprar_actos`. Pero NO hay PDF descargable sin sesión: el botón "Ver" es un postback que
+    abre un visor de GDE que no resolvió sin login al probarlo de nuevo (mismo límite que
+    acta/dictamen en PDF, ya documentado). Decisión (pedido explícito de jdemonasterio: "en vez
+    de bajar el acto final, poné el link para que lo abra una persona"): `comprar_actos.url`
+    apunta al proceso en COMPR.AR con un fragmento (`#ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_lblTitulo`,
+    `comprar.ACTOS_ANCHOR_ID`) que salta directo a la sección — sin guardar ni servir PDFs
+    (el webui los muestra como "Ver documento ↗"; otro agente del backlog construye el visor
+    genérico `/doc?url=`).
+  - **Ofertas desestimadas, con causa**: SÍ están en el dictamen (sección aparte de "Ofertas
+    recomendadas", no paginada junto a esa grilla). `sources.comprar.parse_ofertas_desestimadas_html`
+    las lee por renglón+proveedor; `ofertas.estado` (admitida/desestimada) y
+    `ofertas.causa_desestimacion` quedan en la base, más el total en `procesos.ofertas_desestimadas_n`.
+    `comprar_import.brecha_ofertas` ahora dice si la oferta más baja estaba desestimada y por qué
+    (`oferta_min_desestimada`, `oferta_min_causa`), para que el webui no insinúe sobreprecio
+    sobre una oferta que no cumplía el pliego.
+  - **Plazo de pago** (cuánto tarda el Estado en pagarle al proveedor) NO aparece como campo
+    estructurado en NINGUNO de los 6 procesos probados, viejos ni nuevos: el Pliego Único de
+    Bases y Condiciones Generales (Decreto 1030/2016) lo fija a nivel nacional en un documento
+    GEDO común a casi todo proceso (ej. `DI-2024-79130471-APN-ONC#JGM`), no descargable sin
+    sesión. Los campos que SÍ están en la página y no hay que confundir: "Plazo mantenimiento de
+    la oferta" (validez de la oferta), "Fecha estimada del inicio del contrato" (plazo de
+    ENTREGA) y "Duración del contrato". `sources.comprar.parse_plazo_pago` solo rescata el caso
+    en que el plazo de pago aparece como texto libre (regex con ventana de proximidad a
+    "pago"/"factura"/"abonar", conversión hábiles→corridos ×1,4); en los 6 procesos probados da
+    "sin dato" en los 6 — es el resultado correcto, no un bug. P2 (jdemonasterio, confirmado):
+    "perfecto, usá el plazo de pago de la licitación" — por eso `pipeline.compare.compare()`
+    acepta `plazo_pago_dias` opcional: cuando se conoce, reemplaza el supuesto genérico
+    (`plazo_pago_meses`) en el escenario amarillo y actúa como PISO (nunca acorta) del escenario
+    rojo. Con "sin dato" (el caso de hoy) el comportamiento es idéntico al de antes.
+  - Regresión real encontrada y corregida: una ventana de proximidad simétrica a la palabra
+    "pago" producía un falso positivo ("Plazo mantenimiento de la oferta: 60 Días corridos"
+    seguido, en el texto plano de la página, por la label no relacionada "Requiere pago" —  si
+    hay que pagar para RETIRAR el pliego, no cuánto tarda el Estado en pagar). Se corrigió con
+    una ventana asimétrica (90 caracteres antes, 20 después) más la exclusión explícita de
+    "requiere pago"; test de regresión en `tests/test_comprar.py`.
+
 - **2026-10-12 · Higiene del mercado: envase implausible y cuarentena**: el grupo "arroz" del archivo SEPA traía
   snacks de 80 g, condimentos de 25 g, alfajores y sopas (más caros por kg: no bajaban el mínimo, pero arruinaban
   medianas y gráficos). (1) Un envase < `contenido_minimo_factor` (0,3) × tamaño de referencia del producto no cuenta
@@ -139,17 +183,23 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Auditar con juez | `python -m auditoria.juez --modelo <modelo> --n 60 --max-usd 5` → `_scratch/licitaciones/auditoria/` |
 | Auditar casos (rojos + cambios) | `python -m auditoria.juez --modelo <modelo> --modo casos --n 45 --max-usd 2.5 --ids 1761,1787` |
 | Antes de entregar | `simular.bat` / `python scripts/simular.py`: 14 recorridos de usuario tienen que dar OK |
+| Ver actos admin./ofertas desestimadas/plazo de pago de un proceso COMPR.AR | automático: se muestran en `/licitacion/<id>` al importar (sin comando propio) |
 
 ## 4. Tests
 
 `python -m pytest -q`: parser de unidades y montos, catálogo (casos reales 2021 y SEPA), extracción con fixture real
-(MDS Res. 735/2021), reparto de montos conjuntos, comparador (ventana, IPC, envase, marca, plausibilidad), gateway LLM
-(cache, cuota, perfiles), normalización de links, hechos fechados, sociedades (fixtures BO 2ª sección), claves.
+(MDS Res. 735/2021), reparto de montos conjuntos, comparador (ventana, IPC, envase, marca, plausibilidad, plazo de
+pago del pliego), gateway LLM (cache, cuota, perfiles), normalización de links, hechos fechados, sociedades
+(fixtures BO 2ª sección), claves, COMPR.AR (actos administrativos, ofertas desestimadas con causa, plazo de pago
+con regresión del falso positivo "Requiere pago").
 
 ## 5. Límites conocidos
 
 - COMPR.AR: el filtro de fechas de la búsqueda se aplica del lado nuestro (el del sitio no está reverseado);
-  PDFs de pliegos/anexos sin descarga directa.
+  PDFs de pliegos/anexos/actos administrativos sin descarga directa (el botón "Ver" abre un visor de GDE que
+  requiere sesión); el webui linkea al proceso con un fragmento en vez de bajar el PDF. El plazo de pago al
+  proveedor no es un campo estructurado en ningún proceso probado (2018-2026): lo fija un documento GEDO nacional
+  común, no legible sin sesión; `parse_plazo_pago` solo rescata el caso raro de texto libre.
 - Mayorista vivo: solo Maxiconsumo (sucursal Moreno, sin login). Supermercados: AMBA + espejo SEPA por provincia.
 - BO 2ª sección solo cubre sociedades con sede en CABA; avisos anteriores a ~2012 son páginas escaneadas (baja confianza).
 - Presentaciones INDEC de yerba (500 g) y leche en polvo (800 g) inferidas, no confirmadas.

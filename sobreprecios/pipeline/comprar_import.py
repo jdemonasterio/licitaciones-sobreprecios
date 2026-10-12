@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS ofertas (
     total REAL,
     marca TEXT,
     ganadora INTEGER DEFAULT 0,
+    estado TEXT,
+    causa_desestimacion TEXT,
     oferta_key TEXT NOT NULL,
     UNIQUE (proceso_id, oferta_key)
 );
@@ -69,6 +71,20 @@ CREATE TABLE IF NOT EXISTS alertas_proceso (
     cuit TEXT,
     created_at TEXT,
     UNIQUE (proceso_id, tipo, cuit, detalle)
+);
+
+-- Actos administrativos del proceso (autorización de pliego/llamado, adjudicación y OC...).
+-- Sin PDF descargable sin login (ver docstring de sources/comprar.py): `url` apunta al
+-- proceso en COMPR.AR con un fragmento que salta a la sección, para que una persona lo abra.
+CREATE TABLE IF NOT EXISTS comprar_actos (
+    id INTEGER PRIMARY KEY,
+    proceso_id INTEGER NOT NULL REFERENCES procesos(id) ON DELETE CASCADE,
+    tipo TEXT NOT NULL,
+    numero TEXT NOT NULL,
+    fecha TEXT,
+    descripcion TEXT,
+    url TEXT,
+    UNIQUE (proceso_id, tipo, numero)
 );
 """
 
@@ -110,6 +126,7 @@ def store_detalle(conn: sqlite3.Connection, detalle: dict, proceso_id: int | Non
     """Guarda un proceso de COMPR.AR. Si se pasa proceso_id (un proceso del BO), lo completa."""
     ensure_schema(conn)
     fechas = detalle.get("fechas") or {}
+    desestimadas = detalle.get("ofertas_desestimadas") or []
     row = {
         "numero": detalle.get("numero"),
         "organismo": detalle.get("organismo") or detalle.get("uoc") or None,
@@ -118,6 +135,9 @@ def store_detalle(conn: sqlite3.Connection, detalle: dict, proceso_id: int | Non
         "objeto": detalle.get("objeto"),
         "fecha_apertura": _iso(fechas.get("apertura")),
         "fecha_adjudicacion": _iso(fechas.get("adjudicacion")),
+        "plazo_pago_dias": detalle.get("plazo_pago_dias"),
+        "plazo_pago_texto": detalle.get("plazo_pago_texto"),
+        "ofertas_desestimadas_n": len(desestimadas),
         "updated_at": db.now_iso(),
     }
     if proceso_id:
@@ -130,6 +150,7 @@ def store_detalle(conn: sqlite3.Connection, detalle: dict, proceso_id: int | Non
                    created_at=db.now_iso())
         proceso_id = db.upsert(conn, "procesos", row, ("fuente", "external_id"))
     conn.execute("UPDATE procesos SET origen=COALESCE(origen, 'comprar') WHERE id=?", (proceso_id,))
+    store_actos(conn, proceso_id, detalle.get("actos_administrativos") or [])
 
     renglones = {r.get("nro"): r for r in detalle.get("renglones") or []}
     adjudicaciones = detalle.get("adjudicaciones") or []
@@ -153,15 +174,23 @@ def store_detalle(conn: sqlite3.Connection, detalle: dict, proceso_id: int | Non
 
     conn.execute("DELETE FROM ofertas WHERE proceso_id=?", (proceso_id,))
     ganadoras, pendientes = ofertas_ganadoras_y_pendientes(adjudicaciones, ofertas)
+    # (renglón, proveedor normalizado) -> causa, para marcar cada oferta admitida/desestimada
+    # (jdemonasterio 2026-10-12: la más baja pudo estar desestimada con razón; mostrar por qué).
+    causa_por_oferta: dict[tuple, str] = {}
+    for d in desestimadas:
+        causa_por_oferta.setdefault((d.get("renglon"), _norm_prov(d.get("proveedor"))), d.get("causa") or "")
     for i, o in enumerate(ofertas):
         key = hashlib.sha1(f"{o.get('renglon')}|{o.get('cuit')}|{o.get('proveedor')}|{o.get('precio_unitario')}"
                            .encode("utf-8")).hexdigest()[:16]
+        causa = causa_por_oferta.get((o.get("renglon"), _norm_prov(o.get("proveedor"))))
         conn.execute(
             "INSERT OR IGNORE INTO ofertas (proceso_id, nro_renglon, proveedor, cuit, cantidad, precio_unitario, "
-            "total, marca, ganadora, oferta_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "total, marca, ganadora, estado, causa_desestimacion, oferta_key) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (proceso_id, o.get("renglon"), o.get("proveedor"), _cuit_fmt(o.get("cuit")), o.get("cantidad"),
              o.get("precio_unitario"), o.get("total"), o.get("marca") or None,
-             None if i in pendientes else int(i in ganadoras), key))
+             None if i in pendientes else int(i in ganadoras),
+             "desestimada" if causa else "admitida", causa, key))
     # Los renglones se actualizan en el lugar (ids estables: comparaciones y revisiones siguen apuntando
     # bien); solo se borran los que el dictamen ya no trae.
     previos = {r["external_key"]: r for r in conn.execute(
@@ -233,6 +262,32 @@ def ofertas_ganadoras_y_pendientes(adjudicaciones: list[dict], ofertas: list[dic
         else:
             ganadoras.update(mismas or del_prov)
     return ganadoras, pendientes
+
+
+def store_actos(conn: sqlite3.Connection, proceso_id: int, actos: list[dict]) -> int:
+    """Guarda los actos administrativos del proceso (autorización de pliego/llamado, adjudicación...).
+
+    `numero` es el que una persona reconoce (numero_especial, ej. "RESOL-2026-346-MS"); si no
+    vino, se usa el numero_gde. Sin eso no hay fila (no hay con qué identificar el acto). `url`
+    ya trae el fragmento a la sección (ver ComprarClient.detalle_proceso / ACTOS_ANCHOR_ID): no
+    hay descarga directa del PDF sin sesión (gotcha documentado en sources/comprar.py).
+    """
+    ensure_schema(conn)
+    conn.execute("DELETE FROM comprar_actos WHERE proceso_id=?", (proceso_id,))
+    n = 0
+    for a in actos:
+        numero = (a.get("numero_especial") or a.get("numero_gde") or "").strip()
+        if not numero:
+            continue
+        descripcion = a.get("documento") or ""
+        if a.get("numero_gde") and a.get("numero_gde") != numero:
+            descripcion += f" (expediente GDE {a['numero_gde']})"
+        conn.execute(
+            "INSERT OR IGNORE INTO comprar_actos (proceso_id, tipo, numero, fecha, descripcion, url) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (proceso_id, a.get("documento") or "acto", numero, _iso(a.get("fecha")), descripcion, a.get("url")))
+        n += 1
+    return n
 
 
 def store_ordenes(conn: sqlite3.Connection, proceso_id: int, ordenes: list[dict], adjudicaciones: list[dict],
@@ -338,10 +393,11 @@ def brecha_ofertas(conn: sqlite3.Connection, proceso_id: int, nro_renglon: int |
     if max_ratio is None:
         max_ratio = float((config.settings().get("comparacion") or {}).get("plausibilidad_max_ratio", 4.0))
     rows = conn.execute(
-        "SELECT proveedor, precio_unitario, marca FROM ofertas WHERE proceso_id=? AND nro_renglon IS ? "
-        "AND precio_unitario > 0 ORDER BY precio_unitario", (proceso_id, nro_renglon)).fetchall()
+        "SELECT proveedor, precio_unitario, marca, estado, causa_desestimacion FROM ofertas "
+        "WHERE proceso_id=? AND nro_renglon IS ? AND precio_unitario > 0 ORDER BY precio_unitario",
+        (proceso_id, nro_renglon)).fetchall()
     out = {"n_ofertas": len(rows), "oferta_min": None, "oferta_min_proveedor": None, "brecha_oferta_min_pct": None,
-           "ofertas_implausibles": 0}
+           "ofertas_implausibles": 0, "oferta_min_desestimada": False, "oferta_min_causa": None}
     if not rows or not precio_ganador:
         return out
     plausibles = [r for r in rows if r["precio_unitario"] >= precio_ganador / max_ratio]
@@ -350,7 +406,12 @@ def brecha_ofertas(conn: sqlite3.Connection, proceso_id: int, nro_renglon: int |
         return out
     low = plausibles[0]
     out.update(oferta_min=low["precio_unitario"], oferta_min_proveedor=low["proveedor"],
-               brecha_oferta_min_pct=round((precio_ganador / low["precio_unitario"] - 1) * 100, 2))
+               brecha_oferta_min_pct=round((precio_ganador / low["precio_unitario"] - 1) * 100, 2),
+               # La más baja pudo estar desestimada con razón (pedido de jdemonasterio
+               # 2026-10-12): si lo estuvo, se informa la causa para que el webui diga
+               # "la más baja fue desestimada por: <causa>" en vez de insinuar sobreprecio.
+               oferta_min_desestimada=bool(low["estado"] == "desestimada"),
+               oferta_min_causa=low["causa_desestimacion"])
     return out
 
 
