@@ -328,6 +328,53 @@ def test_analitica_y_producto_renderizan_graficos_sin_errores(page, seeded_app):
     conftest.assert_clean(page)
 
 
+# ── 7b. Precios de programa: revisión humana excluye del comparador ────────
+
+def test_precios_programa_marcar_no_excluye_del_comparador(page, seeded_app):
+    # Antes de revisar nada: el único precio del renglón es el de "programa" (fallback), así
+    # que el semáforo es amarillo y la nota dice de dónde viene la referencia.
+    page.goto(f"/licitacion/{seeded_app.proceso_programa_id}")
+    fila_reng = page.locator('tr[data-soft-key^="reng:"]').first
+    assert "sem-amarillo" in fila_reng.inner_html()
+    page.locator("details summary", has_text="evidencia de mercado").first.click()
+    detalle_antes = page.locator("details").first.inner_text().lower()
+    assert "precio de programa" in detalle_antes
+
+    # En /precios-programa aparece esa misma fila, con el botón de revisión humana.
+    page.goto(f"/precios-programa?edicion={seeded_app.programa_fuente}")
+    fila = page.locator(f'tr[data-soft-key="fila:{seeded_app.programa_obs_key}"]')
+    assert fila.count() == 1
+    marker = f"nav-check-{time.time()}"
+    page.evaluate(f"window.__e2e_marker = {marker!r}")
+
+    comentario = f"no corresponde, revisado por el simulador {time.time()}"
+    fila.locator('textarea[name="nota"]').fill(comentario)
+    fila.locator('button[value="no"]').click()
+
+    assert "Marcada como no" in _toast_text(page)
+    assert page.evaluate("window.__e2e_marker") == marker, (
+        "window.__e2e_marker se perdió: /precios-programa recargó completo en vez de soft-nav")
+    fila = page.locator(f'tr[data-soft-key="fila:{seeded_app.programa_obs_key}"]')
+    assert "✗ No" in fila.inner_text()
+    assert comentario in fila.inner_text()
+
+    # Persiste de verdad (no solo del lado del cliente).
+    page.reload()
+    fila = page.locator(f'tr[data-soft-key="fila:{seeded_app.programa_obs_key}"]')
+    assert "✗ No" in fila.inner_text() and comentario in fila.inner_text()
+
+    # El POST ya recalculó los sobreprecios: sin esa fila no queda ninguna observación de
+    # mercado para el renglón, así que vuelve a "sin datos" (gris), no a otro precio inventado.
+    page.goto(f"/licitacion/{seeded_app.proceso_programa_id}")
+    fila_reng = page.locator('tr[data-soft-key^="reng:"]').first
+    assert "sem-gris" in fila_reng.inner_html()
+    page.locator("details summary", has_text="evidencia de mercado").first.click()
+    detalle_despues = page.locator("details").first.inner_text().lower()
+    assert "sin observaciones de mercado" in detalle_despues
+
+    conftest.assert_clean(page)
+
+
 # ── 8. Seguridad: POST de otro origen rechazado ─────────────────────────────
 
 def test_seguridad_post_de_otro_origen_es_rechazado(page, seeded_app):

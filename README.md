@@ -27,6 +27,7 @@ Problemas: [preguntas frecuentes](docs/preguntas_frecuentes.md). Para seguir mej
 | **Reportes** | Informe para periodistas: página imprimible, Excel y CSV, con metodología y limitaciones |
 | **Datos y fuentes** | Actualizar la base (Boletín Oficial, precios de hoy, INDEC) en segundo plano |
 | **＋ Investigar** | Analizar un caso puntual: link del BO o de COMPR.AR, número de proceso, texto o PDF |
+| **Precios de programa** | Revisar a mano los precios de Precios Cuidados/Justos/Máximos (fallback de mercado) |
 
 ## Cómo se calcula (resumen)
 
@@ -34,7 +35,9 @@ Problemas: [preguntas frecuentes](docs/preguntas_frecuentes.md). Para seguir mej
   (catálogo en [config/productos.yml](config/productos.yml)). Si la compra no dice la variedad o el mercado no tiene
   ese producto en la fecha, queda gris: no se compara contra algo distinto.
 - Referencia: la **misma marca** si la licitación la nombra; si no, el **mínimo de mercado** (supermercados y
-  mayoristas), descartando precios absurdos.
+  mayoristas), descartando precios absurdos. Si no hay NINGÚN precio real de mercado en la fecha, se usa como
+  último recurso el precio de Precios Cuidados/Justos/Máximos (son un piso pactado, no el mínimo real): revisable
+  a mano en "Precios de programa".
 - Precios del día de la compra o anteriores (hasta 15 días), llevados al mes de la compra con el IPC.
 - Semáforo: amarillo ≥ 8 % contra el mínimo observado (con 1 mes de plazo de pago descontado). **Rojo** ≥ 20 % contra el
   mínimo **confirmado por dos cadenas distintas**, aun suponiendo 2 meses de plazo. Diferencias > 4× se marcan
@@ -53,6 +56,7 @@ Detalle técnico y decisiones: [DESIGN_sobreprecios.md](DESIGN_sobreprecios.md).
 python -m sobreprecios.cli setup                  # base + catálogo + INDEC (+ dataset 2021 si está)
 python -m sobreprecios.cli pipeline --desde 2026-01-01 --hasta 2026-09-30
 python -m sobreprecios.cli precios-hoy            # una vez por día
+python -m sobreprecios.cli precios-programa       # Precios Cuidados/Justos/Máximos (config/precios_programa.yml)
 python -m sobreprecios.cli investigar "<link o número>"
 python -m sobreprecios.cli servir --puerto 8000
 python -m pytest -q                               # tests

@@ -314,6 +314,7 @@ ACCIONES = {
     "precios": "Bajar precios de hoy (supermercados y mayoristas)",
     "comparar": "Recalcular sobreprecios",
     "empresas": "Completar empresas (Registro Nacional de Sociedades, ~230 MB la primera vez)",
+    "precios_programa": "Bajar listas de Precios Cuidados/Justos 2020-2023",
 }
 
 
@@ -364,10 +365,14 @@ def _job_runner(accion: str, desde: str, hasta: str):
                 if accion == "precios":
                     from ..sources import precios_hoy
                     mensajes.append(precios_hoy.run(conn, progress=progress))
-                if accion in {"pipeline", "machear", "comprar"}:
+                if accion == "precios_programa":
+                    from ..sources import precios_programa
+                    mensajes.append(precios_programa.importar(conn, progress=progress))
+                if accion in {"pipeline", "machear", "comprar", "precios_programa"}:
                     mensajes.append(match.match_mercado(conn))
                     mensajes.append(match.match_renglones(conn, progress=progress))
-                if accion in {"pipeline", "machear", "comparar", "indec", "precios", "comprar", "extraer"}:
+                if accion in {"pipeline", "machear", "comparar", "indec", "precios", "comprar", "extraer",
+                             "precios_programa"}:
                     mensajes.append(compare.run(conn))
                 db.sync_empresas(conn)
                 from ..normalize import aplicar
@@ -386,6 +391,34 @@ def fuentes_run(accion: str = Form(...), desde: str = Form(""), hasta: str = For
         return _redirect("/fuentes", "Acción desconocida")
     started, msg = _background.start("datos", _job_runner(accion, desde, hasta))
     return _redirect("/fuentes", f"Arrancó: {ACCIONES[accion]}" if started else msg)
+
+
+# ── Precios de programa (Precios Cuidados/Justos/Máximos): validación manual ───────────────
+
+@app.get("/precios-programa", response_class=HTMLResponse)
+def precios_programa(request: Request):
+    abierta = request.query_params.get("edicion") or None
+    with db.session() as conn:
+        ediciones = queries.precios_programa_ediciones(conn)
+        filas = queries.precios_programa_filas(conn, abierta) if abierta else []
+    return _render(request, "precios_programa.html", ediciones=ediciones, abierta=abierta, filas=filas)
+
+
+@app.post("/precios-programa/veredicto")
+def precios_programa_veredicto(fuente: str = Form(...), obs_key: str = Form(...),
+                               veredicto: str = Form(...), nota: str = Form("")):
+    from .. import validaciones_programa as vp
+    destino = f"/precios-programa?edicion={urllib.parse.quote(fuente)}"
+    if veredicto not in vp.VEREDICTOS:
+        return _redirect(destino, "Veredicto inválido")
+    with db.session() as conn:
+        vp.guardar(conn, fuente, obs_key, veredicto, nota, autor="humano")
+        from ..pipeline import compare
+        if conn.execute("SELECT producto_id FROM precios_mercado WHERE fuente=? AND obs_key=? LIMIT 1",
+                        (fuente, obs_key)).fetchone():
+            compare.run(conn)
+    extra = " (se recalcularon los sobreprecios)" if veredicto == "no" else ""
+    return _redirect(destino, f"Marcada como {veredicto}{extra}")
 
 
 @app.get("/jobs/{name}")

@@ -230,6 +230,17 @@ CREATE TABLE IF NOT EXISTS empresa_hechos (
 );
 CREATE INDEX IF NOT EXISTS ix_hechos_persona ON empresa_hechos(persona);
 
+CREATE TABLE IF NOT EXISTS validaciones_programa (
+    id INTEGER PRIMARY KEY,
+    fuente TEXT NOT NULL,
+    obs_key TEXT NOT NULL,
+    autor TEXT NOT NULL,
+    veredicto TEXT,
+    nota TEXT,
+    created_at TEXT,
+    UNIQUE (fuente, obs_key, autor)
+);
+
 CREATE TABLE IF NOT EXISTS reportes (
     id INTEGER PRIMARY KEY,
     titulo TEXT NOT NULL,

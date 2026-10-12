@@ -352,6 +352,47 @@ def corridas(conn: sqlite3.Connection, limit: int = 30) -> list[dict]:
     return [dict(r) for r in conn.execute("SELECT * FROM corridas ORDER BY id DESC LIMIT ?", (limit,))]
 
 
+def precios_programa_ediciones(conn: sqlite3.Connection) -> list[dict]:
+    """Una fila por edición (fuente = programa:<programa>:<edicion_id>): cuántas filas distintas
+    tiene y cuántas ya tienen un veredicto humano (para ver de un vistazo qué falta revisar)."""
+    rows = conn.execute(
+        "SELECT pm.fuente, COUNT(DISTINCT pm.obs_key) n_filas, "
+        "COUNT(DISTINCT CASE WHEN vh.veredicto IS NOT NULL THEN pm.obs_key END) n_revisadas, "
+        "COUNT(DISTINCT CASE WHEN vh.veredicto = 'no' THEN pm.obs_key END) n_descartadas, "
+        "MIN(pm.fecha) desde, MAX(pm.fecha) hasta "
+        "FROM precios_mercado pm "
+        "LEFT JOIN validaciones_programa vh ON vh.fuente = pm.fuente AND vh.obs_key = pm.obs_key "
+        "AND vh.autor = 'humano' "
+        "WHERE pm.canal = 'programa' GROUP BY pm.fuente ORDER BY pm.fuente").fetchall()
+    out = []
+    for r in rows:
+        partes = r["fuente"].split(":", 2)
+        out.append(dict(r, programa=partes[1] if len(partes) > 1 else "",
+                        edicion_id=partes[2] if len(partes) > 2 else r["fuente"]))
+    return out
+
+
+def precios_programa_filas(conn: sqlite3.Connection, fuente: str) -> list[dict]:
+    """Filas (una por obs_key, no una por fecha repetida) de una edición de precios de programa,
+    con el veredicto humano y el del juez LLM (si existen) ya resueltos."""
+    from .. import validaciones_programa as vp
+    rows = conn.execute(
+        "SELECT pm.obs_key, pm.fuente, pm.descripcion, pm.marca, pm.precio, pm.precio_unidad_base, "
+        "pm.unidad_base, pm.contenido_base, pm.producto_id, pm.url, pr.nombre producto_nombre "
+        "FROM precios_mercado pm LEFT JOIN productos pr ON pr.id = pm.producto_id "
+        "WHERE pm.fuente = ? GROUP BY pm.obs_key ORDER BY pm.producto_id IS NULL, pr.nombre, pm.descripcion",
+        (fuente,)).fetchall()
+    veredictos = vp.por_fuente(conn, fuente)
+    out = []
+    for r in rows:
+        d = dict(r)
+        d["descripcion"] = (d["descripcion"] or "").split(" [vigente")[0]
+        v = veredictos.get(r["obs_key"], {})
+        d["humano"], d["juez"] = v.get("humano"), v.get("juez_llm")
+        out.append(d)
+    return out
+
+
 def fuentes_resumen(conn: sqlite3.Connection) -> dict:
     return {
         "documentos": [dict(r) for r in conn.execute(

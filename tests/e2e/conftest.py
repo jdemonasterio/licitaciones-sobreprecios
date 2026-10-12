@@ -69,8 +69,11 @@ _BLACKHOLE_PROXY = "http://127.0.0.1:9"
 class Seeded:
     base_url: str
     db_path: Path
-    proceso_leche_id: int   # 5 proveedores, semaforos rojo/amarillo/verde (ver _seed)
-    proceso_yerba_id: int   # producto sin precios de mercado -> gris
+    proceso_leche_id: int    # 5 proveedores, semaforos rojo/amarillo/verde (ver _seed)
+    proceso_programa_id: int # sin mercado real: cae al precio de "programa" (amarillo) hasta que
+                             # se lo marca "No" en /precios-programa -> vuelve a gris (sin datos)
+    programa_fuente: str     # fuente de esa unica observacion "programa" (ver _seed)
+    programa_obs_key: str
 
 
 # ── Semilla determinista y offline ──────────────────────────────────────────
@@ -100,25 +103,41 @@ def _seed(db_path: Path) -> tuple[int, int]:
             "SELECT id FROM procesos WHERE fuente=? AND external_id=?",
             ("bo_primera", "primera/245330/20210607")).fetchone()[0]
 
-        # Segundo proceso, sintetico: mismo dia, producto SIN precios de mercado
-        # seedeados -> compare.run() debe dejarlo en gris ("sin observaciones").
-        proceso_yerba_id = db.upsert(conn, "procesos", {
-            "fuente": "bo_primera", "external_id": "seed/yerba/1",
-            "numero": "99-9999-XXXX", "organismo": "ORGANISMO SEED YERBA",
+        # Segundo proceso, sintetico: mismo dia, producto SIN precios de mercado reales
+        # seedeados (solo un precio de "programa", mas abajo) -> antes de esa fila cae en gris.
+        proceso_programa_id = db.upsert(conn, "procesos", {
+            "fuente": "bo_primera", "external_id": "seed/programa/1",
+            "numero": "99-9999-XXXX", "organismo": "ORGANISMO SEED PROGRAMA",
             "tipo_procedimiento": "licitacion_publica",
             "fecha_adjudicacion": "2021-06-07", "fecha_publicacion": "2021-06-07",
             "monto_total": 5000000.0, "estado_revision": "pendiente",
             "created_at": db.now_iso(), "updated_at": db.now_iso(),
         }, ("fuente", "external_id"))
         db.upsert(conn, "renglones", {
-            "proceso_id": proceso_yerba_id, "nro_renglon": 1,
-            "descripcion": "Yerba mate 1 kg", "cantidad": 1000.0, "unidad_compra": "kilogramos",
+            "proceso_id": proceso_programa_id, "nro_renglon": 1,
+            # Sin variantes (a diferencia de la yerba): el producto sin atributos criticos deja
+            # que el fallback de "programa" sea lo unico que decide el semaforo.
+            "descripcion": "Azucar blanca comun 1 kg", "cantidad": 1000.0, "unidad_compra": "kilogramos",
             "precio_unitario": 5000.0, "monto_total": 5000000.0,
-            "proveedor": "PROVEEDOR YERBA SRL", "proveedor_cuit": "30-11111111-1",
-            "external_key": "seed:yerba:1",
+            "proveedor": "PROVEEDOR AZUCAR SRL", "proveedor_cuit": "30-11111111-1",
+            "external_key": "seed:programa:1",
         }, ("proceso_id", "external_key"))
 
-        match.match_renglones(conn, use_llm=False)   # reglas alcanzan: leche y yerba matchean
+        match.match_renglones(conn, use_llm=False)   # reglas alcanzan: leche y azucar matchean
+
+        # Unica observacion de este renglon: un precio de "programa" (Precios Cuidados/Justos),
+        # nunca mayorista/minorista real. El comparador lo usa como fallback (pipeline/compare.py,
+        # jdemonasterio 2026-10-12) y el journey de /precios-programa lo marca "No" para ver que
+        # vuelve a "sin datos" (gris) al excluirlo — ver test_precios_programa_* en test_user_journeys.py.
+        programa_fuente = "programa:precios_cuidados:seed_ed1"
+        programa_obs_key = "seed-programa-azucar-1"
+        db.upsert(conn, "precios_mercado", {
+            "fuente": programa_fuente, "canal": "programa", "fecha": "2021-06-07",
+            "descripcion": "Azucar blanca comun programa seed 1 kg [vigente 2021-01-01 a 2021-12-31]",
+            "precio": 4000.0, "contenido_base": 1.0, "unidad_base": "kg", "precio_unidad_base": 4000.0,
+            "producto_id": "azucar", "match_metodo": "seed", "match_confianza": 0.6,
+            "obs_key": programa_obs_key,
+        }, ("fuente", "fecha", "obs_key"))
 
         # 4 observaciones mayoristas, 2 fuentes/familias, mismo dia de la compra
         # (gap=0) -> confianza alta. min_mayorista=457, y DOS familias
@@ -150,7 +169,7 @@ def _seed(db_path: Path) -> tuple[int, int]:
 
         compare.run(conn)
         db.sync_empresas(conn)
-    return proceso_leche_id, proceso_yerba_id
+    return proceso_leche_id, proceso_programa_id, programa_fuente, programa_obs_key
 
 
 def _free_port() -> int:
@@ -183,7 +202,7 @@ def seeded_app(tmp_path_factory):
     cache_dir = work / "cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
 
-    proceso_leche_id, proceso_yerba_id = _seed(db_path)
+    proceso_leche_id, proceso_programa_id, programa_fuente, programa_obs_key = _seed(db_path)
 
     port = _free_port()
     env = dict(os.environ)
@@ -203,7 +222,7 @@ def seeded_app(tmp_path_factory):
     base_url = f"http://127.0.0.1:{port}"
     try:
         _wait_up(proc, base_url)
-        yield Seeded(base_url, db_path, proceso_leche_id, proceso_yerba_id)
+        yield Seeded(base_url, db_path, proceso_leche_id, proceso_programa_id, programa_fuente, programa_obs_key)
     finally:
         proc.terminate()
         try:

@@ -1,0 +1,143 @@
+# Precios Cuidados / Precios Justos / Precios Máximos: ediciones recuperadas de prensa.
+#
+# Decisión de jdemonasterio (2026-10-12, ver DESIGN_sobreprecios.md): en el mercado libre las
+# empresas suelen querer cobrar MÁS, no menos, así que estos precios pactados/techos funcionan
+# más como un PISO que como el mínimo real. Por eso entran al comparador con canal="programa" y
+# son un FALLBACK (pipeline/compare.py): solo se usan cuando no hay ninguna observación mayorista
+# ni minorista en la fecha. No reemplazan nunca a un precio de góndola real.
+#
+# No hay Boletín Oficial para esto (investigado 2026-10-11, ver
+# _scratch/licitaciones/historico_precios/RESUMEN.md): las resoluciones remiten a un Anexo que no
+# se publica. La fuente es prensa que reproduce el listado oficial de la Secretaría de Comercio.
+#
+# Campos por edición:
+#   programa            precios_cuidados | precios_justos | precios_maximos
+#   vigencia_desde/hasta fechas en que el precio pactado estuvo vigente (no solo la de publicación)
+#   fecha_publicacion   cuándo se difundió el listado
+#   region              nacional | amba | ... (casi todas las fuentes dan un precio único "nacional")
+#   formato             pdf_texto | infogram | texto_diario  (ver sources/precios_programa.py)
+#   urls                en orden de preferencia; se intenta cada una hasta que una devuelva contenido válido
+#   notas               qué se probó, cuándo y con qué resultado (histórico, no se borra aunque falle)
+#
+# Ediciones buscadas y DESCARTADAS en esta ronda (no agregadas como entradas activas):
+#   - precios_cuidados_2021_10 (~1247 productos, oct-2021): el PDF de Drive enlazado desde infobae.com
+#     (id 1s-mSnhWNuJnmeAduMlcNrSVoy8QrCQpk) devuelve 404 (link revocado); el artículo de El Cronista
+#     con el mismo título no incluye el listado (solo texto genérico). Probado 2026-10-12. Si alguien
+#     encuentra un espejo (Wayback del PDF, no de la nota), se puede agregar.
+#   - precios_cuidados_2022_07 (~949 productos, jul-2022): el PDF de Drive (id
+#     1ecDrYXvrdxR59J2C2168FezfxTNCQ1jO) es un escaneo (imagen), ya detectado en la investigación
+#     2026-10-11. Requeriría OCR (sobreprecios/pdf_text.py ya sabe hacerlo) — no se activó en esta
+#     ronda por tiempo; candidato para un próximo backlog si hace falta cerrar ese hueco.
+#   - precios_justos_2023_02 (feb/mar-2023, "congelados hasta junio"): el artículo de infobae.com no
+#     trae el listado embebido (ni Drive ni Infogram); remite a la app oficial. Probado 2026-10-12.
+#   - argentina.gob.ar/economia/comercio/preciosjustos: landing Drupal, la tabla se carga por JS no
+#     capturado por Wayback; devuelve 403 a fetch directo (confirmado en la investigación previa).
+#
+# Búsqueda de ediciones 2023 (pedido explícito de jdemonasterio 2026-10-12: "para 2023 no hay otra
+# fuente, el precio de programa ES la fuente"): además de precios_justos_2022_11 (vigente hasta
+# 2023-03-11), se probaron ~12 búsquedas y ~16 notas de prensa para abr-dic 2023 (infobae, El
+# Cronista, El Economista, Página 12, Ámbito, Perfil, La Nación, La Brújula 24, Misiones Online,
+# Diario de Cuyo): ninguna trae un listado completo descargable.
+#   - Perfil (feb-2023, "los 2000 artículos") linkea un PDF de Drive (id
+#     1jbgPMw_lt0IfoQIQXYem-DlSZnNP2l_x) que devuelve 404 (link revocado), igual que el caso de
+#     oct-2021 ya documentado arriba.
+#   - LA NACIÓN, 2023-10-31 ("uno por uno, este sería el valor de los principales productos") SÍ
+#     tiene 3 precios reales y verificables incrustados en el cuerpo de la nota (aceite de girasol
+#     Cañuelas 1,5 l $676,22; agua mineral sin gas Nestlé 1 l $214,81; azúcar clásica Ledesma 1 kg
+#     $878,47; vigencia desde 2023-11-01) pero en prosa narrativa ("...se podría encontrar en las
+#     góndolas del AMBA a $676,22; la botella de...") con el nombre del producto lejos del monto:
+#     el parser texto_diario (que asume "nombre pegado al monto") no lo recupera y no se armó un
+#     extractor a medida para 3 datos puntuales. Candidato de bajo esfuerzo para un backlog si se
+#     necesita más cobertura de nov-2023: `https://www.lanacion.com.ar/economia/precios-justos-
+#     aumenta-manana-uno-por-uno-este-seria-el-valor-de-los-principales-productos-nid31102023/`.
+#   - Misiones Online y Diario de Cuyo (feb-2023): notas cortas sin el listado embebido (remiten a
+#     la app oficial). Página 12 y Ámbito: sin productos/precios en el cuerpo de la nota.
+#   - Conclusión: el hueco abr-2023/dic-2023 queda sin cerrar en esta ronda — es un límite real de
+#     lo publicado por prensa, no una limitación del parser (ver DESIGN_sobreprecios.md §5).
+
+ediciones:
+
+  precios_cuidados_2020_01:
+    programa: precios_cuidados
+    vigencia_desde: "2020-01-07"
+    vigencia_hasta: "2020-04-06"
+    fecha_publicacion: "2020-01-07"
+    region: nacional
+    formato: texto_diario
+    urls:
+      - https://www.cronista.com/economia-politica/el-listado-completo-de-productos-de-precios-cuidados/
+      - https://web.archive.org/web/20200108193312/https://www.cronista.com/economiapolitica/Listado-completo-todos-los-productos-del-nuevo-Precios-Cuidados-20200107-0062.html
+    notas: >
+      Probado 2026-10-12: la URL viva de El Cronista todavía sirve el mismo listado que el snapshot
+      de Wayback de 2020-01-08 (mismos ~304-311 productos y precios, formato "<li>Nombre Marca x
+      Tamaño, $ Precio</li>"), así que se usa primero (no depende de que Wayback esté arriba) y el
+      snapshot queda como respaldo. Cobertura esperada ~14/33 productos del catálogo (los demás no
+      estaban en esta edición puntual, no es límite del parser).
+
+  precios_cuidados_2021_01:
+    programa: precios_cuidados
+    vigencia_desde: "2021-01-12"
+    vigencia_hasta: "2021-04-11"
+    fecha_publicacion: "2021-01-12"
+    region: nacional
+    formato: infogram
+    urls:
+      - https://web.archive.org/web/20210112172854if_/https://e.infogram.com/e28400aa-459a-4df5-941e-2899e3534493?src=embed
+    notas: >
+      Probado 2026-10-12: el snapshot de Wayback trae el JSON de Infogram embebido tal cual
+      ("data":[["Producto",{"value":precio}]]), 577 filas (precio puede venir como número o como
+      string con coma decimal argentina). El mismo ID de Infogram está rotulado "Precios Cuidados
+      2020" en su título interno (se reusa el widget entre ediciones) pero los VALORES de esta
+      captura coinciden con enero-2021, no con la edición 2020 (ej. aceite Cada Día 1500cc: $153 acá
+      vs $121 en la edición de enero-2020) — hay que confiar en el timestamp de Wayback, no en el
+      título del widget. Cobertura esperada ~27/33.
+
+  precios_cuidados_2022_01:
+    programa: precios_cuidados
+    vigencia_desde: "2022-01-12"
+    vigencia_hasta: "2022-04-12"
+    fecha_publicacion: "2022-01-12"
+    region: amba
+    formato: pdf_texto
+    urls:
+      - https://drive.google.com/uc?export=download&id=1q3RYmvFgjFrE9Zz7agWBlRX4ugHmbpCX
+    notas: >
+      Probado 2026-10-12: PDF de texto de 35 páginas, columnas Descripción/Marca/Proveedor/Precio
+      (cabecera repetida en cada página, se detecta por posición x0 de las palabras "Descripción",
+      "Marca", "Proveedor" y "Precio"). 1321 productos, listado de la Ciudad Autónoma de Buenos
+      Aires (el mismo artículo linkea un segundo PDF nacional con "más de 30.000 precios" —id
+      1ub5doYtWs8_DPJAhKGKrpPWjbgQ-fHrx, 381 páginas, 12,6 MB— no incorporado en esta ronda por
+      tamaño/tiempo; queda como backlog si se necesita más volumen). Cobertura esperada ~26/33.
+
+  precios_cuidados_2022_10:
+    programa: precios_cuidados
+    vigencia_desde: "2022-10-11"
+    vigencia_hasta: "2023-01-07"
+    fecha_publicacion: "2022-10-11"
+    region: nacional
+    formato: pdf_texto
+    urls:
+      - https://drive.google.com/uc?export=download&id=1hvkKZm_Rq2OXOCiVIX47X0kAYV5VoeOR
+    notas: >
+      Probado 2026-10-12: PDF de texto de 20 páginas, solo 2 columnas (Producto, Precio ($): sin
+      Marca ni Proveedor separados, van dentro del nombre). 452 productos "de marcas líderes"
+      (artículo infobae.com 2022-10-11), vigente hasta el 7 de enero de 2023 (texto del artículo).
+      Mismo detector de columnas por posición que la edición de enero-2022, con cabeceras distintas
+      (menos columnas): confirma que el enfoque generaliza.
+
+  precios_justos_2022_11:
+    programa: precios_justos
+    vigencia_desde: "2022-11-11"
+    vigencia_hasta: "2023-03-11"
+    fecha_publicacion: "2022-11-11"
+    region: amba
+    formato: texto_diario
+    urls:
+      - https://eleconomista.com.ar/economia/precios-justos-estos-son-1500-productos-precios-congelados-marzo-2023-n57502
+    notas: >
+      Probado 2026-10-12: a pesar del rótulo "tabla_html" de la investigación previa, al revisar el
+      HTML real NO es una <table>: es un párrafo de texto corrido con los productos separados por
+      ";" y precio al final ("Nombre Marca Tamaño: $Precio;..."). El mismo parser de texto_diario
+      (regex "texto antes de un $monto", filtrado por el catálogo) sirve para los dos formatos, así
+      que se reclasificó acá. ~1500 productos AMBA, vigencia de 120 días desde la renovación de
+      noviembre-2022 hasta el congelamiento de marzo-2023 que menciona el propio artículo.
