@@ -239,6 +239,95 @@ CREATE TABLE IF NOT EXISTS reportes (
     html_path TEXT,
     xlsx_path TEXT
 );
+
+-- Módulo de revisión humana (MEJORAS #34): cola de casos grises/rojos/equivalencias/juez con
+-- veredicto humano, y correcciones manuales por campo que compare.run() aplica antes de calcular
+-- (ver sobreprecios/revision_humana.py). Nunca se pisa un veredicto humano desde el pipeline.
+CREATE TABLE IF NOT EXISTS revisiones_caso (
+    id INTEGER PRIMARY KEY,
+    renglon_id INTEGER NOT NULL REFERENCES renglones(id) ON DELETE CASCADE,
+    origen TEXT NOT NULL,          -- gris | equivalencia | rojo | juez | manual
+    estado TEXT NOT NULL DEFAULT 'pendiente',   -- pendiente | resuelto | descartado
+    veredicto TEXT,                -- confirma | descarta | corrige | no_se_puede
+    nota TEXT,
+    revisor TEXT,
+    created_at TEXT,
+    updated_at TEXT,
+    UNIQUE (renglon_id)
+);
+
+-- Correcciones manuales por campo: la más reciente por (renglon_id, campo) es la vigente; borrar
+-- una fila es "deshacer" esa corrección (vuelve a mandar el dato automático).
+CREATE TABLE IF NOT EXISTS correcciones_renglon (
+    id INTEGER PRIMARY KEY,
+    renglon_id INTEGER NOT NULL REFERENCES renglones(id) ON DELETE CASCADE,
+    campo TEXT NOT NULL,           -- producto_id | variante | contenido_base | unidad_base |
+                                    -- precio_unitario | cantidad | fecha_comparacion | marca
+    valor TEXT,
+    nota TEXT,
+    autor TEXT,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_correcciones_renglon ON correcciones_renglon(renglon_id, campo, created_at);
+
+-- Corridas del juez LLM externo (auditoria/juez.py, solo lectura) importadas a la base con
+-- `python -m sobreprecios.cli importar-juez <carpeta>`: ese módulo sigue sin escribir nada acá.
+CREATE TABLE IF NOT EXISTS juez_corridas (
+    id INTEGER PRIMARY KEY,
+    carpeta TEXT NOT NULL UNIQUE,
+    modelo TEXT,
+    modo TEXT,
+    n_items INTEGER,
+    usd REAL,
+    importada_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS juez_veredictos (
+    id INTEGER PRIMARY KEY,
+    corrida_id INTEGER NOT NULL REFERENCES juez_corridas(id) ON DELETE CASCADE,
+    item_id TEXT NOT NULL,         -- "renglon:<id>" | "obs:<id>" | "clave:<entidad>"
+    capa TEXT,
+    veredicto TEXT,
+    tipo_error TEXT,
+    explicacion TEXT,
+    valor_correcto TEXT,
+    regla_sugerida TEXT
+);
+CREATE INDEX IF NOT EXISTS ix_juez_veredictos_item ON juez_veredictos(item_id);
+
+-- Juicio humano sobre UNA observación de mercado puntual, en el contexto de UN renglón (pedido de
+-- jdemonasterio, ronda P16): las observaciones de precios_mercado no tienen un id estable visible
+-- en evidencia_json (es un snapshot JSON, no una FK), así que la clave natural es
+-- (fuente, fecha, descripción). "no_es_mismo_producto" / "precio_o_tamano_mal_leido" hacen que
+-- pipeline/compare.run() excluya esa observación SOLO para este renglón (ver
+-- revision_humana.aplicar_exclusiones_mercado); "equivalente" y "no_se" no excluyen nada, solo
+-- dejan constancia de que un humano la miró.
+CREATE TABLE IF NOT EXISTS validaciones_mercado (
+    id INTEGER PRIMARY KEY,
+    renglon_id INTEGER NOT NULL REFERENCES renglones(id) ON DELETE CASCADE,
+    obs_fuente TEXT NOT NULL,
+    obs_fecha TEXT NOT NULL,
+    obs_descripcion TEXT NOT NULL,
+    juicio TEXT NOT NULL,          -- equivalente | no_es_mismo_producto | precio_o_tamano_mal_leido | no_se
+    nota TEXT,
+    autor TEXT,
+    created_at TEXT NOT NULL,
+    UNIQUE (renglon_id, obs_fuente, obs_fecha, obs_descripcion)
+);
+
+-- Validación rápida IN-LINE en /licitacion/<id> (pedido de jdemonasterio, misma ronda que P16):
+-- un vistazo por renglón sin tener que abrir /revision/<renglon_id>, partido en las 3 partes que
+-- pueden estar mal por separado. Última por (renglon_id, parte) es la vigente (como correcciones_renglon).
+CREATE TABLE IF NOT EXISTS validaciones_renglon (
+    id INTEGER PRIMARY KEY,
+    renglon_id INTEGER NOT NULL REFERENCES renglones(id) ON DELETE CASCADE,
+    parte TEXT NOT NULL,           -- extraccion | producto | comparacion
+    juicio TEXT NOT NULL,          -- ok | no | no_se
+    nota TEXT,
+    autor TEXT,
+    created_at TEXT NOT NULL,
+    UNIQUE (renglon_id, parte)
+);
 """
 
 

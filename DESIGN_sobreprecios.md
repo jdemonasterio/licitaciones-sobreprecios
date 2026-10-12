@@ -31,6 +31,7 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Juez externo | `auditoria/juez.py` | Auditoría LLM fuera del programa, solo lectura, TSV + reglas sugeridas |
 | Simulador | `tests/e2e/`, `scripts/simular.py`, `simular.bat` | Recorridos de usuario reales en el navegador: compuerta antes de entregar |
 | Webui | `sobreprecios/web/` | FastAPI + Jinja; `soft-nav.js` (refresco en el lugar) y `_background.py` (jobs) |
+| Revisión humana | `sobreprecios/revision_humana.py` | Cola de casos grises/rojos/equivalencias/juez, correcciones manuales por campo, validación de referencias de mercado y validación rápida por renglón; proxy de documentos (`/doc`) |
 
 ## 2. Decisiones
 
@@ -122,6 +123,49 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   (precios viejos sin actualizar: fideos 500 g a $47 en 2024). Se recalcula con cada macheo de mercado; los
   apartados no entran al comparador ni a los gráficos. Semáforos: sin cambios (el comparador ya filtraba por envase).
 
+- **2026-10-12 · Módulo de revisión humana (MEJORAS #34, pedido de jdemonasterio)**: un periodista nunca ve un
+  caso sin que un humano lo haya mirado — esto es la interfaz para mirarlo. Qué hace, dónde vive, cómo se
+  desactiva:
+  - **Cola (`/revision`)**: `revision_humana.cola()` sincroniza la tabla `revisiones_caso` con lo que el
+    comparador y el juez externo encuentran HOY (gris con `motivo_codigo` en atributo_desconocido /
+    sin_referencia_variante / sin_referencia_presentacion / sin_datos / revisar_unidad / equivalencia_por_verificar,
+    todos los rojos, y veredicto del juez error/dudoso) pero **nunca pisa una decisión ya tomada**: un caso marcado
+    "descartado" no vuelve a "pendiente" aunque el comparador lo siga viendo gris (mismo criterio que el gate de
+    "publicable" en `sobreprecios/revision.py`, que se revoca solo pero nunca se reafirma solo).
+  - **Correcciones manuales por campo (`/revision/<renglon_id>`)**: `correcciones_renglon` guarda producto,
+    variedad, envase (contenido + unidad), precio unitario, cantidad, fecha de comparación y marca; la más
+    reciente por campo es la vigente, "Deshacer" borra esa fila puntual (vuelve el dato automático). `pipeline/
+    compare.run()` llama a `revision_humana.aplicar_correcciones()` ANTES de armar la comparación — `compare()`
+    (el núcleo puro) sigue sin saber que hubo una corrección manual, solo recibe el dato ya resuelto — y
+    recalcula en un job de background (`revision_<renglon_id>`) que refresca la página en el lugar (soft-nav).
+    La variedad tiene un valor sentinela `__no_se__` ("No sé cuál es la variedad"): guarda que un humano miró sin
+    forzar ningún valor al comparador (el caso sigue resolviéndose solo, puede seguir gris).
+  - **Validación de referencias de mercado (P16, pedido de jdemonasterio)**: en la tabla de evidencia de cada
+    caso, el humano marca cada observación como equivalente / no es el mismo producto / precio o tamaño mal
+    leído / no sé, con una nota. Como una observación de `precios_mercado` no tiene un id estable visible en
+    `evidencia_json` (es un snapshot JSON armado por el comparador, no una FK), la clave es (fuente, fecha,
+    descripción original) — `revision_humana.clave_observacion()` saca el sufijo que el comparador le agrega al
+    ajustar por IPC antes de comparar. Las marcadas "no es el mismo producto" / "precio o tamaño mal leído" se
+    excluyen del cálculo de ESE renglón (`aplicar_exclusiones_mercado()`, tabla `validaciones_mercado`); otros
+    renglones del mismo producto no se tocan.
+  - **Validación rápida in-line (`/licitacion/<id>`)**: por renglón, 3 partes (extracción / producto y variedad /
+    referencia de mercado) con ✓ OK · ✗ No · ? No sé y un comentario, sin abrir la revisión completa
+    (`validaciones_renglon`, última por `(renglon_id, parte)`). El resumen ("validado por…" / "con objeciones" /
+    "revisión parcial") se muestra junto al semáforo. Un botón "Validé esta licitación" en la misma tarjeta de
+    revisión de siempre marca el proceso `revisado` (reusa `sobreprecios/revision.py`, no es una tabla nueva).
+  - **Juez externo importado (`/revision/juez`)**: `auditoria/juez.py` SIGUE siendo de solo lectura sobre la
+    base — el que escribe es este módulo, a pedido explícito (`python -m sobreprecios.cli importar-juez <carpeta>`
+    o el botón del webui), nunca automático. Lee `items.tsv` + `resumen.md` de una corrida y los vuelca en
+    `juez_corridas` / `juez_veredictos`; re-importar la misma carpeta reemplaza sus veredictos enteros.
+  - **Proxy de documentos (`/doc`)**: allowlist estricta de host (boletinoficial.gob.ar, comprar.gob.ar y sus
+    `www.`), solo https, re-chequea el host en CADA redirect (nunca confía en el host inicial), tope de 30 MB y
+    30 s de timeout, cache de 1 día en `cache_dir("docs")` (no es un archivo permanente del proyecto). Para
+    mostrar el PDF/HTML inline en un `<iframe>` sin bajarlo a mano ni pegarle directo a la fuente desde el
+    navegador del revisor.
+  - **Desactivar**: no hay flag — es el gate de revisión en sí. Para no verlo, no entrar a `/revision` ni a
+    `/licitacion/<id>`; el pipeline sigue funcionando igual sin que nadie corrija ni valide nada (correcciones y
+    validaciones son estrictamente aditivas, nunca requeridas).
+
 ## 3. Cómo operar
 
 | Tarea | Comando / lugar |
@@ -138,13 +182,22 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Normalizar entidades | `python -m sobreprecios.cli normalizar` (también corre dentro del pipeline) |
 | Auditar con juez | `python -m auditoria.juez --modelo <modelo> --n 60 --max-usd 5` → `_scratch/licitaciones/auditoria/` |
 | Auditar casos (rojos + cambios) | `python -m auditoria.juez --modelo <modelo> --modo casos --n 45 --max-usd 2.5 --ids 1761,1787` |
-| Antes de entregar | `simular.bat` / `python scripts/simular.py`: 14 recorridos de usuario tienen que dar OK |
+| Revisar casos pendientes | `/revision` (cola) → abrir un caso → corregir dato y/o validar referencias de mercado → "Guardar y recalcular" |
+| Validar un renglón sin abrir el caso | `/licitacion/<id>` → desplegar el renglón → "Validación rápida" (✓/✗/?) |
+| Importar una corrida del juez a la cola | `python -m sobreprecios.cli importar-juez <carpeta>` o botón en `/revision/juez` |
+| Mirar un documento (BO/COMPR.AR) sin salir | botón "Ver documento" en `/revision/<renglon_id>` (proxy `/doc`, solo esos hosts) |
+| Antes de entregar | `simular.bat` / `python scripts/simular.py`: 19 recorridos de usuario tienen que dar OK |
 
 ## 4. Tests
 
 `python -m pytest -q`: parser de unidades y montos, catálogo (casos reales 2021 y SEPA), extracción con fixture real
 (MDS Res. 735/2021), reparto de montos conjuntos, comparador (ventana, IPC, envase, marca, plausibilidad), gateway LLM
-(cache, cuota, perfiles), normalización de links, hechos fechados, sociedades (fixtures BO 2ª sección), claves.
+(cache, cuota, perfiles), normalización de links, hechos fechados, sociedades (fixtures BO 2ª sección), claves,
+revisión humana (`tests/test_revision_humana.py`: correcciones por campo y su recálculo, la cola no pisa una
+decisión humana, exclusión de referencias de mercado, resumen de validación por renglón, parser de
+`items.tsv`/`resumen.md` del juez con fixture en `tests/fixtures/juez_sample/`, allowlist de host del proxy de
+documentos con `httpx.MockTransport` incl. redirect a host no permitido). El simulador (`tests/e2e/`) cubre los
+journeys de `/revision` y de la validación in-line en `/licitacion/<id>` con un navegador real.
 
 ## 5. Límites conocidos
 
@@ -158,3 +211,9 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 - Variantes por bolsa de palabras: no entiende negaciones ("sin palo con menta" queda ambiguo) ni atributos
   coexistentes (fortificación + formulación); el prime pidió parseo por campo — backlog.
 - datos.gob.ar / datos.produccion.gob.ar no respondieron desde la red de desarrollo.
+- Validación de referencias de mercado (P16): la clave es (fuente, fecha, descripción original), no un id de
+  `precios_mercado` — si dos observaciones del mismo producto comparten exactamente esas 3 cosas (raro, pero
+  posible con el espejo SEPA), un juicio humano afecta a ambas. La mejora #27 (clave de serie con EAN) resuelve
+  esto de raíz cuando se implemente.
+- El proxy de documentos (`/doc`) no persiste nada más que un cache de 1 día: no sirve como archivo para un
+  reporte que se vaya a mandar después (para eso, descargar el PDF directo con el link de "Abrir el proceso").

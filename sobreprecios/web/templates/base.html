@@ -17,6 +17,7 @@
         <div class="nav-links">
             {% set path = request.url.path %}
             <a href="/" class="{% if path == '/' or path.startswith('/licitacion') %}active{% endif %}">Licitaciones</a>
+            <a href="/revision" class="{% if path.startswith('/revision') %}active{% endif %}">Revisión</a>
             <a href="/analitica" class="{% if path.startswith('/analitica') or path.startswith('/producto') %}active{% endif %}">Analítica</a>
             <a href="/empresas" class="{% if path.startswith('/empresa') %}active{% endif %}">Empresas</a>
             <a href="/reportes" class="{% if path.startswith('/reportes') %}active{% endif %}">Reportes</a>

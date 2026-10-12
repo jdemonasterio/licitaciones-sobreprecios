@@ -29,7 +29,7 @@ Internamente es `LIC_E2E=1 .venv/bin/python -m pytest tests/e2e -v`. Sin
 `LIC_E2E=1` esa carpeta se skippea entera (tests/e2e/conftest.py lo hace
 explicito), asi que un `pytest` normal del repo no se entera de que existe.
 
-## Que verifica (10 escenarios, `tests/e2e/test_user_journeys.py`)
+## Que verifica (12 escenarios / 19 tests, `tests/e2e/test_user_journeys.py`)
 
 1. **Inicio**: KPIs, filtros (producto/semaforo/busqueda) y orden.
 2. **Detalle de licitacion**: evidencia y "como se calculo" se despliegan.
@@ -50,6 +50,18 @@ explicito), asi que un `pytest` normal del repo no se entera de que existe.
    oscuro el texto no queda del mismo color que el fondo.
 10. **Doble submit**: dos POST concurrentes al mismo job solo arrancan UNA
     corrida (el guard de `web/_background.py` no se saltea).
+11. **Revision humana** (MEJORAS #34, `sobreprecios/revision_humana.py`): la
+    cola de `/revision` lista el renglon gris y el rojo de la semilla y
+    filtra por origen; en `/revision/<id>` corregir el producto asignado de
+    un caso gris recalcula EN EL LUGAR (sin recargar) y el motivo cambia;
+    marcar la observacion que forma el minimo confirmado como "no es el
+    mismo producto" saca ese renglon del rojo (sin tocar los demas
+    renglones del mismo producto); `/doc` con un host no permitido devuelve
+    un error en castellano, nunca sigue el link.
+12. **Validacion in-line en `/licitacion/<id>`**: marcar una parte de un
+    renglon (extraccion/producto/comparacion) con "OK" no recarga la pagina
+    y el resumen ("validado por…" / "con objeciones") persiste despues de
+    navegar a otra pagina y volver.
 
 Todo escenario corre **sin red** (las fuentes externas de precios quedan
 detras de un proxy que no escucha en nadie: fallan rapido y la app sigue

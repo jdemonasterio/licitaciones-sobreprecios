@@ -28,6 +28,7 @@ Uso:
   python -m sobreprecios.cli precios-hoy           # foto diaria de precios (súper + mayoristas)
   python -m sobreprecios.cli investigar "https://www.boletinoficial.gob.ar/detalleAviso/primera/341035/20260422"
   python -m sobreprecios.cli goldens               # TSV de validación en _scratch/licitaciones/
+  python -m sobreprecios.cli importar-juez 20261012-1530   # carga una corrida de auditoria/juez.py a /revision/juez
   python -m sobreprecios.cli estado
 
 Tips:
@@ -277,6 +278,19 @@ def investigar(entrada, pdf):
     """Investiga UNA licitación: link del BO / COMPR.AR, número de proceso, texto o --pdf."""
     from . import investigar as inv
     click.echo(inv.investigar(entrada, pdf, progress=click.echo))
+
+
+@cli.command("importar-juez")
+@click.argument("carpeta")
+def importar_juez_cmd(carpeta):
+    """Importa items.tsv de una corrida de auditoria/juez.py a la base (cola de revisión / /revision/juez).
+
+    CARPETA es el nombre de la corrida (ej. 20261012-1530) o una ruta a items.tsv/resumen.md;
+    si es solo el nombre se busca en _scratch/licitaciones/auditoria/<carpeta>.
+    """
+    from . import revision_humana
+    with db.session() as conn:
+        click.echo(revision_humana.importar_corrida_juez(conn, carpeta))
 
 
 @cli.command()
