@@ -407,7 +407,8 @@ brecha" de `analitica.html` y "adjudicaciones" de `empresa.html` no traían `dat
 checkboxes agrupaba por el texto CRUDO (3 valores con conteos 4/45/19 en vez de uno con 68). Fix completo:
 `web/queries.list_procesos/peores_renglones/empresa` ahora traen `organismo_canonico` y esas 3 celdas filtran
 por ahí y muestran el nombre unificado (el texto tal como figura en el documento, con la subunidad, queda
-en el tooltip; owner 2026-10-12: "311 - Ministerio..." y "MINISTERIO DE..." en la misma columna confundían). Además, `normalize/entidades.
+en el tooltip; 2026-10-12, a revisar por jdemonasterio: "311 - Ministerio..." y "MINISTERIO DE..." en la misma
+columna confundían). Además, `normalize/entidades.
 normalizar_organismo()` perdía las tildes del canónico ("Ministerio de Economia" en vez de "Ministerio de
 Economía") porque recortaba sobre una copia ya sin acentos; ahora recorta del texto original (misma posición:
 `strip_accents()` no cambia la cantidad de caracteres) y agrega `jurisdiccion_clave` (sin acentos/mayúsculas,
