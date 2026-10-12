@@ -49,6 +49,18 @@ def test_filas_texto_diario_lee_li_y_parrafo_con_punto_y_coma():
     assert {"descripcion": "Detergente Magistral 300 cc", "marca": None, "precio": 164.99} in eco
 
 
+def test_filas_texto_diario_descarta_el_json_embebido_y_deduplica():
+    """Regresión: la nota de 2020 viene también como JSON embebido en la página; antes quedaban 336
+    filas con descripciones tipo 'roperties":{"indent":0},..."content":"Aceite...' duplicando las buenas."""
+    html = ('<li>Aceite de Girasol Cada Dia x 1500 Cc $ 120</li>'
+            '<script>{"additional_properties":{"indent":0},"alignment":"left",'
+            '"content":"Aceite de Girasol Cada Dia x 1500 Cc $ 120"}</script>'
+            '<li>Yerba Mate Rosamonte x 500 Gr $ 99,5</li>')
+    filas = pp._filas_texto_diario(html)
+    assert filas == [{"descripcion": "Aceite de Girasol Cada Dia x 1500 Cc", "marca": None, "precio": 120.0},
+                     {"descripcion": "Yerba Mate Rosamonte x 500 Gr", "marca": None, "precio": 99.5}]
+
+
 # ── Macheo al catálogo (_mapear_fila) ────────────────────────────────────────────────────────
 
 def test_mapear_fila_exige_catalogo_y_tamano_en_la_unidad_base():

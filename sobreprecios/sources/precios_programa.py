@@ -244,12 +244,20 @@ def _filas_infogram(html: str) -> list[dict]:
 
 
 def _filas_texto_diario(html: str) -> list[dict]:
-    filas = []
+    filas, vistas = [], set()
     for desc_raw, val_raw in _PRICE_ROW_RE.findall(html):
-        desc = html_mod.unescape(desc_raw).strip(" ,:;\n\t")
-        desc = re.sub(r"\s+", " ", desc)
+        desc = html_mod.unescape(desc_raw)
+        # Algunos diarios repiten la nota como JSON embebido ({"alignment":"left","content":"Aceite...")
+        # además del HTML: el regex agarra la cola del JSON pegada a la descripción. Se queda con el
+        # texto del último "content" y se descarta lo que siga teniendo pinta de JSON.
+        if '"content":"' in desc:
+            desc = desc.rsplit('"content":"', 1)[1]
+        if any(c in desc for c in '{}"'):
+            continue
+        desc = re.sub(r"\s+", " ", desc.strip(" ,:;\n\t"))
         precio = parse_number(val_raw)
-        if desc and 2 <= len(desc) <= 90 and precio and precio > 0:
+        if desc and 2 <= len(desc) <= 90 and precio and precio > 0 and (desc, precio) not in vistas:
+            vistas.add((desc, precio))
             filas.append({"descripcion": desc, "marca": None, "precio": precio})
     return filas
 

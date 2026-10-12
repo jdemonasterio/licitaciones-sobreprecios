@@ -89,7 +89,7 @@ dato para convertir quedan fuera de las sumas.{% endif %}</p>{% endif %}
 
 <h2>Renglones con mayor brecha</h2>
 <div class="table-wrap"><table>
-<thead><tr><th>Semáforo</th><th>Fecha</th><th>Organismo</th><th>Bien</th><th>Proveedor</th><th class="num">Pagó</th><th class="num">Referencia</th><th class="num">Brecha</th><th class="num">Exceso</th></tr></thead>
+<thead><tr><th>Semáforo</th><th>Fecha</th><th>Organismo</th><th>Bien</th><th>Proveedor</th><th class="num">Adjudicado</th><th class="num">Referencia</th><th class="num">Brecha</th><th class="num">Exceso</th></tr></thead>
 <tbody>{% for r in peores %}
 <tr><td><span class="sem sem-{{ r.semaforo }}">{{ SEMAFORO_TXT[r.semaforo] }}</span></td><td>{{ r.fecha|fecha }}</td>
 <td><a href="/licitacion/{{ r.proceso_id }}">{{ r.organismo or '—' }}</a></td><td>{{ r.descripcion }}</td>

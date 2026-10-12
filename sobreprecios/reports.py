@@ -301,7 +301,7 @@ def _expediente_html(titulo: str, proc: dict, resumen: dict, comprobantes: list[
     </div>"""
 
     cols_res = [("nro_renglon", "Renglón"), ("descripcion", "Bien"), ("proveedor", "Proveedor"),
-                ("precio_unidad_base", "Pagó $/u. base"), ("ref_principal_valor", "Referencia $"),
+                ("precio_unidad_base", "Precio adjudicado $/u. base"), ("ref_principal_valor", "Referencia $"),
                 ("sobreprecio_ajustado_pct", "Brecha"), ("exceso_ars", "Exceso $")]
     filas_res = []
     for c in comprobantes:

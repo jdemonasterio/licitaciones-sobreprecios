@@ -37,6 +37,72 @@ Problemas: [preguntas frecuentes](docs/preguntas_frecuentes.md). Para seguir mej
 Recorrido completo con capturas: ver **[Qué podés hacer, paso a paso](#qué-podés-hacer-paso-a-paso)** más abajo. Para
 publicarla en internet (versión de solo lectura o con contraseña): [docs/despliegue_nube.md](docs/despliegue_nube.md).
 
+## Qué podés hacer, paso a paso
+
+Capturas de la base real (compras publicadas en el Boletín Oficial y COMPR.AR). Los nombres y CUIT de los
+proveedores están reemplazados por "Proveedor A, B…": los colores de estas capturas **no pasaron por revisión
+humana** y un color sin revisar no se publica al lado de un nombre.
+
+**1. Ver qué compras tienen sobreprecio.** La lista de licitaciones, ordenada por exceso estimado en pesos
+constantes, con filtros por producto, organismo, fechas y estado de revisión.
+
+![Lista de licitaciones analizadas](docs/img/01_licitaciones.jpg)
+
+**2. Abrir una licitación.** Arriba la síntesis (colores, montos, cobertura y qué falta para publicar); abajo qué
+documento se importó, las ofertas y, renglón por renglón, por qué tiene ese color.
+
+![Detalle de una licitación](docs/img/02_licitacion.jpg)
+
+**3. Ver la cuenta completa de un renglón.** El comprobante imprimible: dato original, precio por kilo/litro,
+referencia de mercado, ajuste por inflación y escenarios de plazo de pago.
+
+![Comprobante de cálculo](docs/img/04_comprobante.jpg)
+
+**4. Armar el expediente para un periodista.** Un HTML por licitación: resultados primero y después cómo se
+construyeron (fuentes, normalizaciones, inflación, supuestos y preguntas abiertas).
+
+![Expediente para periodista](docs/img/05_expediente.jpg)
+
+**5. Revisar los casos dudosos.** La cola de revisión: rojos, grises, equivalencias por verificar, montos que no
+cierran y lo que marcó el juez externo.
+
+![Cola de revisión humana](docs/img/06_revision_cola.jpg)
+
+**6. Corregir un caso.** Producto, variedad, envase, precio o fecha; descartar un precio de mercado mal leído;
+completar el checklist de explicaciones alternativas. Se recalcula en el lugar.
+
+![Revisión de un caso](docs/img/07_revision_caso.jpg)
+
+**7. Mirar el panorama.** Organismos, productos, proveedores y meses con más brecha, en pesos de cada fecha, pesos
+constantes o dólares.
+
+![Analítica](docs/img/08_analitica.jpg)
+
+**8. Seguir un producto en el tiempo.** Lo que adjudicó el Estado en cada compra contra el mínimo de mercado de cada
+mes.
+
+![Serie de precios de un producto](docs/img/09_producto.jpg)
+
+**9. Validar los precios de programa.** Las listas históricas de Precios Cuidados/Justos con su texto original, para
+marcar ✓/✗ cada fila.
+
+![Precios de programa](docs/img/10_precios_programa.jpg)
+
+**10. Investigar un caso puntual.** Pegar un link del Boletín Oficial o de COMPR.AR, un número de proceso, el texto
+de la norma o un PDF.
+
+![Investigar una licitación](docs/img/11_investigar.jpg)
+
+**11. Ver el impacto de un cambio.** Después de cada recálculo: qué renglones cambiaron de color o de exceso y qué
+marcas "publicable" se revocaron.
+
+![Impacto de un recálculo](docs/img/12_impacto.jpg)
+
+**12. Actualizar los datos.** Bajar avisos nuevos, precios de hoy, INDEC y dólar en segundo plano; copia de
+seguridad y restauración sin consola.
+
+![Datos y fuentes](docs/img/13_fuentes.jpg)
+
 ## Cómo se calcula (resumen)
 
 - Cada precio se lleva a $/kg, $/litro o $/unidad y se compara solo contra el **mismo producto, variedad y envase**
@@ -162,7 +228,7 @@ humano lo revise** en la pantalla de Revisión. Detalle técnico y fechas de cad
 
 ## Antecedente
 
-Grupo Quijote (Calles, Madanes, Oks, Serebrennik; software de David Ruiz Díaz), "Indicadores de Transparencia en
+Grupo Quijote (Calles, Madanes, Oks, Serebrennik), "Indicadores de Transparencia en
 Argentina – El Precio de los Insumos Críticos que compra el Estado" (2021). Este proyecto reimplementa y extiende
 esa metodología; su dataset 2021 se usa como caso de validación.
 

@@ -91,7 +91,7 @@ def comparaciones(conn: sqlite3.Connection) -> Path:
                     r["sobreprecio_corroborado_pct"], r["estado_atributo"], r["motivo_codigo"], r["semaforo"],
                     r["confianza"], r["motivo"]])
     header = ["Organismo", "Fecha", "Proceso", "proceso_id", "renglon_id", "Descripción", "Marca", "Producto canónico",
-              "Cantidad", "Unidad", "Precio unitario", "Pagó por u. base", "U. base", "Mín. mayorista",
+              "Cantidad", "Unidad", "Precio unitario", "Precio adjudicado por u. base", "U. base", "Mín. mayorista",
               "De dónde sale el mínimo", "P25 mayorista", "Mediana mayorista", "N obs. mayorista", "Mín. súper",
               "Mediana súper", "INDEC", "Misma marca", "Ajuste financiero %", "Brecha vs mínimo (sin ajuste) %",
               "Exceso $", "Link BO", "Proveedor", "Referencia usada", "Valor referencia", "Brecha ajustada %",

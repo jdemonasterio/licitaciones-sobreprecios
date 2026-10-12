@@ -1,6 +1,6 @@
 """Importa el dump MySQL del sistema original de Grupo Quijote (2020-2021).
 
-El sistema viejo (Laravel, David Ruiz Díaz) guardó:
+El sistema viejo (Laravel) guardó:
   compras_del_estado  ~115 renglones adjudicados publicados en el BO en 2021
                       (leche en polvo, yerba, fideos, harinas...), con link al aviso
   daily_scrappes      scrapes diarios ene-nov 2021 de 4 fuentes mayoristas

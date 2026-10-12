@@ -108,14 +108,14 @@
         <tr>
             <td>{{ EXPLICACION_TXT[item] }}</td>
             <td>{% if e and e.autor %}<span class="tag {% if e.estado == 'verificado' %}tag-alerta{% endif %}">{{ EXPLICACION_ESTADO_TXT.get(e.estado, e.estado) }}</span>{% else %}<span class="muted small">pendiente</span>{% endif %}</td>
-            <td class="small">{{ e.nota if e else '' }}</td>
+            <td class="small">{{ (e.nota or '') if e else '' }}</td>
             <td>
                 <form method="post" action="/revision/{{ c.id }}/explicacion" style="display:flex;gap:3px;flex-wrap:wrap;align-items:center">
                     <input type="hidden" name="item" value="{{ item }}">
                     <select name="estado" style="font-size:12px;padding:1px">
                     {% for s in EXPLICACION_ESTADOS %}<option value="{{ s }}" {% if e and e.estado == s %}selected{% endif %}>{{ EXPLICACION_ESTADO_TXT[s] }}</option>{% endfor %}
                     </select>
-                    <input type="text" name="nota" placeholder="nota" style="width:160px;font-size:12px" value="{{ e.nota if e else '' }}">
+                    <input type="text" name="nota" placeholder="nota" style="width:160px;font-size:12px" value="{{ (e.nota or '') if e else '' }}">
                     <button type="submit" class="btn btn-sm">Guardar</button>
                 </form>
             </td>
