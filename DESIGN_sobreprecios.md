@@ -273,6 +273,61 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   el primero que aparece llevado hacia atrás con el IPC del mes exacto, rotulado "PRECIO INFERIDO" en el motivo,
   confianza baja, nunca rojo. Si existe un dato anterior (aunque viejo) no se infiere: rige `gap_maximo_dias`.
 
+- **2026-10-12 · Diseño de la interfaz (jdemonasterio): sistema de diseño en `styles.css`/`base.html`.**
+  Investigación de referencia (portales de monitoreo de compras públicas, sitios de datos/elecciones y
+  design systems de gobierno — opentender, DoZorro/ProZorro, OCDS/Jarbas, GOV.UK, USWDS, Poncho, Chequeado,
+  ProPublica) en `_scratch/licitaciones/ux/INVESTIGACION_UX.md`. Decisiones:
+  - **Tipografía**: Inter (Google Fonts + fallback `system-ui`), una sola familia para todo (no editorial +
+    UI como ProPublica/Poncho: acá no hay prosa larga). Base 16px (antes 15px) — GOV.UK/USWDS/ProPublica/Poncho
+    coinciden en 16px como mínimo legible. Cifras tabulares nativas (`font-feature-settings: "tnum"`) en
+    columnas `.num` y KPIs. El encabezado más chico (`h3`) ahora pesa igual que el cuerpo y marca jerarquía
+    solo con negrita (principio explícito de GOV.UK: "el peso señala estructura, no el tamaño").
+  - **Tokens**: escala tipográfica `--fs-2xs`…`--fs-2xl`, espaciado en grilla de 4px (`--space-1`…`--space-6`,
+    misma convención que GOV.UK/USWDS), `--radius`/`--radius-sm`/`--radius-pill`. Paleta neutra sin cambios
+    (ya era un "papel" cálido con texto casi negro, acorde a estos design systems); un solo acento azul
+    (`--accent` `#1f67bf` claro / `#3987e5` oscuro, igual criterio que GOV.UK/Poncho/opentender) compartido
+    ahora con `--series-1` del gráfico (antes tenían valores ligeramente distintos sin motivo). Par de
+    gráfico azul/naranja (`--series-1`/`--series-2`) sin tocar: ya era el par ColorBrewer clásico que
+    ProPublica recomienda por ser distinguible con daltonismo.
+  - **Semáforo (bug de contraste encontrado y corregido)**: color + ícono + texto, nunca el color solo (ya
+    lo hacía el código). Lo que faltaba: los tonos de texto no tenían variante por tema — en modo oscuro
+    quedaban con el MISMO hex que en modo claro puesto sobre fondo oscuro. Medido con la fórmula de contraste
+    WCAG (luminancia relativa): rojo (`#d03b3b` sobre fondo rojo oscuro) daba **3.19:1**, verde (`#0a7a0a`
+    sobre fondo verde oscuro) daba **2.59:1** — ambos por debajo del mínimo AA de texto (4.5:1). Se separaron
+    en tokens `--critical-ink`/`--warning-ink`/`--good-ink` con un valor propio por tema:
+
+    | token (claro) | valor | sobre badge | sobre fondo | token (oscuro) | valor | sobre badge |
+    |---|---|---|---|---|---|---|
+    | `--critical-ink` | `#a82f2f` | 5.68:1 | 6.23:1 | `--critical-ink` | `#ef6a67` | 5.05:1 |
+    | `--warning-ink` | `#8a5a00` | 5.37:1 | — | `--warning-ink` | `#fab219` | 7.25:1 |
+    | `--good-ink` | `#0a7a0a` | 4.88:1 | 5.10:1 | `--good-ink` | `#3fc23f` | 6.14:1 |
+    | `--text-3` (muted) | `#666560` | — | 4.94:1 | `--text-3` | `#8f8e86` (sin cambio) | 5.70:1 |
+
+    Todos ≥ AA (4.5:1). De paso se encontró un segundo bug: en modo oscuro el hover de `.btn-primary` ponía
+    texto blanco sobre `#86b6ef` (un azul clarito pensado para texto de link, no para fondo de botón) →
+    2.11:1. Se agregó `--accent-hover` como token separado para fondos de hover (blanco sobre él: 5.01-8.14:1
+    según tema).
+  - **Foco visible**: no existía ningún estilo de foco propio (dependía 100% del default del navegador).
+    Se agregó un `outline` + halo de 3px en el acento sobre todo lo interactivo (`a`, `button`, `.btn`,
+    inputs, `summary`, `[tabindex]`) — mismo principio que el contorno de foco de GOV.UK, en nuestro color
+    en vez de amarillo.
+  - **Tablas**: cebra sutil en filas pares (USWDS/opentender/ProPublica, para lectura horizontal de filas
+    con muchas columnas numéricas) sumada al hover existente, sin tocar `overflow-x:auto` (tablas anchas
+    siguen scrolleando dentro de `.table-wrap`, nunca la página). **Se probó y se descartó** un `thead`
+    sticky (como opentender/DoZorro): con tablas cortas el header flotante tapaba celdas clickeables y
+    rompió 3 journeys del simulador Playwright (`<th>` interceptaba los clicks) — revertido, documentado en
+    el comentario de `styles.css` para no reintentarlo sin resolver antes el offset contra una navbar que
+    puede ocupar 1-3 líneas según el ancho.
+  - **Clases nuevas** (sin tocar templates salvo `base.html`, por los otros dos agentes trabajando en
+    paralelo sobre templates): `.callout` (nota destacada dentro de una página, estaba en la lista de clases
+    a mantener pero no existía ningún estilo) y `.soft-toast-error` (bug de CSS faltante: `soft-nav.js` ya le
+    pone esa clase al toast de error — `soft-nav.js:69` — pero nunca tuvo estilo propio; un error se veía
+    igual que un éxito).
+  - **Verificación**: `_scratch/licitaciones/ux/antes_*.png` / `despues_*.png` (Playwright, 1366px y 375px,
+    `/`, `/licitacion/<id>`, `/analitica`, `/revision`, contra una copia de `data/sobreprecios.db`, nunca la
+    original) + una pasada en `color_scheme=dark`. `python -m pytest -q` y el simulador E2E (20/20) quedaron
+    verdes; la única regresión real detectada en el camino fue el `thead` sticky (ver arriba), revertida.
+
 ## 3. Cómo operar
 
 | Tarea | Comando / lugar |

@@ -1,5 +1,28 @@
-/* Sobreprecios — estilos. Tokens de color en :root, modo oscuro propio (no invertido).
- * Semáforo = colores de estado + ícono + texto: nunca el color solo. */
+/* Sobreprecios — estilos.
+ *
+ * Sistema de diseño (2026-10-12): tokens en :root, modo oscuro propio (no invertido).
+ * Investigación de referencia (portales de monitoreo de compras públicas, sitios de
+ * datos/elecciones y design systems de gobierno) en
+ * _scratch/licitaciones/ux/INVESTIGACION_UX.md. Decisiones clave:
+ *   - Tipografía: Inter (Google Fonts, con fallback a system-ui) — gratuita, muy legible
+ *     en español (buena altura de x y soporte de tildes/ñ) y con cifras tabulares nativas
+ *     (font-feature "tnum"), igual que usan la mayoría de los dashboards de datos
+ *     consultados (opentender, paneles OCDS) y recomienda ProPublica para interfaces.
+ *   - Tamaño base 16px (antes 15px): GOV.UK, USWDS, Poncho y ProPublica coinciden en
+ *     16px como mínimo legible para prosa; las tablas quedan más densas (14px) a
+ *     propósito, como en opentender/DoZorro/ProPublica.
+ *   - Jerarquía de encabezados: el nivel más chico (h3) usa el mismo tamaño que el
+ *     cuerpo y marca la jerarquía solo con negrita — principio explícito de GOV.UK
+ *     ("usar el peso para señalar estructura, no el tamaño").
+ *   - Semáforo = color + ícono + texto, nunca el color solo (igual que DoZorro/ProZorro
+ *     con sus indicadores de riesgo). Los tonos de texto (*-ink) están separados de los
+ *     tonos "puros" (--critical/--warning/--good) y verificados en WCAG AA (≥4.5:1) en
+ *     los dos temas — el modo oscuro tenía colores de texto sin ajustar por tema y
+ *     fallaba AA (ver DESIGN_sobreprecios.md, "Diseño de la interfaz").
+ *   - Un solo acento (azul), igual que GOV.UK/Poncho/opentender; series de gráfico
+ *     azul/naranja (ya existían) es el par classic ColorBrewer que usa ProPublica por
+ *     ser distinguible con daltonismo.
+ */
 :root {
     color-scheme: light;
     --bg: #f6f6f3;
@@ -8,28 +31,61 @@
     --border: #dedcd5;
     --text: #1b1b1a;
     --text-2: #52514e;
-    --text-3: #7a7974;
-    --accent: #2a78d6;
-    --accent-ink: #1c5cab;
-    --series-1: #2a78d6;
+    --text-3: #666560;
+    --accent: #1f67bf;
+    --accent-ink: #184f93;
+    --accent-hover: #184f93;
+    --series-1: #1f67bf;
     --series-2: #eb6834;
+    /* Tonos "puros" — solo para superficies grandes/decorativas (franjas, rellenos de
+       gráfico). Para texto sobre badges/semáforo usar siempre las variantes *-ink. */
     --good: #0ca30c;
     --warning: #fab219;
     --critical: #d03b3b;
     --neutral: #8e8d88;
+    --good-ink: #0a7a0a;
+    --warning-ink: #8a5a00;
+    --critical-ink: #a82f2f;
     --good-bg: #e6f5e6;
     --warning-bg: #fdf3dc;
     --critical-bg: #fbe7e7;
     --neutral-bg: #efeeeb;
+
+    /* Tipografía: escala 1 sola vez, se reusa en todo el archivo. */
+    --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --fs-2xs: 12px;
+    --fs-xs: 13px;
+    --fs-sm: 14px;
+    --fs-base: 16px;
+    --fs-md: 18px;
+    --fs-lg: 20px;
+    --fs-xl: 24px;
+    --fs-2xl: 28px;
+    --lh-base: 1.5;
+    --lh-tight: 1.35;
+
+    /* Espaciado: grilla de 4px (misma convención que GOV.UK/USWDS). */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+
     --radius: 8px;
+    --radius-sm: 6px;
+    --radius-pill: 999px;
     --shadow: 0 1px 2px rgba(0,0,0,.05);
+    --focus-ring: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
         color-scheme: dark;
         --bg: #121211; --surface: #1a1a19; --surface-2: #232321; --border: #33332f;
         --text: #f4f4f1; --text-2: #c3c2b7; --text-3: #8f8e86;
-        --accent: #3987e5; --accent-ink: #86b6ef; --series-1: #3987e5; --series-2: #d95926;
+        --accent: #3987e5; --accent-ink: #86b6ef; --accent-hover: #2f6fc4;
+        --series-1: #3987e5; --series-2: #d95926;
+        --good-ink: #3fc23f; --warning-ink: #fab219; --critical-ink: #ef6a67;
         --good-bg: #13301a; --warning-bg: #3a2e10; --critical-bg: #3d1b1b; --neutral-bg: #2a2a27;
     }
 }
@@ -37,89 +93,109 @@
     color-scheme: dark;
     --bg: #121211; --surface: #1a1a19; --surface-2: #232321; --border: #33332f;
     --text: #f4f4f1; --text-2: #c3c2b7; --text-3: #8f8e86;
-    --accent: #3987e5; --accent-ink: #86b6ef; --series-1: #3987e5; --series-2: #d95926;
+    --accent: #3987e5; --accent-ink: #86b6ef; --accent-hover: #2f6fc4;
+    --series-1: #3987e5; --series-2: #d95926;
+    --good-ink: #3fc23f; --warning-ink: #fab219; --critical-ink: #ef6a67;
     --good-bg: #13301a; --warning-bg: #3a2e10; --critical-bg: #3d1b1b; --neutral-bg: #2a2a27;
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: var(--fs-base)/var(--lh-base) var(--font-sans); font-feature-settings: "tnum" 1; }
 a { color: var(--accent-ink); }
-.container { max-width: 1400px; margin: 0 auto; padding: 20px 16px 60px; }
-h1 { font-size: 24px; margin: 4px 0 4px; }
-h2 { font-size: 18px; margin: 28px 0 10px; }
-h3 { font-size: 15px; margin: 18px 0 8px; }
+.container { max-width: 1400px; margin: 0 auto; padding: var(--space-5) var(--space-4) 60px; }
+h1 { font-size: var(--fs-2xl); font-weight: 700; margin: var(--space-1) 0 var(--space-1); }
+h2 { font-size: var(--fs-lg); font-weight: 700; margin: var(--space-6) 0 var(--space-3); }
+h3 { font-size: var(--fs-base); font-weight: 700; margin: var(--space-4) 0 var(--space-2); }  /* mismo tamaño que el cuerpo: la jerarquía la marca el peso (GOV.UK) */
 .muted { color: var(--text-3); }
-.small { font-size: 13px; }
+.small { font-size: var(--fs-xs); }
+
+/* Foco visible y consistente en todo lo interactivo (ausente antes: dependía del
+   default del navegador). Inspirado en el contorno de foco de GOV.UK, en nuestro
+   color de acento en vez de amarillo para no desentonar con la paleta. */
+a:focus-visible, button:focus-visible, .btn:focus-visible, summary:focus-visible,
+input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--radius-sm);
+}
 
 /* Navegación */
-.navbar { display: flex; align-items: center; gap: 18px; padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; flex-wrap: wrap; }
+.navbar { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-4); background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; flex-wrap: wrap; }
 .brand { font-weight: 700; color: var(--text); text-decoration: none; }
-.nav-links { display: flex; gap: 4px; flex-wrap: wrap; }
-.nav-links a { color: var(--text-2); text-decoration: none; padding: 6px 10px; border-radius: 6px; }
+.nav-links { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+.nav-links a { color: var(--text-2); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); font-size: var(--fs-sm); }
 .nav-links a.active, .nav-links a:hover { background: var(--surface-2); color: var(--text); }
 .nav-cta { margin-left: auto; }
 
 /* Botones y formularios */
-.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); color: var(--text); text-decoration: none; cursor: pointer; font: inherit; font-size: 14px; }
+.btn { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-4); border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--text); text-decoration: none; cursor: pointer; font: inherit; font-size: var(--fs-sm); font-weight: 500; }
 .btn:hover { background: var(--surface-2); }
-.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-ink); }
-.btn-sm { padding: 4px 10px; font-size: 13px; }
-input[type=text], input[type=date], input[type=search], select, textarea { font: inherit; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn-sm { padding: var(--space-1) var(--space-3); font-size: var(--fs-xs); }
+input[type=text], input[type=date], input[type=search], select, textarea { font: var(--fs-sm)/var(--lh-base) var(--font-sans); padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); }
 textarea { width: 100%; min-height: 120px; }
 select, input[type=text], input[type=search] { max-width: 100%; }   /* simulador: /fuentes desbordaba a 390 px */
-label { font-size: 13px; color: var(--text-2); display: block; margin-bottom: 3px; }
-.filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin: 12px 0; }
+label { font-size: var(--fs-xs); color: var(--text-2); display: block; margin-bottom: 3px; }
+.filters { display: flex; gap: var(--space-3); flex-wrap: wrap; align-items: flex-end; padding: var(--space-3); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin: var(--space-3) 0; }
 .filters .field { display: flex; flex-direction: column; min-width: 0; max-width: 100%; }
 .filters select { width: 100%; }
 
 /* Tarjetas de totales */
-.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin: 14px 0; }
-.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; box-shadow: var(--shadow); }
-.kpi .label { font-size: 13px; color: var(--text-2); }
-.kpi .value { font-size: 24px; font-weight: 650; margin-top: 2px; font-variant-numeric: tabular-nums; }
-.kpi .sub { font-size: 12px; color: var(--text-3); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-3); margin: var(--space-4) 0; }
+.kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3) var(--space-4); box-shadow: var(--shadow); }
+.kpi .label { font-size: var(--fs-xs); color: var(--text-2); }
+.kpi .value { font-size: var(--fs-xl); font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+.kpi .sub { font-size: var(--fs-2xs); color: var(--text-3); }
 
-/* Tablas */
+/* Tablas: cebra sutil para lectura horizontal en tablas anchas (opentender/DoZorro/
+   USWDS), números alineados a la derecha con cifras tabulares. (Se probó un thead
+   sticky como en esos paneles, pero con tablas cortas el header flotante tapaba
+   celdas clickeables y rompía journeys del simulador — se descartó: 2026-10-12.) */
 .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
-table { border-collapse: collapse; width: 100%; font-size: 14px; }
-th, td { padding: 8px 10px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
-th { background: var(--surface-2); font-weight: 600; color: var(--text-2); font-size: 13px; white-space: nowrap; }
-td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table { border-collapse: collapse; width: 100%; font-size: var(--fs-sm); line-height: var(--lh-tight); }
+th, td { padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+th { background: var(--surface-2); font-weight: 600; color: var(--text-2); font-size: var(--fs-xs); white-space: nowrap; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; white-space: nowrap; }
+tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--surface-2) 35%, transparent); }
 tr:hover td { background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
 tr.row-link { cursor: pointer; }
 
-/* Semáforo: color + ícono + texto */
-.sem { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+/* Semáforo: color + ícono + texto, nunca el color solo */
+.sem { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: var(--radius-pill); font-size: var(--fs-2xs); font-weight: 600; white-space: nowrap; }
 .sem::before { font-size: 11px; }
-.sem-rojo { background: var(--critical-bg); color: var(--critical); }
+.sem-rojo { background: var(--critical-bg); color: var(--critical-ink); }
 .sem-rojo::before { content: "▲"; }
-.sem-amarillo { background: var(--warning-bg); color: #9a6700; }
-:root[data-theme="dark"] .sem-amarillo { color: var(--warning); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sem-amarillo { color: var(--warning); } }
+.sem-amarillo { background: var(--warning-bg); color: var(--warning-ink); }
 .sem-amarillo::before { content: "◆"; }
-.sem-verde { background: var(--good-bg); color: #0a7a0a; }
+.sem-verde { background: var(--good-bg); color: var(--good-ink); }
 .sem-verde::before { content: "●"; }
 .sem-gris { background: var(--neutral-bg); color: var(--text-2); }
 .sem-gris::before { content: "○"; }
-.tag { display: inline-block; padding: 1px 7px; border-radius: 4px; background: var(--surface-2); color: var(--text-2); font-size: 12px; margin: 1px 2px 1px 0; }
-.tag-alerta { background: var(--warning-bg); color: #8a5a00; }
-.pos { color: var(--critical); font-weight: 600; }
-.neg { color: #0a7a0a; }
+.tag { display: inline-block; padding: 1px 7px; border-radius: 4px; background: var(--surface-2); color: var(--text-2); font-size: var(--fs-2xs); margin: 1px 2px 1px 0; }
+.tag-alerta { background: var(--warning-bg); color: var(--warning-ink); }
+.pos { color: var(--critical-ink); font-weight: 600; }
+.neg { color: var(--good-ink); }
 
 /* Paneles */
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin: 12px 0; box-shadow: var(--shadow); }
-.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3) var(--space-4); margin: var(--space-3) 0; box-shadow: var(--shadow); }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: var(--space-4); }
 .grid-2 > * { min-width: 0; }   /* una tabla ancha scrollea dentro de su caja, no estira la página */
-.meta-grid { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 14px; }
+.meta-grid { display: grid; grid-template-columns: max-content 1fr; gap: 4px var(--space-4); font-size: var(--fs-sm); }
 .meta-grid dt { color: var(--text-3); }
 .meta-grid dd { margin: 0; }
-details { margin: 6px 0; }
+details { margin: var(--space-2) 0; }
 details > summary { cursor: pointer; color: var(--accent-ink); }
 .doc-frame { width: 100%; height: 70vh; border: 1px solid var(--border); border-radius: var(--radius); margin-top: 6px; background: var(--surface-2); }
-pre.texto { white-space: pre-wrap; font-size: 13px; background: var(--surface-2); padding: 12px; border-radius: 6px; max-height: 420px; overflow: auto; }
-.help { background: var(--surface-2); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 14px; color: var(--text-2); margin: 10px 0; }
-.banner { display: flex; gap: 10px; align-items: center; padding: 10px 14px; border-radius: var(--radius); background: var(--warning-bg); margin: 10px 0; }
+pre.texto { white-space: pre-wrap; font-size: var(--fs-xs); background: var(--surface-2); padding: var(--space-3); border-radius: var(--radius-sm); max-height: 420px; overflow: auto; }
+.help { background: var(--surface-2); border-left: 3px solid var(--accent); padding: var(--space-3) var(--space-4); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: var(--fs-sm); color: var(--text-2); margin: var(--space-3) 0; }
+/* Nota destacada dentro de una página (distinta del banner de estado de un job y del
+   aviso lateral .help): pensada para una aclaración puntual sobre un caso o reporte. */
+.callout { display: flex; gap: var(--space-3); align-items: flex-start; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; padding: var(--space-3) var(--space-4); margin: var(--space-3) 0; font-size: var(--fs-sm); box-shadow: var(--shadow); }
+.callout::before { content: "ℹ"; font-weight: 700; color: var(--accent-ink); flex: none; }
+.banner { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-3) var(--space-4); border-radius: var(--radius); background: var(--warning-bg); margin: var(--space-3) 0; }
 .banner.ok { background: var(--good-bg); }
 .banner.error { background: var(--critical-bg); }
 .spinner { width: 14px; height: 14px; border: 2px solid var(--text-3); border-top-color: transparent; border-radius: 50%; animation: spin 0.9s linear infinite; }
@@ -127,11 +203,12 @@ pre.texto { white-space: pre-wrap; font-size: 13px; background: var(--surface-2)
 
 /* Gráficos */
 .chart-box { position: relative; height: 320px; }
-.chart-legend { display: flex; gap: 14px; font-size: 13px; color: var(--text-2); margin: 6px 0; flex-wrap: wrap; }
+.chart-legend { display: flex; gap: var(--space-4); font-size: var(--fs-xs); color: var(--text-2); margin: var(--space-2) 0; flex-wrap: wrap; }
 .chart-legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; background: var(--c); vertical-align: -1px; }
 
 /* Toast de soft-nav */
-.soft-toast { position: fixed; right: 18px; bottom: 18px; background: var(--text); color: var(--bg); padding: 10px 14px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.2); z-index: 50; max-width: 460px; }
+.soft-toast { position: fixed; right: 18px; bottom: 18px; background: var(--text); color: var(--bg); padding: var(--space-3) var(--space-4); border-radius: var(--radius-sm); box-shadow: 0 4px 12px rgba(0,0,0,.2); z-index: 50; max-width: 460px; font-size: var(--fs-sm); }
+.soft-toast-error { background: var(--critical-ink); color: #fff; }
 
 @media (max-width: 700px) {
     .grid-2 { grid-template-columns: minmax(0, 1fr); }
