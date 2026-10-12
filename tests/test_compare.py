@@ -341,3 +341,16 @@ def test_load_observations_excluye_fila_marcada_no_por_un_humano(tmp_path):
         # "ok" o "no_se" de un humano no excluye (solo "no" lo hace).
         vp.guardar(conn, "programa:precios_cuidados:ed1", "k1", "ok", None, autor="humano")
         assert len(load_observations(conn, "yerba_mate")) == 1
+
+
+
+def test_precio_inferido_hacia_atras_en_un_hueco_sin_datos():
+    # Compra de abril 2021 sin nada antes; el mercado aparece recién en junio (como ene-jul 2024 vs SEPA ago-2024).
+    ipc = {"2021-04-01": 100.0, "2021-05-01": 110.0, "2021-06-01": 115.0, "2021-09-01": 121.0}
+    obs = [may(242, fecha="2021-09-20", fuente="a"), may(245, fecha="2021-09-20", fuente="b", desc="otra")]
+    res = compare(400.0, 10.0, "2021-04-10", 1.0, obs, ipc, CFG_MIN)
+    assert res.ref_min_mayorista == pytest.approx(200.0)       # 242 x 100/121 (IPC de abril / septiembre)
+    assert "PRECIO INFERIDO" in res.motivo and res.confianza == "baja" and res.semaforo == "amarillo"
+    # Si hay algo antes (aunque viejo), no se infiere: se respeta el gap máximo.
+    viejo = obs + [may(150, fecha="2020-11-01", fuente="c", desc="vieja")]
+    assert compare(400.0, 10.0, "2021-04-10", 1.0, viejo, ipc, CFG_MIN).motivo_codigo == "sin_datos"

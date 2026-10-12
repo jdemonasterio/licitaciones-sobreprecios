@@ -36,6 +36,9 @@ comparacion:
   ventana_directa_dias: 15
   # Más lejos que esto no se compara (ni ajustando por IPC).
   gap_maximo_dias: 120
+  # Hueco sin datos anteriores (ene-jul 2024): se infiere hacia atrás desde lo primero que aparece después, hasta
+  # N días, con el IPC. Rotulado "inferido", confianza baja, nunca rojo (MEJORAS #46).
+  gap_inferencia_dias: 240
   # Un envase de mercado entra si su contenido está entre tamaño/banda y tamaño*banda
   # (los bultos grandes son más baratos por kg; los chicos, más caros).
   banda_tamano: 2.5

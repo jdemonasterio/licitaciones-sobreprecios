@@ -267,6 +267,12 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
     edición se pierden por diseño en vez de adivinar — ver `tests/test_precios_programa.py` y la nota en
     `config/precios_programa.yml`.
 
+- **2026-10-12 · Política de precios por período y precio INFERIDO (jdemonasterio, MEJORAS #46)**: 2020-2023 →
+  listas de Precios Cuidados/Justos (fallback de mercado); ene-jul 2024 (hueco: el archivo SEPA empieza en
+  ago-2024) → si no hay NINGÚN dato anterior a la compra y sí uno posterior a <= `gap_inferencia_dias` (240), se usa
+  el primero que aparece llevado hacia atrás con el IPC del mes exacto, rotulado "PRECIO INFERIDO" en el motivo,
+  confianza baja, nunca rojo. Si existe un dato anterior (aunque viejo) no se infiere: rige `gap_maximo_dias`.
+
 ## 3. Cómo operar
 
 | Tarea | Comando / lugar |

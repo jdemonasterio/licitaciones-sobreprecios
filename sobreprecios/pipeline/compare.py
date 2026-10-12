@@ -232,9 +232,21 @@ def select_observations(obs: list[Obs], fecha: str, contenido_estado: float | No
     if not candidatas:
         gap_max = int(gap_maximo or cfg.get("gap_maximo_dias", 120))
         nearest_gap = min(_days(o.fecha, fecha) for o in usable)
-        if nearest_gap > gap_max:
-            return [], nearest_gap
-        candidatas = [o for o in usable if _days(o.fecha, fecha) == nearest_gap]
+        if nearest_gap <= gap_max:
+            candidatas = [o for o in usable if _days(o.fecha, fecha) == nearest_gap]
+        else:
+            # Hueco sin datos (ene-jul 2024: el archivo SEPA empieza en ago-2024): si no hay NADA antes y sí
+            # después, se infiere hacia atrás con el IPC desde lo primero que aparece (jdemonasterio 2026-10-12,
+            # MEJORAS #46). Rotulado "inferido", confianza baja, nunca rojo.
+            gap_inf = int(cfg.get("gap_inferencia_dias", 240))
+            antes = [o for o in usable if o.fecha[:10] <= fecha[:10] and _days(o.fecha, fecha) <= gap_inf]
+            despues = [o for o in usable if o.fecha[:10] > fecha[:10]]
+            g = min((_days(o.fecha, fecha) for o in despues), default=None)
+            if antes or g is None or g > gap_inf:
+                return [], nearest_gap
+            candidatas = [o for o in despues if _days(o.fecha, fecha) == g]
+            if info is not None:
+                info["inferido"] = candidatas[0].fecha[:10]
     elegidas = _as_of_por_serie(candidatas, fecha)
     if exacta:
         exactas, _ = filter_presentation(elegidas, contenido_estado, True, cfg)
@@ -563,7 +575,9 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
         sin_orig, _ = referencia_corroborada(pool, tol, original=True)
         if sin_orig and _pct(precio_estado_ub / factor(plazo_rojo), max(sin_orig, res.ref_principal_valor)) < rojo:
             sin_rojo.append("el resultado depende del ajuste por IPC de precios de otro mes")
-    if gap is not None and gap > ventana:
+    if info.get("inferido"):
+        sin_rojo.append(f"precio inferido hacia atrás desde el mercado del {info['inferido']} con el IPC")
+    elif gap is not None and gap > ventana:
         sin_rojo.append(f"precio de mercado a {gap} días (contexto, ajustado por IPC)")
     if res.estado_atributo == "sin_mercado":
         sin_rojo.append("variedad no verificada contra el mercado")
@@ -604,9 +618,12 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
     if res.ref_corroborada:
         notas.append(f"{res.sobreprecio_corroborado_pct:+.1f}% vs el mínimo confirmado por 2 fuentes "
                      f"(${res.ref_corroborada:,.2f}) con {plazo_rojo:g} meses de plazo")
+    if info.get("inferido"):
+        notas.insert(0, f"PRECIO INFERIDO: no hay datos de mercado de esa fecha; se usa el del {info['inferido']} "
+                        "llevado hacia atrás con el IPC")
     if sp >= rojo and res.semaforo != "rojo":
         notas.append("sin rojo: " + "; ".join(sin_rojo))
-    elif gap is not None and gap > ventana:
+    elif gap is not None and gap > ventana and not info.get("inferido"):
         notas.append(f"precio de mercado a {gap} días, ajustado por IPC")
     res.motivo = (f"{sp:+.1f}% vs {res.ref_principal.replace('_', ' ')} "
                   f"(plazo supuesto {plazo:g} mes: {res.ajuste_financiero_pct:.1f}%, aprox. IPC; confianza {res.confianza}"
