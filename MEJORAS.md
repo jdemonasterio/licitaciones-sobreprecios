@@ -130,7 +130,7 @@ Los textos todavía dicen "el Estado pagó" para recomendaciones de dictamen.
 Como verificar: cada renglón y reporte dice "recomendado", "contratado" o
 "pagado" según la fuente.
 
-**#30 — Índices con fecha de publicación y versión.**
+**#30 — Índices con fecha de publicación y versión (decidido en #45).**
 Prime P20: guardar cuándo se publicó cada IPC y permitir el modo "lo que se
 sabía a la fecha". Como verificar: tabla `indices` con `fecha_publicacion` y
 `version`; el comparador puede elegir modo.
@@ -190,6 +190,15 @@ aparece como sucesión con sus fuentes.
 **#40 — Autoridades de empresas con ventana temporal (riesgo del prime).**
 Buscar notas de diarios que fechen la designación y en qué Boletín salió; distinguir fecha del acto, vigencia y
 publicación. Como verificar: una designación parcial no cierra cargos que no menciona.
+
+**#44 — Validación humana de las referencias de mercado (P16, P17, P18; dentro de #34).**
+En la pantalla del caso, el humano marca cada precio de mercado (sobre todo los dos que confirman el mínimo) como
+equivalente / no es el mismo producto / precio o tamaño mal leído / no sé, viendo fuente, cadena o mayorista,
+fecha, descripción original, envase y factor IPC; el comparador excluye lo descartado. La variante del renglón se
+puede elegir o responder "no sé". Como verificar: E2E que descarta una referencia y ve el recálculo en el lugar.
+
+**#45 — IPC con fecha de publicación y versión, modo "disponible a la fecha" (P20, decidido).**
+Ver #30: se implementa. Como verificar: test que muestra que una compra del 5 de un mes no usa el IPC de ese mes.
 
 **#41 — Domicilios: solo se ocultan los de personas humanas.** Los de empresas y organismos se muestran.
 
