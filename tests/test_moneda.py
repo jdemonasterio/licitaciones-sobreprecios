@@ -2,7 +2,7 @@ import sqlite3
 
 import pytest
 
-from sobreprecios.normalize.moneda import Moneda, registrar
+from sobreprecios.normalize.moneda import Moneda, registrar, registrar_real
 from sobreprecios.sources.cotizaciones import parse_argentinadatos, parse_bluelytics
 
 IPC = {"2021-01-01": 100.0, "2022-01-01": 150.0, "2023-01-01": 300.0}
@@ -41,6 +41,16 @@ def test_convertir_y_funcion_sql():
     assert conn.execute("SELECT conv(3000, '2021-01-08')").fetchone()[0] == pytest.approx(20)
     assert conn.execute("SELECT conv(NULL, '2021-01-08')").fetchone()[0] is None
     assert "dólares" in m.etiqueta("usd") and "enero 2023" in m.etiqueta("real")
+
+
+def test_registrar_real_queda_fijo_aunque_la_pantalla_muestre_nominal():
+    """Pedido del owner (2026-10-12): rankings/listas ordenan SIEMPRE por pesos reales, aunque
+    la columna mostrada esté en nominal — conv_real no depende del modo elegido para mostrar."""
+    m = mon()
+    conn = sqlite3.connect(":memory:")
+    registrar_real(conn, m)   # nada de "nominal"/"usd" acá: siempre real
+    assert conn.execute("SELECT conv_real(1000, '2021-01-20')").fetchone()[0] == pytest.approx(3000)
+    assert conn.execute("SELECT conv_real(NULL, '2021-01-20')").fetchone()[0] is None
 
 
 def test_parsers_de_cotizaciones():

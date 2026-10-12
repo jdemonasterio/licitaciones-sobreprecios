@@ -47,7 +47,7 @@ revisados (probá limpiar el filtro de estado).</div>
 <tr data-soft-key="rev:{{ it.renglon_id }}" class="row-link" onclick="location.href='/revision/{{ it.renglon_id }}'">
     <td><span class="tag">{{ ORIGEN_TXT.get(it.origen, it.origen) }}</span></td>
     <td><span class="sem sem-{{ it.semaforo or 'gris' }}">{{ SEMAFORO_TXT[it.semaforo or 'gris'] }}</span></td>
-    <td>{{ it.fecha or '—' }}</td>
+    <td>{{ it.fecha|fecha if it.fecha else '—' }}</td>
     <td>{{ it.organismo or '—' }}</td>
     <td><a href="/revision/{{ it.renglon_id }}">{{ it.descripcion }}</a><div class="muted small">{{ (it.producto or '')|replace('_', ' ') }}</div></td>
     <td class="num {% if it.brecha and it.brecha > 0 %}pos{% else %}neg{% endif %}">{{ it.brecha|pct }}</td>

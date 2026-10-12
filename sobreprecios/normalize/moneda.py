@@ -125,3 +125,14 @@ def registrar(conn: sqlite3.Connection, modo: str, moneda: Moneda | None = None)
     moneda = moneda or cargar(conn)
     conn.create_function("conv", 2, lambda monto, fecha: moneda.convertir(monto, fecha, modo), deterministic=True)
     return moneda
+
+
+def registrar_real(conn: sqlite3.Connection, moneda: Moneda | None = None) -> Moneda:
+    """Registra conv_real(monto, fecha), SIEMPRE en pesos reales, sin importar qué moneda esté
+    eligiendo la pantalla para mostrar montos (pedido del owner, 2026-10-12): un ranking que
+    ordena por "exceso" o "monto" nominal mezcla $1.000 de 2019 con $1.000 de 2025 como si
+    valieran lo mismo. `web/queries.py` usa esta función para el ORDER BY de las listas y
+    rankings, y la columna que se MUESTRA sigue respetando el selector "Montos en" de siempre."""
+    moneda = moneda or cargar(conn)
+    conn.create_function("conv_real", 2, lambda monto, fecha: moneda.a_real(monto, fecha), deterministic=True)
+    return moneda

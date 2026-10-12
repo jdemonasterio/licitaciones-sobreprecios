@@ -229,15 +229,25 @@ DESIGN con la tolerancia real (±5 %). Pendiente, en orden:
    mínimo con sus grupos, IPC, escenarios de plazo) exportable con el caso.
 3. Explicar junto al color por qué un +52 % es amarillo (qué condición impide el rojo).
 4. Compuerta "publicable" visible: qué hacen Guardar / Validé / Publicable y qué falta para publicar.
-5. Investigar: separar comparación histórica de la extrapolación con precios de hoy (contexto, nunca rojo) y
-   decir qué tipo de documento se importó (pliego, dictamen, adjudicación, OC); estado "procesado, sin
-   comparación" con motivos y próximos pasos.
-6. Analítica auditable: cobertura por organismo (comparables / total / publicables), n por mes, ponderación; aviso
-   cuando un ranking mezcla años en pesos de cada fecha.
-7. Nombres legibles (ediciones de programa, tipos de importación), fechas dd/mm/aaaa y controles en español.
-8. Lo que agregaría: vista de impacto antes/después de un cambio de reglas o catálogo; paquete para el periodista
-   (expediente congelado con fuentes); checklist de explicaciones alternativas por caso; backup/restauración de la
-   base sin consola.
+5. — **HECHO (2026-10-12, ver DESIGN_sobreprecios.md)**: Investigar dice qué tipo de documento se importó
+   (`queries.tipo_importado()`, banner en `/licitacion/<id>`: dictamen = recomendado, acto del BO = adjudicado,
+   nunca "pagado") y el estado "Procesado; sin comparación" con motivos agrupados y próximos pasos
+   (`investigar._resumen_comparacion()`). Pedido explícito del owner sobre la mitad de este punto (ya
+   implementado, pisa lo que decía antes este ítem): el precio de HOY llevado hacia atrás por IPC para una
+   compra vieja SÍ puede habilitar rojo como cualquier otra referencia (no queda "nunca rojo" como contexto
+   puro) — esta ronda solo rotula esa referencia bien explícito en el resultado (`investigar._nota_extrapolado()`)
+   y la adaptación del núcleo del comparador queda para otro agente.
+6. — **HECHO (2026-10-12)**: cobertura por organismo/producto/proveedor (comparables/total/publicables,
+   `queries.agrupado()`), n por mes en el tooltip del gráfico, aclaración de que "brecha promedio" no está
+   ponderada, y aviso cuando el rango mezcla años en pesos nominales (`aviso_multi_anio`). Sumado por pedido
+   del owner (fuera del alcance original de este ítem): el orden de los rankings y de `/` ahora es SIEMPRE en
+   pesos constantes (`conv_real`), mostrando el nominal igual.
+7. — **HECHO (2026-10-12)**: ediciones de precios de programa legibles (`sources/precios_programa.etiqueta_edicion`),
+   tipos de importación en `/investigar` y método de extracción en castellano, filtro Jinja `fecha` (dd/mm/aaaa)
+   aplicado en toda la UI, `lang="es-AR"`.
+8. — **PARCIAL (2026-10-12)**: vista de impacto antes/después construida (`sobreprecios/impacto.py`, `/impacto`).
+   El paquete para el periodista, el checklist de explicaciones alternativas y el backup/restauración sin
+   consola siguen pendientes (no se tocaron en esta ronda).
 Como verificar: cada punto con su criterio en `_scratch/licitaciones/REVISION_PRIME_JOURNEYS.md` (local).
 
 **#41 — Domicilios: solo se ocultan los de personas humanas.** Los de empresas y organismos se muestran. Verificado 2026-10-12: la página de cada empresa muestra su domicilio legal y ningún filtro oculta domicilios de personas jurídicas; los reportes no exportan datos societarios.

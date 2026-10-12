@@ -12,6 +12,7 @@ Solapas:
   /fuentes       Estado de los datos y botones para actualizar (jobs en background)
   /investigar    Investigar UNA licitación a pedido: link del BO / COMPR.AR, número, texto o PDF
   /doc           Proxy de solo lectura para mirar un PDF/HTML del BO o COMPR.AR en un <iframe>
+  /impacto       Vista de impacto antes/después de un recálculo (webui o revisión humana)
 
 Regla del webui: una acción nunca recarga la página
 ni borra lo que el usuario está haciendo. Los POST pasan por soft-nav.js, el
@@ -36,6 +37,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .. import config, db, reports, revision_humana
+from ..sources.precios_programa import PROGRAMA_TXT
 from . import _background, queries
 
 WEB_DIR = Path(__file__).resolve().parent
@@ -73,6 +75,35 @@ def _pct(value):
     if value in (None, ""):
         return "—"
     return f"{float(value):+.1f}%".replace(".", ",")
+
+
+def _fecha(value, con_hora: bool = False):
+    """dd/mm/aaaa (MEJORAS #49.7): la fecha interna siempre es ISO (YYYY-MM-DD[THH:MM...]) para
+    ordenar y filtrar bien en SQL; esto es solo la forma en que se MUESTRA en pantalla. No tocar
+    los `value=` de `<input type="date">`: esos tienen que seguir en ISO, el navegador los
+    traduce solo al formato local del sistema operativo."""
+    if value in (None, ""):
+        return "—"
+    s = str(value)
+    if len(s) < 10 or s[4] != "-" or s[7] != "-":
+        return s   # no parece una fecha ISO: se muestra tal cual en vez de romper la página
+    y, m, d = s[0:4], s[5:7], s[8:10]
+    out = f"{d}/{m}/{y}"
+    if con_hora and len(s) >= 16 and s[10] in ("T", " "):
+        out += " " + s[11:16]
+    return out
+
+
+def _extraccion_txt(valor):
+    """Nombre legible del método de extracción de un renglón (MEJORAS #49.7): oculta ids
+    internos como "llm:gpt-6-luna" o "sin_extraccion (LLMUnavailable)" detrás de una frase."""
+    if not valor:
+        return "—"
+    if valor.startswith("llm:"):
+        return f"lectura con IA del aviso ({valor.split(':', 1)[1]})"
+    if valor.startswith("sin_extraccion"):
+        return "no se pudo extraer automáticamente"
+    return EXTRACCION_TXT.get(valor, valor)
 
 
 def _millones(value, moneda="nominal"):
@@ -113,15 +144,27 @@ MOTIVO_CODIGO_TXT = {
                                   "un humano todavía no confirmó que esa equivalencia sea correcta",
     "ok": "se pudo calcular una referencia de mercado comparable",
 }
+# Tipos de "qué pegaste" en /investigar (MEJORAS #49.7): nunca mostrar el id interno (p.ej. "comprar_url").
+TIPO_INVESTIGACION_TXT = {
+    "bo": "aviso del Boletín Oficial", "comprar_url": "link de COMPR.AR",
+    "comprar_numero": "número de proceso (COMPR.AR)", "texto": "texto pegado",
+    "pdf": "PDF subido", "vacio": "vacío", "invalido": "link no aceptado",
+}
+# Método de extracción de un renglón, en criollo (MEJORAS #49.7).
+EXTRACCION_TXT = {"regex": "lectura automática del aviso (patrón exacto)",
+                  "comprar": "dictamen de evaluación (COMPR.AR)",
+                  "legacy_quijotes": "dataset Quijote 2021 (resumen, no el acto original)"}
 # Legenda corta de #35: un caso es una investigación para que un humano decida, nunca una conclusión publicada sola.
 LEGENDA_INVESTIGACION = ("Un color (sobre todo rojo) es una investigación pendiente de revisión humana, no una "
                          "conclusión: puede explicarse por logística, plazos de pago, especificaciones o un "
                          "error de publicación. Nada sale a prensa sin pasar por Revisión y quedar \"publicable\".")
 
-templates.env.filters.update(ars=_ars, num=_num, pct=_pct, millones=_millones)
+templates.env.filters.update(ars=_ars, num=_num, pct=_pct, millones=_millones, fecha=_fecha,
+                             extraccion_txt=_extraccion_txt)
 templates.env.globals.update(SEMAFORO_TXT=SEMAFORO_TXT, REF_TXT=REF_TXT, ATRIBUTO_TXT=ATRIBUTO_TXT,
                              MOTIVO_CODIGO_TXT=MOTIVO_CODIGO_TXT, LEGENDA_INVESTIGACION=LEGENDA_INVESTIGACION,
-                             PARTE_TXT=revision_humana.PARTE_TXT, PARTES_RENGLON=revision_humana.PARTES_RENGLON)
+                             PARTE_TXT=revision_humana.PARTE_TXT, PARTES_RENGLON=revision_humana.PARTES_RENGLON,
+                             TIPO_INVESTIGACION_TXT=TIPO_INVESTIGACION_TXT, PROGRAMA_TXT=PROGRAMA_TXT)
 
 
 # ── Seguridad mínima ───────────────────────────────────────────────────────
@@ -200,7 +243,8 @@ def licitacion(request: Request, proceso_id: int):
     from ..pipeline.extract import resolutive_part
     texto = resolutive_part(proc.get("texto") or "", 12000) if proc.get("texto") else ""
     return _render(request, "licitacion.html", p=proc, renglones=rows, texto=texto, equiv=equiv,
-                   validaciones=validaciones, cfg=config.settings().get("comparacion") or {})
+                   validaciones=validaciones, cfg=config.settings().get("comparacion") or {},
+                   tipo_importado=queries.tipo_importado(proc, rows))
 
 
 @app.post("/licitacion/{proceso_id}/revision")
@@ -252,8 +296,14 @@ def analitica(request: Request):
     with db.session() as conn:
         data = {dim: queries.agrupado(conn, filtros, dim, moneda=moneda) for dim in
                 ["organismo", "producto", "proveedor", "procedimiento", "mes"]}
-        return _render(request, "analitica.html", filtros=filtros, data=data,
-                       kpis=queries.kpis(conn, filtros, moneda),
+        kpis = queries.kpis(conn, filtros, moneda)
+        # Aviso de pesos constantes (MEJORAS #49.6): sumar "nominal" de años distintos mezcla
+        # inflación. No se cambia el default solo: se avisa y se deja elegir "Montos en".
+        anios = {(kpis.get("desde") or "")[:4], (kpis.get("hasta") or "")[:4]} - {""}
+        aviso_multi_anio = moneda == "nominal" and len(anios) > 1
+        href_real = "?" + urllib.parse.urlencode({**dict(request.query_params), "moneda": "real"})
+        return _render(request, "analitica.html", filtros=filtros, data=data, kpis=kpis,
+                       aviso_multi_anio=aviso_multi_anio, href_real=href_real,
                        peores=queries.peores_renglones(conn, filtros, moneda=moneda),
                        opciones=queries.opciones_filtros(conn), **_moneda_ctx(conn, moneda))
 
@@ -400,12 +450,19 @@ def revision_caso(request: Request, renglon_id: int):
         return _render(request, "revision_caso.html", c=data, valores=revision_humana.formulario(data))
 
 
-def _recalcular_proceso(proceso_id: int) -> str:
+def _recalcular_proceso(proceso_id: int, renglon_id: int | None = None) -> str:
     """Corre en el worker thread del job 'revision_<renglon_id>': abre SU PROPIA conexión
-    (ver docstring de web/_background.py), nunca la del request que disparó el guardado."""
+    (ver docstring de web/_background.py), nunca la del request que disparó el guardado.
+
+    Envuelto con `impacto.recalcular_con_impacto` (MEJORAS #49.8, "vista de impacto"): saca una
+    foto de las comparaciones del proceso ANTES de recalcular, así /impacto puede mostrar qué
+    renglón cambió de color o perdió el publicable a raíz de ESTA corrección puntual."""
+    from .. import impacto
     from ..pipeline import compare as compare_mod
+    origen = f"revision:{renglon_id}" if renglon_id else f"revision:proceso:{proceso_id}"
     with db.session() as conn:
-        return compare_mod.run(conn, [proceso_id])
+        return impacto.recalcular_con_impacto(conn, origen, [proceso_id],
+                                              lambda: compare_mod.run(conn, [proceso_id]))
 
 
 @app.post("/revision/{renglon_id}/guardar")
@@ -434,7 +491,7 @@ def revision_guardar(renglon_id: int, producto_id: str = Form(""), variante: str
     if not cambiados:
         return _redirect(f"/revision/{renglon_id}", "Revisión guardada")
     resumen = ", ".join(dict.fromkeys(etiquetas[c] for c in cambiados))
-    started, jmsg = _background.start(f"revision_{renglon_id}", lambda: _recalcular_proceso(proceso_id))
+    started, jmsg = _background.start(f"revision_{renglon_id}", lambda: _recalcular_proceso(proceso_id, renglon_id))
     return _redirect(f"/revision/{renglon_id}", f"Guardado ({resumen}); recalculando…" if started else jmsg)
 
 
@@ -448,7 +505,7 @@ def revision_deshacer(renglon_id: int, correccion_id: int = Form(...)):
         proceso_id = row["proceso_id"]
     if not ok:
         return _redirect(f"/revision/{renglon_id}", "Esa corrección ya no existe")
-    _background.start(f"revision_{renglon_id}", lambda: _recalcular_proceso(proceso_id))
+    _background.start(f"revision_{renglon_id}", lambda: _recalcular_proceso(proceso_id, renglon_id))
     return _redirect(f"/revision/{renglon_id}", "Corrección deshecha; recalculando…")
 
 
@@ -472,7 +529,7 @@ def revision_validar_mercado(renglon_id: int, obs_fuente: str = Form(...), obs_f
         else:
             revision_humana.quitar_validacion_mercado(conn, renglon_id, obs_fuente, obs_fecha, obs_descripcion)
         proceso_id = row["proceso_id"]
-    started, jmsg = _background.start(f"revision_{renglon_id}", lambda: _recalcular_proceso(proceso_id))
+    started, jmsg = _background.start(f"revision_{renglon_id}", lambda: _recalcular_proceso(proceso_id, renglon_id))
     return _redirect(f"/revision/{renglon_id}", "Guardado; recalculando…" if started else jmsg)
 
 
@@ -578,7 +635,13 @@ def _job_runner(accion: str, desde: str, hasta: str):
                     mensajes.append(match.match_renglones(conn, progress=progress))
                 if accion in {"pipeline", "machear", "comparar", "indec", "precios", "comprar", "extraer",
                              "precios_programa"}:
-                    mensajes.append(compare.run(conn))
+                    # Foto de antes/después (MEJORAS #49.8, vista de impacto): "pipeline"/"extraer"/"comprar"
+                    # sobre renglones NUEVOS no tiene nada útil para comparar, pero una recorrida así
+                    # también recalcula lo ya existente si tocaste config/settings.yml o el catálogo,
+                    # así que igual queda la foto por si hace falta mirarla en /impacto.
+                    from .. import impacto
+                    mensajes.append(impacto.recalcular_con_impacto(
+                        conn, f"fuentes:{accion}", None, lambda: compare.run(conn)))
                 db.sync_empresas(conn)
                 from ..normalize import aplicar
                 mensajes.append(aplicar.run(conn))
@@ -602,11 +665,14 @@ def fuentes_run(accion: str = Form(...), desde: str = Form(""), hasta: str = For
 
 @app.get("/precios-programa", response_class=HTMLResponse)
 def precios_programa(request: Request):
+    from ..sources import precios_programa as pp
     abierta = request.query_params.get("edicion") or None
     with db.session() as conn:
         ediciones = queries.precios_programa_ediciones(conn)
         filas = queries.precios_programa_filas(conn, abierta) if abierta else []
-    return _render(request, "precios_programa.html", ediciones=ediciones, abierta=abierta, filas=filas)
+    abierta_etiqueta = pp.etiqueta_edicion(abierta) if abierta else None
+    return _render(request, "precios_programa.html", ediciones=ediciones, abierta=abierta, filas=filas,
+                   abierta_etiqueta=abierta_etiqueta)
 
 
 @app.post("/precios-programa/veredicto")
@@ -618,12 +684,33 @@ def precios_programa_veredicto(fuente: str = Form(...), obs_key: str = Form(...)
         return _redirect(destino, "Veredicto inválido")
     with db.session() as conn:
         vp.guardar(conn, fuente, obs_key, veredicto, nota, autor="humano")
+        from .. import impacto
         from ..pipeline import compare
         if conn.execute("SELECT producto_id FROM precios_mercado WHERE fuente=? AND obs_key=? LIMIT 1",
                         (fuente, obs_key)).fetchone():
-            compare.run(conn)
+            impacto.recalcular_con_impacto(conn, f"precios_programa:{fuente}", None, lambda: compare.run(conn))
     extra = " (se recalcularon los sobreprecios)" if veredicto == "no" else ""
     return _redirect(destino, f"Marcada como {veredicto}{extra}")
+
+
+# ── Vista de impacto antes/después de un recálculo (MEJORAS #49.8) ─────────────
+
+@app.get("/impacto", response_class=HTMLResponse)
+def impacto_page(request: Request):
+    from .. import impacto
+    with db.session() as conn:
+        return _render(request, "impacto.html", corridas=impacto.corridas(conn))
+
+
+@app.get("/impacto/{corrida_id}", response_class=HTMLResponse)
+def impacto_corrida(request: Request, corrida_id: int):
+    from .. import impacto
+    with db.session() as conn:
+        row = conn.execute("SELECT * FROM corridas WHERE id=? AND tipo='recalculo'", (corrida_id,)).fetchone()
+        if not row:
+            return _redirect("/impacto", "No existe esa corrida")
+        datos = impacto.diff(conn, corrida_id)
+    return _render(request, "impacto_corrida.html", corrida=dict(row), datos=datos)
 
 
 @app.get("/jobs/{name}")

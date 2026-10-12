@@ -70,6 +70,40 @@ def _ediciones() -> dict:
     return config.load_yaml("precios_programa.yml").get("ediciones") or {}
 
 
+# Nombres legibles para el webui (MEJORAS #49.7, item 4): nunca mostrar el id interno
+# ("precios_cuidados_2021_01" o "programa:precios_cuidados:precios_cuidados_2021_01") como
+# única referencia — el id sigue disponible en un tooltip para quien lo necesite.
+PROGRAMA_TXT = {"precios_cuidados": "Precios Cuidados", "precios_justos": "Precios Justos",
+               "precios_maximos": "Precios Máximos"}
+REGION_TXT = {"nacional": "lista nacional", "amba": "AMBA", "caba": "CABA"}
+_MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre",
+         "octubre", "noviembre", "diciembre"]
+
+
+def etiqueta_edicion(fuente: str) -> str:
+    """Nombre legible de una edición de precios de programa.
+
+    `fuente` es "programa:<programa>:<edicion_id>" (como vive en `precios_mercado.fuente`) o
+    directamente un `edicion_id` de `config/precios_programa.yml`. Devuelve algo como
+    "Precios Cuidados — enero 2021 (lista nacional)" en vez del id interno.
+    """
+    partes = (fuente or "").split(":", 2)
+    edicion_id = partes[2] if len(partes) > 2 else (partes[-1] if partes else fuente)
+    ed = _ediciones().get(edicion_id) or {}
+    programa_id = ed.get("programa") or (partes[1] if len(partes) > 1 else edicion_id)
+    programa = PROGRAMA_TXT.get(programa_id, programa_id.replace("_", " ").title())
+    vigencia = ed.get("vigencia_desde") or ed.get("fecha_publicacion")
+    if vigencia and len(vigencia) >= 7:
+        try:
+            periodo = f"{_MESES[int(vigencia[5:7]) - 1]} {vigencia[:4]}"
+        except (IndexError, ValueError):
+            periodo = edicion_id
+    else:
+        periodo = edicion_id
+    region = REGION_TXT.get(ed.get("region"), ed.get("region") or "")
+    return f"{programa} — {periodo}" + (f" ({region})" if region else "")
+
+
 def _descargar(edicion_id: str, urls: list[str], ext: str, progress=None) -> Path | None:
     """Descarga (con caché) la primera URL de `urls` que devuelva contenido del tipo esperado.
 

@@ -58,6 +58,17 @@ _BO_PATTERNS = [
 ]
 _PROCESO_RE = re.compile(r"\b(\d{1,3}(?:/\d{1,3})?-\d{4}-[A-Z]{2,4}\d{2})\b", re.I)
 
+# Motivos cortos para agrupar en el mensaje final (MEJORAS #49.5, item 1c): un trabajo terminado
+# con cero renglones comparables tiene que decir "Procesado; sin comparación" con el POR QUÉ
+# agrupado, nunca un "listo" verde que insinúe que se encontró algo.
+_MOTIVO_CORTO = {
+    "sin_datos": "sin precio de mercado en esa fecha", "sin_precio": "no se pudo calcular el precio por unidad",
+    "fuera_alcance": "sin producto del catálogo", "atributo_desconocido": "no se sabe qué variedad exige",
+    "sin_referencia_variante": "sin precio de ESA variedad en la fecha",
+    "sin_referencia_presentacion": "sin precio de ESE envase en la fecha",
+    "revisar_unidad": "precio fuera de rango (revisar unidad)",
+}
+
 
 def ensure_schema(conn: sqlite3.Connection) -> None:
     conn.executescript(SCHEMA)
@@ -139,6 +150,59 @@ def _documento(conn: sqlite3.Connection, entrada: dict, archivo: Path | None, pr
     return _store_manual_document(conn, entrada["texto"], "Texto pegado", "texto")
 
 
+def _resumen_comparacion(conn: sqlite3.Connection, pid: int, n_renglones: int, n_productos: int) -> tuple[str, str]:
+    """`(estado, mensaje)` para el final de `investigar()` (MEJORAS #49.5, item 1c).
+
+    Si NINGÚN renglón quedó con semáforo (rojo/amarillo/verde), el trabajo terminó bien
+    (se importó y se procesó) pero sin comparación: nunca un "listo" verde que insinúe que se
+    encontró algo. Se agrupan los motivos y se agregan próximos pasos concretos.
+    """
+    rows = conn.execute(
+        "SELECT COALESCE(k.semaforo, 'gris') semaforo, COALESCE(k.motivo_codigo, 'fuera_alcance') codigo, "
+        "COUNT(*) n FROM renglones r LEFT JOIN comparaciones k ON k.renglon_id = r.id "
+        "WHERE r.proceso_id=? GROUP BY semaforo, codigo", (pid,)).fetchall()
+    comparables = sum(r["n"] for r in rows if r["semaforo"] in ("rojo", "amarillo", "verde"))
+    if comparables:
+        return "ok", f"Listo: {n_renglones} renglón(es), {n_productos} producto(s) comparable(s)"
+    motivos = sorted(((_MOTIVO_CORTO.get(r["codigo"], r["codigo"]), r["n"]) for r in rows),
+                     key=lambda t: -t[1])
+    detalle = "; ".join(f"{n} {m}" for m, n in motivos) or "sin renglones"
+    primer_gris = conn.execute(
+        "SELECT r.id FROM renglones r LEFT JOIN comparaciones k ON k.renglon_id=r.id "
+        "WHERE r.proceso_id=? ORDER BY r.id LIMIT 1", (pid,)).fetchone()
+    siguiente = (f"Próximo paso: revisar renglón por renglón en /revision/{primer_gris['id']}"
+                if primer_gris else "Próximo paso: revisar el proceso")
+    if any(r["codigo"] == "fuera_alcance" for r in rows):
+        siguiente += "; si falta el producto, sumalo a config/productos.yml y volvé a investigar."
+    return "sin_comparacion", f"Procesado; sin comparación ({detalle}). {siguiente}"
+
+
+def _nota_extrapolado(conn: sqlite3.Connection, pid: int) -> str | None:
+    """Si la referencia de algún renglón viene de una observación muy alejada de la fecha de la
+    compra (en la práctica, el precio de HOY llevado hacia atrás por IPC), lo dice EXPLÍCITO en
+    el resultado de Investigar (decisión del owner 2026-10-12): esa referencia ahora puede
+    habilitar un color igual que cualquiera otra, así que la advertencia y cómo se construyó el
+    número tienen que estar siempre a la vista, nunca escondidas en un tooltip."""
+    cfg = config.settings().get("comparacion") or {}
+    ventana = int(cfg.get("ventana_directa_dias", 15))
+    row = conn.execute(
+        "SELECT k.gap_dias, k.evidencia_json, k.fecha_compra FROM renglones r "
+        "JOIN comparaciones k ON k.renglon_id=r.id "
+        "WHERE r.proceso_id=? AND k.gap_dias IS NOT NULL ORDER BY k.gap_dias DESC LIMIT 1", (pid,)).fetchone()
+    if not row or (row["gap_dias"] or 0) <= ventana:
+        return None
+    try:
+        evidencia = json.loads(row["evidencia_json"] or "[]")
+    except (TypeError, ValueError):
+        evidencia = []
+    obs_lejana = next((o for o in evidencia if o.get("factor_ipc")), None)
+    if not obs_lejana:
+        return None
+    return (f"ADVERTENCIA — referencia: precio de hoy ({obs_lejana['fecha']}) llevado a "
+           f"{row['fecha_compra']} con IPC (×{obs_lejana['factor_ipc']:.3f}); puede marcar rojo igual que "
+           "un precio de la fecha real, revisar antes de concluir")
+
+
 def investigar(entrada_texto: str, archivo: str | None = None, progress=None) -> str:
     """Corre la investigación completa y devuelve un mensaje con el link al resultado."""
     from . import llm
@@ -205,14 +269,20 @@ def investigar(entrada_texto: str, archivo: str | None = None, progress=None) ->
                 precios_hoy.run_productos(conn, productos)
             progress("comparando")
             # Para un caso puntual se acepta comparar contra el precio de hoy aunque la compra
-            # sea vieja (llevado a la fecha por IPC, confianza baja y avisado en el motivo).
+            # sea vieja (llevado a la fecha por IPC). Decisión del owner (2026-10-12): esa
+            # referencia puede habilitar rojo igual que cualquier otra (la ajusta otro agente en
+            # pipeline/compare.py); acá solo se rotula bien explícito en el resultado
+            # (`_nota_extrapolado`, más abajo) para que nunca se lea como un precio de la fecha.
             compare.run(conn, [pid], gap_maximo=3 * 365)
             db.sync_empresas(conn)
             from .normalize import aplicar
             aplicar.run(conn)
-            msg = f"Listo: {n} renglón(es), {len(productos)} producto(s) comparable(s)"
-            conn.execute("UPDATE investigaciones SET estado='ok', mensaje=?, proceso_id=?, finished_at=? WHERE id=?",
-                         (msg, pid, db.now_iso(), inv_id))
+            estado, msg = _resumen_comparacion(conn, pid, n, len(productos))
+            nota = _nota_extrapolado(conn, pid)
+            if nota:
+                msg = f"{msg} — {nota}"
+            conn.execute("UPDATE investigaciones SET estado=?, mensaje=?, proceso_id=?, finished_at=? WHERE id=?",
+                         (estado, msg, pid, db.now_iso(), inv_id))
             return f"{msg}. Ver /licitacion/{pid}"
         except Exception as exc:
             conn.execute("UPDATE investigaciones SET estado='error', mensaje=?, finished_at=? WHERE id=?",
@@ -221,9 +291,52 @@ def investigar(entrada_texto: str, archivo: str | None = None, progress=None) ->
             raise
 
 
+def _clave_caso(row: dict) -> str:
+    """Clave canónica de "es el mismo caso" (MEJORAS #49.1, item 1d): un aviso del BO pegado con
+    y sin `?busqueda=1` ya normaliza a la MISMA tupla (seccion, aviso_id, fecha) en
+    `normalizar_entrada` — eso es la clave. Texto pegado y PDFs no se agrupan (no hay forma
+    barata de saber si dos textos distintos son "el mismo caso" sin comparar contenido byte a
+    byte, y dos intentos legítimos distintos no deberían fusionarse)."""
+    try:
+        normalizada = json.loads(row.get("normalizada") or "{}")
+    except (TypeError, ValueError):
+        normalizada = {}
+    tipo = normalizada.get("tipo")
+    if tipo == "bo":
+        return f"bo:{normalizada.get('seccion')}:{normalizada.get('aviso_id')}:{normalizada.get('fecha')}"
+    if tipo in {"comprar_url", "comprar_numero"}:
+        return f"{tipo}:{normalizada.get('url') or normalizada.get('numero')}"
+    return f"row:{row['id']}"   # sin agrupar: cada intento es su propio grupo
+
+
 def lista(conn: sqlite3.Connection, limit: int = 30) -> list[dict]:
+    """Investigaciones recientes, agrupando reintentos del MISMO caso (MEJORAS #49.1): pegar el
+    mismo aviso del BO con y sin `?busqueda=1` no debe aparecer como dos filas sueltas. Se mira
+    un poco más atrás que `limit` para no cortar un grupo a la mitad; la fila más reciente de
+    cada grupo manda el estado/mensaje, pero si ESA no tiene `proceso_id` (p. ej. un reintento que
+    dio error) se usa el de un intento anterior del mismo grupo si existe.
+    """
     ensure_schema(conn)
-    return [dict(r) for r in conn.execute("SELECT * FROM investigaciones ORDER BY id DESC LIMIT ?", (limit,))]
+    rows = [dict(r) for r in conn.execute(
+        "SELECT * FROM investigaciones ORDER BY id DESC LIMIT ?", (max(limit, 1) * 3,))]
+    grupos: dict[str, dict] = {}
+    orden: list[str] = []
+    for r in rows:   # ya viene DESC: la primera vez que se ve una clave es la más reciente
+        clave = _clave_caso(r)
+        if clave not in grupos:
+            grupos[clave] = dict(r, intentos=[r["id"]])
+            orden.append(clave)
+        else:
+            g = grupos[clave]
+            g["intentos"].append(r["id"])
+            if not g.get("proceso_id") and r.get("proceso_id"):
+                g["proceso_id"] = r["proceso_id"]
+    out = []
+    for clave in orden[:limit]:
+        g = grupos[clave]
+        g["n_intentos"] = len(g["intentos"])
+        out.append(g)
+    return out
 
 
 def guardar_upload(nombre: str, contenido: bytes) -> Path:
