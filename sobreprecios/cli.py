@@ -253,15 +253,22 @@ def empresas(zip_path):
 @cli.command("organismos-historia")
 @click.option("--sin-llm", is_flag=True, help="Solo buscar y contar resultados, sin pedirle al LLM que confirme.")
 @click.option("--max-resultados", default=6, type=int, help="Resultados de noticias por búsqueda.")
-def organismos_historia_cmd(sin_llm, max_resultados):
-    """Grafo de sucesión de organismos (MEJORAS #39, P13): busca en Google News + LLM barato.
+@click.option("--no-cache", "no_cache", is_flag=True,
+             help="Ignora la caché de URLs resueltas y notas bajadas; fuerza re-descarga.")
+def organismos_historia_cmd(sin_llm, max_resultados, no_cache):
+    """Grafo de sucesión de organismos (MEJORAS #39/#51, P13): busca en Google News + LLM barato.
 
     Semillas: `renombres` de config/organismos.yml (ej. Desarrollo Social -> Capital Humano).
     Exige >= 4 medios independientes confirmando para marcar un arco 'confirmado'; con menos
     queda 'propuesto' (nunca se borra lo encontrado). Nunca guarda un arco que cierre un ciclo.
+    Para cada resultado intenta leer el cuerpo de la nota real (MEJORAS #51): resuelve el link
+    de Google News, baja la nota (HTTPS, con caché) y le pasa los primeros párrafos al juez
+    junto al título — mejor evidencia en absorciones, donde el título no nombra a los dos
+    organismos. Tope de 100 consultas reales por dominio/hora; si se agota, sigue sin ese dato.
     """
     from . import organismos_historia as oh
-    _run("organismos_historia", lambda c: oh.run(c, con_llm=not sin_llm, max_resultados=max_resultados))
+    _run("organismos_historia", lambda c: oh.run(c, con_llm=not sin_llm, max_resultados=max_resultados,
+                                                  no_cache=no_cache))
 
 
 @cli.command()

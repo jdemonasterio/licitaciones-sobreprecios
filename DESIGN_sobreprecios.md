@@ -352,6 +352,43 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   confirmaciones independientes (la lógica de umbral/aciclicidad está cubierta por 14 tests con búsqueda/LLM
   mockeados, `tests/test_organismos_historia.py`).
 
+- **2026-10-12 · Sucesión de organismos: leer el cuerpo de la nota, no solo el título (MEJORAS #51)**. Qué: el
+  juez LLM de `organismos_historia._llm_confirma()` ahora recibe, además de título+medio+fecha, los primeros 2
+  párrafos de la nota real (si se pueden conseguir) — necesario porque en una absorción el título casi nunca
+  nombra a los dos organismos (medido en la corrida real del #39: Capital Humano quedaba "propuesto" con 1 sola
+  confirmación). Dónde: `sobreprecios/organismos_historia.py` (`resolver_url_original`, `bajar_cuerpo`,
+  `extraer_parrafos`, `parrafo_de_nota`, llamadas desde `investigar()`); prompt `prompts/organismo_sucesion.md`
+  (placeholder `<<PARRAFO>>`). Decisión clave (2026-10-12): Google News deja de exponer el link real desde 2024
+  (el id del redirect `news.google.com/rss/articles/<id>` ya no es base64 reversible, verificado en vivo) — hay
+  que bajar la página intermedia, leer sus atributos `data-n-a-id`/`-ts`/`-sg`, y pedirle al endpoint interno
+  `batchexecute` (RPC "Fbv4je", método "garturlreq") la URL real ("garturlres"). GOTCHA real (costó la primera
+  corrida de validación): el parámetro de locale del payload tiene que ser `"GL:HL"` exacto (`"AR:es-419"`, el
+  mismo par que ya usa la búsqueda RSS) — `"es-AR"` devuelve un error interno de Google (`[3]`, sin URL) y falló
+  el 100% de las resoluciones hasta corregirlo. Todo el contenido externo (RSS, página intermedia, respuesta de
+  `batchexecute`, HTML de la nota) se trata como no confiable: `defusedxml`/`bs4` para parsear, nunca `eval`, el
+  párrafo se delimita clarísimo en el prompt ("---INICIO/FIN PARRAFO---") con instrucción explícita de ignorar
+  cualquier texto que intente dar órdenes, y el juez sigue devolviendo solo el schema cerrado de siempre
+  (`confirma`/`tipo`/`fecha`/`razon`) — nada de esto cambia el control de flujo del módulo. Cómo operar: nada
+  nuevo que prender, es automático dentro de `investigar()`; `--no-cache` en la CLI fuerza re-resolver/re-bajar
+  ignorando la caché (`data/cache/organismos_historia/{resueltos,notas}/`, cache solo de éxitos — una falla
+  puede ser transitoria y no se cachea). Tope: `MAX_QUERIES_POR_HORA = 100` consultas reales por dominio (Google
+  News o cada medio), ventana rolling de 60 min, reservado ANTES de cada request real (cuenta reintentos; un
+  cache hit no reserva nada); si se agota, loguea el motivo y sigue con el título solo — nunca bloquea en un
+  loop. Estado en memoria del proceso (no persiste entre corridas de CLI distintas; alcanza para una corrida).
+  **Corrida real** (copia de `data/sobreprecios.db`, nunca la original; perfil `pago`, gpt-6-luna): resolución
+  de URL 67/67 (100% en esta corrida; 2 notas no se pudieron bajar por 403 de dataconurbano.net/france24.com,
+  cayeron a título solo como diseñado). Desarrollo Social → Capital Humano pasó de PROPUESTO (1 medio, La
+  Nación) a **CONFIRMADO (8 medios: Clarin.com, Diputados Bonaerenses, El Mostrador, El Resaltador, La Izquierda
+  Diario, La Nación, Perfil, Tiempo Argentino)**; Seguridad → Seguridad Nacional de CONFIRMADO (4 medios) a
+  **CONFIRMADO (5 medios: Clarin.com, Infobae, La Verdad Junín, Perfil, elDiarioAR.com)**. Gasto LLM real: USD
+  0,0067 (tope pedido: USD 0,50). Tests: `tests/test_organismos_historia.py` pasó de 14 a 40 (resolución de URL
+  con fixtures de la página intermedia real y de `batchexecute`, extracción de párrafo con boilerplate
+  descartado, contenido malicioso tratado como texto plano que nunca cambia el veredicto mockeado, fallback a
+  título en cada punto de falla, tope de consultas independiente por servicio) — todo sin red real. Límites
+  conocidos: la resolución depende del formato interno de Google News (`data-n-a-*` + `batchexecute`), que puede
+  volver a cambiar sin aviso — si eso pasa, el fallback a título sigue funcionando pero sin la mejora; algunos
+  medios bloquean el fetch por bot-detection (403, visto en vivo) y esas notas quedan sin párrafo, no es un bug.
+
 - **2026-10-12 · Autoridades con ventana temporal + designación parcial (MEJORAS #12, #40)**: `empresa_hechos`
   separa 3 fechas, nunca confundidas: `vigente_desde` (fecha del ACTO: asamblea/acta, ya existía),
   `fecha_publicacion` (NUEVA columna: cuándo salió impreso el aviso en el BO — pie "e. DD/MM/AAAA Nº ... v. ...",
@@ -783,7 +820,7 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Validar | `python -m sobreprecios.cli goldens` → TSV en `_scratch/licitaciones/` |
 | Normalizar entidades | `python -m sobreprecios.cli normalizar` (también corre dentro del pipeline) |
 | Minar/aprobar abreviaturas de producto | `python -m sobreprecios.cli abreviaturas [--buscar [--limite N] [--con-llm]] [--aprobar X] [--rechazar X]` → `config/abreviaturas.yml` |
-| Sucesión de organismos (renombres/absorciones) | `python -m sobreprecios.cli organismos-historia [--sin-llm] [--max-resultados N]` |
+| Sucesión de organismos (renombres/absorciones) | `python -m sobreprecios.cli organismos-historia [--sin-llm] [--max-resultados N] [--no-cache]` |
 | Auditar con juez | `python -m auditoria.juez --modelo <modelo> --n 60 --max-usd 5` → `_scratch/licitaciones/auditoria/` |
 | Auditar casos (rojos + cambios) | `python -m auditoria.juez --modelo <modelo> --modo casos --n 45 --max-usd 2.5 --ids 1761,1787` |
 | Ver actos admin./ofertas desestimadas/plazo de pago de un proceso COMPR.AR | automático: se muestran en `/licitacion/<id>` al importar (sin comando propio) |
@@ -825,9 +862,12 @@ y la clave jamás aparece en los logs (`caplog`).
 Diccionario de abreviaturas (`tests/test_abreviaturas.py`): expansión aditiva/idempotente, nunca por substring,
 minería determinística (sin depender del orden de un `set`), nunca auto-aprueba con `--con-llm` mockeado,
 regresión del caso real "fid" + "hvo"/"int" (huevo/integral abreviados no deben entrar como fideos comunes).
-Sucesión de organismos (`tests/test_organismos_historia.py`, 14 tests, búsqueda/LLM mockeados): semillas reales de
-`config/organismos.yml`, umbral de 4 medios independientes, deduplicación por URL entre queries, grafo acíclico
-(rechaza un ciclo y un arco a sí mismo), nunca confirma sin LLM.
+Sucesión de organismos (`tests/test_organismos_historia.py`, 40 tests, búsqueda/red/LLM mockeados): semillas reales
+de `config/organismos.yml`, umbral de 4 medios independientes, deduplicación por URL entre queries, grafo acíclico
+(rechaza un ciclo y un arco a sí mismo), nunca confirma sin LLM — más (MEJORAS #51) resolución del link de Google
+News a la nota real (`batchexecute`, con fixtures de la página intermedia y de la respuesta), extracción de
+párrafos (boilerplate descartado, contenido malicioso tratado como texto plano que nunca cambia el veredicto del
+juez mockeado) y el tope de 100 consultas/hora por dominio (independiente por servicio, expira fuera de la ventana).
 
 redirect a host no permitido, checklist de explicaciones alternativas, comprobante de cálculo con su par
 corroborado y la familia de cada observación, colores en vivo y resumen corto de la cola). El simulador
