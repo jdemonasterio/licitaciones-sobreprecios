@@ -65,7 +65,8 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
 <tbody>
 {% for r in renglones %}
 <tr data-soft-key="reng:{{ r.id }}">
-    <td><span class="sem sem-{{ r.semaforo or 'gris' }}">{{ SEMAFORO_TXT[r.semaforo or 'gris'] }}</span>
+    <td><span class="sem sem-{{ r.semaforo or 'gris' }}">{{ SEMAFORO_TXT[r.semaforo or 'gris'] }}</span>{% if r.motivo_codigo == 'equivalencia_por_verificar' %}
+        <div><span class="tag tag-alerta" title="La brecha llega a rojo contra productos parecidos, pero no se pudo verificar que sea el mismo producto, variedad o envase">⚠ equivalencia por verificar</span></div>{% endif %}
         {% if r.confianza %}<div class="muted small">confianza {{ r.confianza }}</div>{% endif %}</td>
     <td>{{ r.descripcion }}{% if r.marca %} <span class="tag">marca {{ r.marca }}</span>{% endif %}
         {% if r.producto_nombre %}<div class="small muted">→ {{ r.producto_nombre }}</div>{% else %}<div class="small muted">sin producto comparable</div>{% endif %}

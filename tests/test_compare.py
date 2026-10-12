@@ -129,12 +129,19 @@ def test_variante_sin_verificar_no_da_rojo():
     vfn = lambda d: "largos" if "spaghetti" in d.lower() else ("cortos" if "tirabuzon" in d.lower() else None)
     obs = [may(240, fuente="a", desc="Fideos tirabuzon 500 g"), may(242, fuente="b", desc="Fideos tirabuzon 500 g"),
            may(300, fuente="a", desc="Fideos tirabuzon")]
-    # La licitación pide largos y el mercado solo tiene cortos: gris, sin porcentaje (prime P18).
-    res = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, variante="largos", variante_obs=vfn)
+    # La licitación pide largos y el mercado solo tiene cortos: gris sin porcentaje (prime P18)...
+    gris = dict(CFG_MIN, equivalencia_no_verificada="gris")
+    res = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, gris, variante="largos", variante_obs=vfn)
     assert res.semaforo == "gris" and res.motivo_codigo == "sin_referencia_variante"
     assert res.sobreprecio_ajustado_pct is None
+    # ...salvo que la brecha contra lo parecido llegue a rojo: amarillo "equivalencia por verificar" (P7).
+    eq = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, variante="largos", variante_obs=vfn)
+    assert eq.semaforo == "amarillo" and eq.motivo_codigo == "equivalencia_por_verificar"
+    assert "equivalencia no está verificada" in eq.motivo and eq.confianza == "baja"
+    barato = compare(250.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, variante="largos", variante_obs=vfn)
+    assert barato.semaforo == "gris" and barato.motivo_codigo == "sin_referencia_variante"
     # Atributo desconocido en la compra: gris (P17); "no exigido" (ficha SIByS sin la variante): todo el mercado.
-    assert compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, variante_obs=vfn).motivo_codigo == "atributo_desconocido"
+    assert compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, gris, variante_obs=vfn).motivo_codigo == "atributo_desconocido"
     libre = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, variante_obs=vfn, estado_atributo="no_exigido")
     assert libre.semaforo == "rojo" and "variedad no exigida" in libre.motivo
     # Si pide cortos y hay cortos: compara contra esos y puede ser rojo.
@@ -188,7 +195,8 @@ def test_variante_de_otra_fecha_no_es_referencia():
     obs = [may(240, fuente="a", desc="Leche polvo comun"), may(250, fuente="b", desc="Leche polvo otra"),
            may(500, fecha="2024-06-05", fuente="a", desc="Leche polvo fortificada")]
     # La fortificada solo existe en 2024: en 2021 no hay referencia de esa variante -> gris (P18).
-    res = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, variante="fortificada", variante_obs=vfn)
+    res = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, dict(CFG_MIN, equivalencia_no_verificada="gris"),
+                  variante="fortificada", variante_obs=vfn)
     assert res.semaforo == "gris" and res.motivo_codigo == "sin_referencia_variante"
     # Con la flag en sin_rojo vuelve el comportamiento anterior (todo el mercado, sin rojo).
     res2 = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, dict(CFG_MIN, variante_sin_mercado="sin_rojo"),
@@ -201,8 +209,12 @@ def test_presentacion_exacta_se_busca_en_la_fecha_no_en_todo_el_historial():
     obs = [may(240, fuente="a", contenido=0.8), may(250, fuente="b", contenido=0.8),
            may(900, fecha="2024-06-05", fuente="a", contenido=1.0, desc="Leche 1 kg")]
     # Estricto (default): el envase exigido no está en la fecha -> gris; el de 2024 no lo reemplaza.
-    res = compare(300.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, presentacion_exacta=True)
+    res = compare(300.0, 10.0, "2021-06-08", 1.0, obs, IPC, dict(CFG_MIN, equivalencia_no_verificada="gris"),
+                  presentacion_exacta=True)
     assert res.semaforo == "gris" and res.motivo_codigo == "sin_referencia_presentacion"
+    # Con la brecha contra envases parecidos >= rojo: amarillo "equivalencia por verificar".
+    eq = compare(300.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, presentacion_exacta=True)
+    assert eq.semaforo == "amarillo" and eq.motivo_codigo == "equivalencia_por_verificar"
     # No estricto: banda dentro de la fecha.
     res2 = compare(300.0, 10.0, "2021-06-08", 1.0, obs, IPC, dict(CFG_MIN, presentacion_exigida_estricta=False),
                    presentacion_exacta=True)

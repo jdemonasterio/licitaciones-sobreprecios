@@ -367,6 +367,13 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
     info: dict = {}
     selected, gap = select_observations(obs, fecha, contenido_estado, indice, cfg,
                                         exacta=presentacion_exacta, gap_maximo=gap_maximo, info=info)
+    if not selected and info.get("sin_presentacion") and not bloqueo:
+        bloqueo = ("sin_referencia_presentacion",
+                   "la compra exige un envase que el mercado no tiene en la fecha; envases distintos no son referencia")
+        # Comparación exploratoria contra envases parecidos (banda): solo sirve para "equivalencia por verificar".
+        selected, gap = select_observations(obs, fecha, contenido_estado, indice,
+                                            dict(cfg, presentacion_exigida_estricta=False),
+                                            exacta=presentacion_exacta, gap_maximo=gap_maximo)
     tol_pres = float(cfg.get("tolerancia_presentacion", 0.03))
     res.presentacion_exacta = bool(presentacion_exacta and selected and contenido_estado and all(
         o.contenido_base and abs(o.contenido_base - contenido_estado) <= tol_pres * contenido_estado for o in selected))
@@ -436,11 +443,12 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
                                           dict(cfg, presentacion_exigida_estricta=False), exacta=False,
                                           gap_maximo=gap_maximo)
         res.evidencia = [dict(asdict(o), exploratoria=True) for o in sorted(explorar, key=lambda o: o.precio_ub)[:15]]
-    if bloqueo:
+    # Equivalencia no verificada (variedad, composición o envase): gris, salvo que la brecha contra el mercado
+    # más parecido llegue al umbral de rojo -> amarillo destacado "equivalencia por verificar", para que dispare
+    # la revisión humana (jdemonasterio 2026-10-12, P7). Flag: comparacion.equivalencia_no_verificada.
+    marcar_si_rojo = cfg.get("equivalencia_no_verificada", "amarillo_si_rojo") == "amarillo_si_rojo"
+    if bloqueo and (not marcar_si_rojo or not res.ref_principal_valor):
         return _gris(res, *bloqueo)
-    if not selected and info.get("sin_presentacion"):
-        return _gris(res, "sin_referencia_presentacion",
-                     "la compra exige un envase que el mercado no tiene en la fecha; envases distintos no son referencia")
     if not res.ref_principal_valor:
         res.motivo = ("sin observaciones de mercado comparables"
                       + (f" (la más cercana a {gap} días)" if gap else "")
@@ -515,6 +523,14 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
         sin_rojo.append("variedad no verificada contra el mercado")
     if bloquear_rojo:
         sin_rojo.append(bloquear_rojo)
+    if bloqueo:
+        if sp < rojo:
+            return _gris(res, *bloqueo)
+        res.semaforo, res.motivo_codigo = "amarillo", "equivalencia_por_verificar"
+        res.confianza = "baja"
+        res.motivo = (f"posible sobreprecio: {sp:+.1f}% vs {res.ref_principal.replace('_', ' ')} de productos parecidos, "
+                      f"pero la equivalencia no está verificada ({bloqueo[1]}). Revisar el pliego antes de concluir")
+        return res
     res.motivo_codigo = "ok"
     if sp >= amarillo and not sin_rojo and res.sobreprecio_corroborado_pct is not None \
             and res.sobreprecio_corroborado_pct >= rojo:

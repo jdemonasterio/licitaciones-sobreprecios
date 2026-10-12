@@ -60,7 +60,8 @@ comparacion:
   # Rojo exige que el mínimo (o la misma marca) esté confirmado por >= N familias de fuentes
   # independientes dentro de ±tolerancia (SEPA y su espejo son UNA familia). Decisión del LLM prime P1.
   rojo_min_fuentes: 2
-  corroboracion_tolerancia: 0.02
+  # jdemonasterio 2026-10-12 (P1): 5 % — en Argentina hay mucha variabilidad de precios entre cadenas.
+  corroboracion_tolerancia: 0.05
   umbral_rojo_pct: 20
   umbral_amarillo_pct: 8
   # Si precio_estado / referencia > N (o < 1/N) casi seguro es un error de unidad
@@ -84,6 +85,9 @@ comparacion:
   atributo_desconocido: gris
   # Variante exigida sin mercado de esa variante en la fecha: gris | sin_rojo
   variante_sin_mercado: gris
+  # Equivalencia no verificada (variedad / composición / envase): gris, o amarillo destacado
+  # "equivalencia por verificar" si la brecha contra lo más parecido llega al umbral de rojo (P7).
+  equivalencia_no_verificada: amarillo_si_rojo   # amarillo_si_rojo | gris
   # El promedio INDEC como única referencia nunca da rojo (máximo amarillo).
   indec_solo_habilita_rojo: false
 
