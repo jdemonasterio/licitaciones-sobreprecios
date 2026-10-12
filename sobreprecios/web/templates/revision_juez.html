@@ -34,7 +34,7 @@ una segunda opinión, no un veredicto.</p>
 <h4 style="margin-top:14px">Ítems</h4>
 <div class="table-wrap"><table class="small">
 <thead><tr><th>Capa</th><th>Veredicto</th><th>Tipo de error</th><th>Explicación</th><th>Regla sugerida</th><th></th></tr></thead>
-<tbody>{% for it in c.items %}<tr>
+<tbody>{% for it in c["items"] %}<tr>
     <td>{{ it.capa }}</td>
     <td>{% if it.veredicto == 'error' %}<span class="sem sem-rojo">error</span>{% elif it.veredicto == 'dudoso' %}<span class="sem sem-amarillo">dudoso</span>{% else %}<span class="sem sem-verde">{{ it.veredicto }}</span>{% endif %}</td>
     <td class="small">{{ it.tipo_error or '' }}</td>

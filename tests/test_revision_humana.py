@@ -329,3 +329,34 @@ def test_obtener_documento_demasiado_pesado_se_rechaza(monkeypatch, tmp_path):
     client = httpx.Client(transport=httpx.MockTransport(handler), follow_redirects=False)
     with pytest.raises(ValueError, match="30 MB"):
         rh.obtener_documento("https://comprar.gob.ar/pliego/pesado", client=client)
+
+
+def test_pagina_corridas_del_juez_renderiza_con_una_corrida_importada(tmp_path, monkeypatch):
+    # Regresión: en Jinja, `c.items` sobre un dict es el MÉTODO items(), no la lista de ítems (500 en /revision/juez).
+    monkeypatch.setenv("LIC_DB_PATH", str(tmp_path / "web.db"))
+    with db.session() as conn:
+        rh.importar_corrida_juez(conn, FIXTURES / "juez_sample")
+    from fastapi.testclient import TestClient
+    from sobreprecios.web.app import app
+    resp = TestClient(app).get("/revision/juez")
+    assert resp.status_code == 200 and "veredicto" in resp.text.lower()
+
+
+def test_doc_escapa_el_error_y_aisla_el_html_externo(monkeypatch):
+    # Revisión de seguridad 2026-10-12: XSS reflejado en el error y HTML de terceros en el origen del webui.
+    from fastapi.testclient import TestClient
+    from sobreprecios.web import app as webapp
+    client = TestClient(webapp.app)
+    resp = client.get("/doc", params={"url": "https://<script>alert(1)</script>.example/"})
+    assert resp.status_code == 400 and "<script>" not in resp.text
+    monkeypatch.setattr(webapp.revision_humana, "obtener_documento",
+                        lambda url: (b"<html><script>fetch('/x',{method:'POST'})</script></html>", "text/html; charset=utf-8"))
+    html_resp = client.get("/doc", params={"url": "https://comprar.gob.ar/x"})
+    assert html_resp.headers["content-security-policy"].startswith("sandbox")
+    assert html_resp.headers["x-content-type-options"] == "nosniff"
+    monkeypatch.setattr(webapp.revision_humana, "obtener_documento", lambda url: (b"%PDF-1.7 ...", "application/octet-stream"))
+    pdf = client.get("/doc", params={"url": "https://comprar.gob.ar/x.pdf"})
+    assert pdf.headers["content-type"] == "application/pdf"
+    monkeypatch.setattr(webapp.revision_humana, "obtener_documento", lambda url: (b"<svg onload=alert(1)>", "image/svg+xml"))
+    otro = client.get("/doc", params={"url": "https://comprar.gob.ar/x.svg"})
+    assert otro.headers["content-type"].startswith("text/plain")

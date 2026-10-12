@@ -476,16 +476,35 @@ def revision_validar_mercado(renglon_id: int, obs_fuente: str = Form(...), obs_f
     return _redirect(f"/revision/{renglon_id}", "Guardado; recalculando…" if started else jmsg)
 
 
+_DOC_HEADERS = {"X-Content-Type-Options": "nosniff", "Referrer-Policy": "no-referrer"}
+# El HTML de terceros (BO, COMPR.AR) se muestra en un origen opaco, sin scripts ni formularios: si no, un script
+# de esa página correría con el origen del webui y podría disparar acciones (revisión de seguridad 2026-10-12).
+_CSP_SANDBOX = ("sandbox; default-src 'none'; img-src https: data:; style-src https: 'unsafe-inline'; "
+                "font-src https: data:")
+
+
 @app.get("/doc")
 def doc_proxy(url: str):
+    import html as _html
     try:
         contenido, ctype = revision_humana.obtener_documento(url)
     except ValueError as exc:
-        return HTMLResponse(f"<p class='help'>No se pudo mostrar el documento: {exc}</p>", status_code=400)
+        return HTMLResponse(f"<p class='help'>No se pudo mostrar el documento: {_html.escape(str(exc))}</p>",
+                            status_code=400, headers={**_DOC_HEADERS, "Content-Security-Policy": "sandbox"})
     except Exception as exc:   # noqa: BLE001 — una fuente externa caída no debe tumbar la página
         return HTMLResponse(f"<p class='help'>No se pudo bajar el documento ({type(exc).__name__}). "
-                            "Probá abrirlo directo con el link de arriba.</p>", status_code=502)
-    return Response(content=contenido, media_type=ctype)
+                            "Probá abrirlo directo con el link de arriba.</p>", status_code=502,
+                            headers={**_DOC_HEADERS, "Content-Security-Policy": "sandbox"})
+    base = (ctype or "").split(";")[0].strip().lower()
+    if base == "application/pdf" or contenido[:5].startswith(b"%PDF"):
+        return Response(content=contenido, media_type="application/pdf",
+                        headers={**_DOC_HEADERS, "Content-Disposition": "inline"})
+    if base in {"text/html", "application/xhtml+xml"}:
+        return Response(content=contenido, media_type=ctype,
+                        headers={**_DOC_HEADERS, "Content-Security-Policy": _CSP_SANDBOX})
+    # Cualquier otro tipo se muestra como texto, nunca como algo que el navegador ejecute.
+    return Response(content=contenido, media_type="text/plain; charset=utf-8",
+                    headers={**_DOC_HEADERS, "Content-Security-Policy": "sandbox"})
 
 
 # ── Fuentes y jobs ─────────────────────────────────────────────────────────
