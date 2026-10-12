@@ -200,6 +200,24 @@ puede elegir o responder "no sé". Como verificar: E2E que descarta una referenc
 **#45 — IPC con fecha de publicación y versión, modo "disponible a la fecha" (P20, decidido).**
 Ver #30: se implementa. Como verificar: test que muestra que una compra del 5 de un mes no usa el IPC de ese mes.
 
+**#46 — Política de precios por período (jdemonasterio 2026-10-12).**
+2020-2023: listas de Precios Cuidados/Justos/Máximos (en 2023 son la única fuente: sumar también recortes de
+diarios con listas parciales). Ene-jul 2024: agujero sin datos -> precio INFERIDO hacia atrás desde los
+volcados SEPA de agosto/septiembre 2024 corregidos por IPC (rotulado "inferido", confianza baja, nunca rojo).
+Ago-2024 en adelante: archivo SEPA. Si aparece un dataset mejor, reemplaza a la inferencia.
+Como verificar: una compra de marzo 2024 muestra referencia "inferida desde ago-2024 por IPC".
+
+**#47 — Validación en el frontend: licitación y Precios Cuidados.**
+En la página de cada licitación, botones ✓/✗/? y comentario para validar extracción, producto/variante y
+comparación de cada renglón, y "validé esta licitación" (dentro de #34). Página de Precios Cuidados con cada
+precio importado, su contexto (texto original, fuente, producto asignado, precio por kg, veredicto del juez) y
+✓/✗/? + comentario; lo descartado no entra al comparador. Como verificar: E2E de ambos.
+
+**#48 — Revisión de user journeys por el LLM prime (al terminar #34, #36, #37).**
+Mandarle 3-4 recorridos paso a paso (capturas + texto) de usuarios investigando licitaciones y preguntar qué
+ve bien, qué falta y qué agregaría; hasta 4 llamadas, presupuesto aparte de USD 10.
+Como verificar: decisiones del prime registradas y su backlog derivado.
+
 **#41 — Domicilios: solo se ocultan los de personas humanas.** Los de empresas y organismos se muestran.
 
 **#42 — Impuestos en los precios.** Registrar si cada fuente informa precio con o sin IVA; las promociones se
