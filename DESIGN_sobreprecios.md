@@ -709,6 +709,64 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 
 - **2026-10-12 · Tablas interactivas (orden + filtro) sin librerías externas** (jdemonasterio): `sobreprecios/web/static/tablas.js` (vanilla JS) + estilos en `static/styles.css` dan a cualquier tabla orden por columna (click/Enter en el encabezado, flecha + `aria-sort`, vacío "—"/"-" SIEMPRE al final en los dos sentidos) y, en columnas categóricas, un botón-embudo con un menú de checkboxes (buscador, "Todos"/"Ninguno", cuenta por valor) que combina con Y entre columnas. Opt-in por markup, nada se activa solo: `<table class="tabla-interactiva" data-tabla-id="...">` + `<th data-tipo="num|fecha|texto|cat|ninguno">` (`data-separador` para celdas con varios valores, p.ej. lista de proveedores) + `data-valor` en el `<td>` cuando el texto mostrado está formateado — ahí va el dato CRUDO de Jinja (el número/fecha ISO antes de `|ars`/`|millones`/`|pct`/`|fecha`), nunca el texto argentino ("$ 1.234,56"): `tablas.js` parsea esos dos formatos con funciones DISTINTAS (`parseNumCrudo` para `data-valor`, con punto decimal estándar; `parseNum` con comas/puntos argentinos solo para el texto mostrado cuando no hay `data-valor`) — mezclarlos fue el primer bug real (un `data-valor="25.0"` se leía como 250 si pasaba por el parser argentino, que trata el punto como separador de miles). Filas con detalle (`<tr data-fila-detalle>` inmediatamente después de la fila principal, como en `/licitacion/<id>`) se mueven/ocultan siempre junto a su fila. Estado (orden + filtros activos) en `sessionStorage` por `pathname + tabla`, reaplicado solo tras un refresco en el lugar de `soft-nav.js` (evento `softnav:swapped`). El panel del filtro es un singleton `position:fixed` sobre `document.body` (nunca lo recorta el `overflow-x:auto` de `.table-wrap`, cabe a 375px); se reposiciona (no se cierra) con scroll/resize de la página — cerrarlo ahí se probó primero y resultó frágil: el propio `focus()` del buscador puede disparar un scroll mínimo del documento y cerraría el panel al toque de abrirlo. Valores de filtro (pueden venir de scraping externo: proveedor, organismo, producto) siempre van por `textContent`/propiedades del DOM, nunca `innerHTML`, para no abrir una vía de inyección. Aplicado a las ~10 tablas principales: `licitaciones.html` (lista), `licitacion.html` (renglones + detalle, ofertas por renglón), `analitica.html` (rankings por organismo/producto/proveedor/procedimiento + peores renglones), `revision.html`, `empresas.html`, `empresa.html` (adjudicaciones), `precios_programa.html` (ediciones), `reportes.html`, `impacto_corrida.html`, `revision_juez.html` (ítems por corrida). Tests: `tests/e2e/test_user_journeys.py` (orden asc/desc con vacíos al final, filtro categórico + "Mostrando X de Y", persistencia tras soft-nav, sin scroll horizontal a 390px con el panel abierto) — diseñados para no asumir un total fijo de filas, porque la base de la sesión del simulador es compartida y otros journeys recalculan/agregan procesos antes.
 
+- **2026-10-12 · Nombre canónico de organismo: tildes correctas + roll-up configurable + filtro de
+  columna arreglado (MEJORAS #53)**: el mismo organismo aparecía con nombres distintos según la
+  fuente — código SAF de COMPR.AR adelante ("311 - Ministerio de Desarrollo Social"), el título
+  completo del Boletín Oficial ("MINISTERIO DE DESARROLLO SOCIAL") y con una subunidad después
+  ("... SECRETARÍA DE GESTIÓN ADMINISTRATIVA") — y eso partía las cifras en Analítica ("Exceso por
+  organismo"), el select de filtro y, sobre todo, el filtro de COLUMNA de las tablas interactivas
+  (MEJORAS #52) que agregó la sesión anterior. Diagnóstico: el select y los rankings de
+  `web/queries.py` YA agrupaban bien (`COALESCE(p.organismo_canonico, p.organismo)`, `agrupado()`);
+  el bug real estaba en 3 `<td>` de tablas `tabla-interactiva` (`licitaciones.html`, el ranking
+  "Renglones con mayor brecha" de `analitica.html`, "adjudicaciones" de `empresa.html`) donde la
+  columna "Organismo" es `data-tipo="cat"` pero el `<td>` no traía `data-valor`: `tablas.js` lee
+  entonces `textContent` (el texto CRUDO, con subunidad) para el menú de checkboxes, así que las 3
+  variantes aparecían como 3 valores distintos del filtro con sus propios conteos (4/45/19) en vez
+  de un solo "Ministerio de Desarrollo Social (68)". Fix: esas 3 queries
+  (`list_procesos`, `peores_renglones`, `empresa().adjudicaciones`) ahora traen también
+  `organismo_canonico`, y el `<td>` muestra el texto crudo (sigue el detalle de la subunidad) pero
+  filtra por `data-valor="{{ organismo_canonico or organismo }}"` — mismo patrón que ya usaban
+  `monto`/`exceso` (crudo para mostrar, vía `data-valor`, sin formato argentino).
+  Segundo bug, más de fondo: `normalize/entidades.normalizar_organismo()` separaba
+  jurisdicción/subunidad sobre una copia YA sin acentos (`strip_accents().upper()`, necesaria para
+  que el regex de subunidades matchee sin depender de cómo vino tipeado) y devolvía ESE pedazo sin
+  tilde como el texto a mostrar — todo canónico salía sin tildes ("Ministerio de Economia",
+  "Comision Nacional de Energia Atomica"). Como `strip_accents()` nunca cambia la cantidad de
+  caracteres (una tilde es 1 char de entrada -> 1 char de salida), la posición del corte encontrada
+  sobre la copia sin acentos VALE igual sobre el texto original: ahora se recorta del original y se
+  conservan los acentos (`jurisdiccion`/`unidad`/`nombre`); se agregó `jurisdiccion_clave`
+  (sin acentos/mayúsculas/espacios) para AGRUPAR sin que una tilde faltante rompa la unión — nunca
+  se muestra. `normalize/aplicar.run()` pasó de una sola pasada a dos: 1) normaliza cada proceso y
+  junta candidatos por clave; 2) elige UN solo texto por clave con `_mejor_variante` (gana el que
+  tiene más tildes/ñ; empate por más corto, después alfabético — determinístico, nunca "la fuente
+  que más se repite") y lo aplica a TODOS los procesos de esa clave, así dos variantes que agrupan
+  igual (con o sin tilde, con o sin SAF adelante) siempre muestran el mismo nombre. Es una pasada
+  extra sobre `procesos` (no join, no N²; en la base real son 178 filas).
+  **Roll-up configurable** (pedido explícito, es una decisión del owner): `config/settings.yml ->
+  organismos.agrupar_subunidades` (default `true`) — con `true`, una subunidad agrupa en su
+  jurisdicción madre para Analítica/filtros/rankings (el detalle de la subunidad sigue viéndose en
+  `procesos.organismo`, nunca se toca); con `false`, cada subunidad queda en su propio balde (sigue
+  deduplicada por mayúsculas/acentos/SAF, pero no sube al padre). `config.agrupar_subunidades_organismo()`.
+  **Independiente de la sucesión histórica** (`organismos_sucesion`, MEJORAS #39/#51): esto NUNCA
+  agrupa organismos renombrados entre sí — verificado con el caso real "Ministerio de Seguridad"
+  vs "Ministerio de Seguridad Nacional" (SAF 343, cambio post-2018 sin confirmar en `organismos_sucesion`):
+  siguen con `organismo_canonico` distinto, a propósito (conviven las dos tablas sin pisarse: una
+  decide "es el mismo nombre escrito distinto", la otra "este organismo pasó a ser otro").
+  Golden para el owner: `goldens.organismos()` (`_scratch/licitaciones/validation_organismos_*.tsv`,
+  gitignored) — una fila por `organismo` CRUDO distinto con su código SAF, cuántos procesos tiene,
+  el canónico, la jurisdicción madre (SIEMPRE a nivel ministerio, para que el owner vea el roll-up
+  aunque hoy esté apagado) y el motivo de la unión; ordenado por cuántas variantes comparten el
+  mismo canónico (lo que más junta es lo más dudoso de revisar primero). Corrida real contra una
+  COPIA de `data/sobreprecios.db` (nunca se escribe la real): 24 `organismo` crudos distintos -> 21
+  canónicos (68 procesos de "Ministerio de Desarrollo Social" quedaron en 3 crudos distintos, ahora
+  bien agrupados; antes del fix el canónico ya agrupaba igual pero sin tildes). Tests:
+  `tests/test_normalize.py` (tildes conservadas, `jurisdiccion_clave` une variantes y NO une
+  "Ministerio de Salud" con "Ministerio de Salud y Desarrollo Social"), `tests/test_normalize_aplicar.py`
+  (las 3 variantes reales terminan con el mismo canónico, elige la mejor acentuada entre un glitch
+  sin tilde y uno bien escrito, respeta `agrupar_subunidades=false`, idempotente), `tests/test_config.py`
+  (default y override del flag), `tests/test_queries.py` (las 3 queries exponen `organismo_canonico`),
+  `tests/test_goldens.py` (una fila por crudo, orden por tamaño de grupo).
+
 ## 3. Cómo operar
 
 | Tarea | Comando / lugar |

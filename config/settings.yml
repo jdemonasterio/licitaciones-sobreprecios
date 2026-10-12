@@ -108,6 +108,21 @@ comparacion:
   #     plazo de pago) como para el ajuste temporal de precios de mercado de otro mes.
   ipc_modo: retrospectivo
 
+# Nombre canónico de organismo (MEJORAS #53, jdemonasterio 2026-10-12): el mismo organismo aparece
+# con nombres distintos según la fuente (código SAF de COMPR.AR adelante, el título completo del
+# Boletín Oficial, o con una subunidad tipo "... Secretaría de Gestión Administrativa") y eso
+# partía las cifras en Analítica, los filtros y los rankings. `organismo_canonico` (ver
+# `normalize/entidades.normalizar_organismo` + `normalize/aplicar.run`) siempre normaliza
+# mayúsculas/acentos/espacios para AGRUPAR y muestra un nombre legible con tildes correctas.
+organismos:
+  # true (default): una subunidad se agrupa en su jurisdicción madre (el ministerio/organismo
+  # padre) para Analítica, filtros y rankings — la subunidad sigue viéndose como detalle en la
+  # licitación puntual (`procesos.organismo`, sin tocar). false: cada subunidad queda en su propio
+  # balde (sigue normalizada, no se duplica por mayúsculas/acentos/SAF, pero no sube al padre).
+  # Es independiente de `organismos_sucesion` (cambios de nombre confirmados con prensa, ver
+  # `organismos_historia.py`): esto nunca agrupa organismos RENOMBRADOS entre sí.
+  agrupar_subunidades: true
+
 # Impuestos en los precios (MEJORAS #42, jdemonasterio 2026-10-12): si cada canal/fuente informa el
 # precio CON o SIN IVA. Solo documental — NO cambia ningún cálculo: el IVA es el mismo para todos los
 # productos y proveedores de este catálogo, así que no hace falta ajustar nada, alcanza con saberlo

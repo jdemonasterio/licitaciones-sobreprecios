@@ -118,7 +118,7 @@ def list_procesos(conn: sqlite3.Connection, filtros: dict, orden: str = "exceso"
     _preparar(conn, moneda)
     order_by = ORDENES.get(orden, ORDENES["exceso"])
     rows = conn.execute(
-        f"SELECT p.id, p.numero, p.organismo, p.objeto, p.tipo_procedimiento, p.url, p.estado_revision, "
+        f"SELECT p.id, p.numero, p.organismo, p.organismo_canonico, p.objeto, p.tipo_procedimiento, p.url, p.estado_revision, "
         f"COALESCE(p.fecha_adjudicacion, p.fecha_publicacion) fecha, "
         f"COUNT(r.id) n_renglones, COALESCE(SUM({_m('r.monto_total', moneda)}), 0) monto, "
         f"COALESCE(SUM({_real('r.monto_total')}), 0) monto_real, "
@@ -329,7 +329,7 @@ def peores_renglones(conn: sqlite3.Connection, filtros: dict, limit: int = 15, m
     where, params = _where(filtros)
     _preparar(conn, moneda)
     rows = conn.execute(
-        f"SELECT p.id proceso_id, p.organismo, COALESCE(p.fecha_adjudicacion, p.fecha_publicacion) fecha, "
+        f"SELECT p.id proceso_id, p.organismo, p.organismo_canonico, COALESCE(p.fecha_adjudicacion, p.fecha_publicacion) fecha, "
         f"r.descripcion, r.proveedor, r.proveedor_cuit, {_m('r.precio_unidad_base', moneda)} precio_unidad_base, "
         f"r.unidad_base, k.ref_principal, {_m('k.ref_principal_valor', moneda)} ref_principal_valor, "
         f"k.sobreprecio_ajustado_pct, {_m('k.exceso_ars', moneda)} exceso_ars, k.semaforo, k.confianza "
@@ -440,7 +440,7 @@ def empresa(conn: sqlite3.Connection, cuit: str) -> dict | None:
         "SELECT * FROM empresa_hechos WHERE cuit = ? ORDER BY tipo, vigente_hasta IS NOT NULL, "
         "vigente_desde DESC", (cuit,))]
     data["adjudicaciones"] = [dict(r) for r in conn.execute(
-        "SELECT p.id proceso_id, p.organismo, p.numero, COALESCE(p.fecha_adjudicacion, p.fecha_publicacion) fecha, "
+        "SELECT p.id proceso_id, p.organismo, p.organismo_canonico, p.numero, COALESCE(p.fecha_adjudicacion, p.fecha_publicacion) fecha, "
         "r.descripcion, r.cantidad, r.unidad_compra, r.precio_unitario, r.monto_total, k.semaforo, "
         "k.sobreprecio_ajustado_pct FROM renglones r JOIN procesos p ON p.id = r.proceso_id "
         "LEFT JOIN comparaciones k ON k.renglon_id = r.id WHERE r.proveedor_cuit = ? ORDER BY fecha DESC",

@@ -140,10 +140,22 @@ def _saf_tabla() -> dict[str, dict]:
 
 
 def normalizar_organismo(texto: str | None) -> dict:
-    """{nombre (de la fecha, limpio), jurisdiccion, unidad, saf, saf_nombre, original}.
+    """{nombre (de la fecha, limpio), jurisdiccion, unidad, jurisdiccion_clave, saf, saf_nombre, original}.
 
     Acepta el título del BO ("MINISTERIO DE DESARROLLO SOCIAL SECRETARÍA DE GESTIÓN ADMINISTRATIVA"),
     el SAF de COMPR.AR ("310 - Ministerio de Salud") o la UOC ("80/000 - Dirección General ... - MS").
+
+    `jurisdiccion`/`unidad`/`nombre` CONSERVAN los acentos del texto de origen: el corte entre
+    jurisdiccion y unidad se ubica sobre una copia sin acentos/en mayúsculas (`up`, para que
+    _UNIDADES matchee sin depender de cómo vino tipeado), pero el resultado se recorta del texto
+    ORIGINAL en esa misma posición — `strip_accents()` nunca suma ni resta caracteres (una tilde
+    es 1 char de entrada -> 1 char de salida), así que la posición vale para los dos strings por
+    igual. Antes el resultado se mostraba siempre sin tildes (MEJORAS #53: "Ministerio de
+    Economia" en vez de "Ministerio de Economía") porque se devolvía el trozo YA pelado de `up`.
+
+    `jurisdiccion_clave` es la comparación insensible a mayúsculas/acentos/espacios: usala para
+    AGRUPAR (dos variantes con o sin tilde tienen que caer en el mismo balde); nunca para mostrar
+    — lo legible con tildes correctas es `jurisdiccion`/`unidad`.
     """
     raw = re.sub(r"\s+", " ", (texto or "").replace("\xa0", " ")).strip()
     saf = None
@@ -155,14 +167,20 @@ def normalizar_organismo(texto: str | None) -> dict:
         m2 = re.match(r"^(\d{1,3})/\d{1,3}\s*-\s*(.+)$", raw)   # UOC "80/000 - ...": el prefijo NO es el SAF
         if m2:
             raw_nombre = m2.group(2)
+    raw_nombre = raw_nombre.strip()
     up = strip_accents(raw_nombre).upper()
-    partes = re.split(rf"\s+(?={_UNIDADES}\b)", up, maxsplit=1)
-    jurisdiccion = partes[0].strip()
-    unidad = partes[1].strip() if len(partes) > 1 else ""
+    partes_up = re.split(rf"\s+(?={_UNIDADES}\b)", up, maxsplit=1)
+    if len(partes_up) > 1 and len(up) == len(raw_nombre):
+        corte = len(partes_up[0])
+        jurisdiccion, unidad = raw_nombre[:corte].strip(), raw_nombre[corte:].strip()
+    else:
+        jurisdiccion, unidad = raw_nombre, ""
     saf_nombre = None
     if saf and saf in _saf_tabla():
         saf_nombre = (_saf_tabla()[saf].get("nombres") or [None])[0]
     return {
-        "nombre": raw_nombre.strip(), "jurisdiccion": jurisdiccion.title() if jurisdiccion else None,
-        "unidad": unidad.title() if unidad else None, "saf": saf, "saf_nombre": saf_nombre, "original": texto,
+        "nombre": raw_nombre, "jurisdiccion": jurisdiccion.title() if jurisdiccion else None,
+        "unidad": unidad.title() if unidad else None,
+        "jurisdiccion_clave": strip_accents(jurisdiccion).upper() if jurisdiccion else None,
+        "saf": saf, "saf_nombre": saf_nombre, "original": texto,
     }

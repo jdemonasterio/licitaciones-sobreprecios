@@ -53,15 +53,47 @@ def test_normalizar_persona():
 
 @pytest.mark.parametrize("texto,jur,unidad,saf", [
     ("MINISTERIO DE DESARROLLO SOCIAL SECRETARÍA DE GESTIÓN ADMINISTRATIVA", "Ministerio De Desarrollo Social",
-     "Secretaria De Gestion Administrativa", None),
+     "Secretaría De Gestión Administrativa", None),
     ("310 - Ministerio de Salud", "Ministerio De Salud", None, "310"),
-    ("80/000 - Dirección General de Administración - MS", "Direccion General De Administracion - Ms", None, None),
+    ("80/000 - Dirección General de Administración - MS", "Dirección General De Administración - Ms", None, None),
     ("MINISTERIO DE SALUD", "Ministerio De Salud", None, None),
 ])
 def test_normalizar_organismo(texto, jur, unidad, saf):
     o = normalizar_organismo(texto)
     assert o["saf"] == saf and o["unidad"] == unidad
-    assert o["jurisdiccion"].replace(" ", "").lower() == jur.replace(" ", "").lower()
+    assert o["jurisdiccion"] == jur
+
+
+@pytest.mark.parametrize("texto,jur_con_tilde", [
+    # MEJORAS #53: antes se mostraba sin tildes ("Ministerio De Economia") porque el corte entre
+    # jurisdiccion y unidad se hacia sobre el texto YA pelado de acentos y ESE pedazo era lo que
+    # se devolvia. Casos reales de la base (2026-10-12).
+    ("MINISTERIO DE ECONOMÍA SECRETARÍA LEGAL Y ADMINISTRATIVA", "Ministerio De Economía"),
+    ("105 - Comisión Nacional de Energía Atómica", "Comisión Nacional De Energía Atómica"),
+    ("201 - Dirección Nacional de Migraciones", "Dirección Nacional De Migraciones"),
+])
+def test_normalizar_organismo_conserva_tildes_en_la_jurisdiccion(texto, jur_con_tilde):
+    assert normalizar_organismo(texto)["jurisdiccion"] == jur_con_tilde
+
+
+def test_normalizar_organismo_jurisdiccion_clave_ignora_acentos_mayusculas_y_saf():
+    """La CLAVE de comparacion (no la que se muestra) tiene que ser la misma para las 3 variantes
+    reales del mismo organismo (MEJORAS #53): con codigo SAF adelante, en mayusculas sin SAF (BO),
+    y con una subunidad despues (el corte deja la jurisdiccion aparte, ver arriba)."""
+    claves = {
+        normalizar_organismo("311 - Ministerio de Desarrollo Social")["jurisdiccion_clave"],
+        normalizar_organismo("MINISTERIO DE DESARROLLO SOCIAL")["jurisdiccion_clave"],
+        normalizar_organismo("MINISTERIO DE DESARROLLO SOCIAL SECRETARÍA DE GESTIÓN ADMINISTRATIVA")["jurisdiccion_clave"],
+    }
+    assert len(claves) == 1
+
+
+def test_normalizar_organismo_jurisdiccion_clave_no_une_organismos_distintos():
+    """Nombres parecidos pero DISTINTOS (uno no es subcadena limpia del otro) no deben compartir
+    clave: "Ministerio de Salud" != "Ministerio de Salud y Desarrollo Social" (ejemplo del owner)."""
+    a = normalizar_organismo("MINISTERIO DE SALUD")["jurisdiccion_clave"]
+    b = normalizar_organismo("MINISTERIO DE SALUD Y DESARROLLO SOCIAL")["jurisdiccion_clave"]
+    assert a != b
 
 
 def test_organismo_saf_no_une_renombres():
