@@ -16,3 +16,4 @@ openpyxl>=3.1                # export XLSX de reportes
 xlrd>=2.0                    # planillas .xls de INDEC
 pytest>=8.0
 zstandard>=0.22         # archivo histórico SEPA (.tar.zst)
+defusedxml>=0.7         # parseo seguro de RSS externo (organismos_historia.py: XXE/billion-laughs)

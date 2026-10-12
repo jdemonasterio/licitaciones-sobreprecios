@@ -16,7 +16,7 @@ import json
 import sqlite3
 from dataclasses import dataclass, field
 
-from . import config
+from . import abreviaturas, config
 from .textnorm import norm, tokens
 from .units import parse_size
 
@@ -116,7 +116,9 @@ def _contains(toks: set[str], phrase: tuple[str, ...]) -> bool:
 
 def match_rules(descripcion: str, catalog: dict[str, Producto]) -> Match:
     """Producto canónico por reglas. producto_id=None si no hay ganador único."""
-    toks = tokens(descripcion)
+    # MEJORAS #1 (P22): suma tokens de abreviaturas APROBADAS (config/abreviaturas.yml) antes de
+    # matchear — aditivo, nunca borra texto (ver abreviaturas.expandir).
+    toks = tokens(abreviaturas.expandir(descripcion))
     if not toks:
         return Match(None, 0.0, "reglas", "descripción vacía")
     scored: list[tuple[int, str, str]] = []

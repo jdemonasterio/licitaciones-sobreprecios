@@ -375,6 +375,17 @@ _FECHA_RE = re.compile(r"\b(\d{1,2})[/.](\d{1,2})[/.](\d{2,4})\b")
 # notarial que lo protocoliza semanas/meses después (confirmado en el fixture
 # 2014: escritura 09/06/14, acta 20/01/14 — son 5 meses de diferencia).
 _FECHA_ACTO_RE = re.compile(r"ASAMBLEA[^.\d]{0,40}(\d{1,2}[/.]\d{1,2}[/.]\d{2,4})", re.IGNORECASE)
+# Fecha de PUBLICACIÓN en el Boletín (pie de aviso estándar "e. DD/MM/AAAA Nº .../.. v. DD/MM/AAAA":
+# "e." = edición, "v." = vencimiento de la obligación de publicar). Es la fecha en que el aviso salió
+# impreso, casi siempre semanas/meses después del acto (ver fixture 2014: acta 20/01, publicación
+# 04/08) — nunca usar esta fecha como `vigente_desde` (MEJORAS #12/#40).
+_PUBLICACION_RE = re.compile(r"\be\.?\s*(\d{1,2}[/.]\d{1,2}[/.]\d{2,4})\s*N[°ºo]", re.IGNORECASE)
+# Señal de que el acto reemplaza TODO el directorio (no solo el cargo que menciona), para que
+# `db._close_superseded_autoridades` no deje cargos "colgados" en una designación parcial ni, al
+# revés, deje de cerrar el directorio viejo completo cuando el acto sí lo renueva entero.
+_RENOVACION_TOTAL_RE = re.compile(
+    r"nuevo\s+directorio|renovaci[oó]n\s+total|totalidad\s+de\s+los\s+cargos|"
+    r"por\s+vencimiento\s+de\s+(?:los|sus)\s+cargos|nuevas?\s+autoridades", re.IGNORECASE)
 
 _CARGO_CANON = {
     "PRESIDENTE": "presidente", "VICEPRESIDENTE": "vicepresidente",
@@ -449,12 +460,26 @@ def extraer_hechos(texto: str, razon_social: str, cuit: str | None = None) -> li
     """Reglas (regex) sobre el texto de un aviso -> lista de hechos fechados.
 
     Cada hecho: {tipo, persona, documento, cargo, valor, vigente_desde,
-    fuente_texto}. `tipo` ∈ autoridad|socio|domicilio|razon_social|capital|
-    objeto|constitucion|disolucion. `vigente_desde` es la primera fecha
-    dd/mm/yyyy encontrada en el ámbito relevante del aviso (heurística: casi
-    todos los avisos tienen la fecha del acto cerca del principio) — si no
-    hay fecha, el caller decide si usar `fecha_iso` del aviso (la de
-    PUBLICACIÓN, que no es lo mismo: puede ser semanas después del acto).
+    fecha_publicacion, fuente_texto} (+ `renovacion_total` en los de tipo
+    autoridad). `tipo` ∈ autoridad|socio|domicilio|razon_social|capital|
+    objeto|constitucion|disolucion.
+
+    Tres fechas, nunca confundidas (MEJORAS #12/#40):
+      - `vigente_desde` = fecha del ACTO (asamblea/acta): la primera fecha
+        dd/mm/yyyy encontrada en el ámbito relevante del aviso (heurística: casi
+        todos los avisos tienen la fecha del acto cerca del principio) — si no
+        hay fecha, el caller decide si usar `fecha_iso` del aviso.
+      - `fecha_publicacion` = cuándo salió IMPRESO el aviso en el Boletín
+        (pie "e. DD/MM/AAAA Nº ... v. ..."), casi siempre semanas/meses después
+        del acto. None si el aviso no trae ese pie (fixtures viejos/OCR).
+      - "vigencia" = el rango (`vigente_desde`, `vigente_hasta`) que mantiene
+        `db.close_superseded_facts`; no es una fecha nueva, es la ventana.
+
+    `renovacion_total` (solo autoridad): True si el texto dice algo como "nuevo
+    directorio" o "por vencimiento de los cargos de los directores" — el acto
+    reemplaza TODO el directorio aunque no repita cargo por cargo. Si es False,
+    `db._close_superseded_autoridades` solo cierra los cargos que este acto
+    vuelve a nombrar, no el directorio entero (designación parcial).
 
     Cuando las reglas no encuentran nada pero el texto no está vacío, el
     caller puede recurrir a `sobreprecios.llm.complete_json` con el prompt
@@ -467,6 +492,9 @@ def extraer_hechos(texto: str, razon_social: str, cuit: str | None = None) -> li
     ambito = _ambito_relevante(texto, razon_social)
     acto_match = _FECHA_ACTO_RE.search(ambito)
     fecha_acto = _normalizar_fecha(acto_match.group(1)) if acto_match else _normalizar_fecha(ambito)
+    pub_match = _PUBLICACION_RE.search(ambito)
+    fecha_publicacion = _normalizar_fecha(pub_match.group(1)) if pub_match else None
+    renovacion_total = bool(_RENOVACION_TOTAL_RE.search(ambito))
     hechos: list[dict] = []
 
     def _snippet(span_texto: str, centro: int, radio: int = 160) -> str:
@@ -494,7 +522,8 @@ def extraer_hechos(texto: str, razon_social: str, cuit: str | None = None) -> li
                 continue
             hechos.append({
                 "tipo": "autoridad", "persona": nombre, "documento": documento, "cargo": cargo,
-                "valor": None, "vigente_desde": fecha_acto,
+                "valor": None, "vigente_desde": fecha_acto, "fecha_publicacion": fecha_publicacion,
+                "renovacion_total": renovacion_total,
                 "fuente_texto": _snippet(ambito, start),
             })
 
@@ -504,7 +533,7 @@ def extraer_hechos(texto: str, razon_social: str, cuit: str | None = None) -> li
         fecha = _normalizar_fecha(cmatch.group(1))
         hechos.append({
             "tipo": "constitucion", "persona": None, "documento": cuit, "cargo": None,
-            "valor": razon_social, "vigente_desde": fecha,
+            "valor": razon_social, "vigente_desde": fecha, "fecha_publicacion": fecha_publicacion,
             "fuente_texto": _snippet(ambito, cmatch.start()),
         })
 
@@ -514,7 +543,7 @@ def extraer_hechos(texto: str, razon_social: str, cuit: str | None = None) -> li
         hechos.append({
             "tipo": "objeto", "persona": None, "documento": cuit, "cargo": None,
             "valor": re.sub(r"\s+", " ", omatch.group(1)).strip()[:2000], "vigente_desde": fecha_acto,
-            "fuente_texto": _snippet(ambito, omatch.start()),
+            "fecha_publicacion": fecha_publicacion, "fuente_texto": _snippet(ambito, omatch.start()),
         })
 
     # --- domicilio social (best-effort: sin fixture real que lo ejercite) ---
@@ -523,7 +552,7 @@ def extraer_hechos(texto: str, razon_social: str, cuit: str | None = None) -> li
         hechos.append({
             "tipo": "domicilio", "persona": None, "documento": cuit, "cargo": None,
             "valor": re.sub(r"\s+", " ", dmatch.group(1)).strip(), "vigente_desde": fecha_acto,
-            "fuente_texto": _snippet(ambito, dmatch.start()),
+            "fecha_publicacion": fecha_publicacion, "fuente_texto": _snippet(ambito, dmatch.start()),
         })
 
     # --- cambio de razón social (best-effort) ---
@@ -532,7 +561,7 @@ def extraer_hechos(texto: str, razon_social: str, cuit: str | None = None) -> li
         hechos.append({
             "tipo": "razon_social", "persona": None, "documento": cuit, "cargo": None,
             "valor": rmatch.group(1).strip(), "vigente_desde": fecha_acto,
-            "fuente_texto": _snippet(ambito, rmatch.start()),
+            "fecha_publicacion": fecha_publicacion, "fuente_texto": _snippet(ambito, rmatch.start()),
         })
 
     # --- capital social (best-effort) ---
@@ -541,7 +570,7 @@ def extraer_hechos(texto: str, razon_social: str, cuit: str | None = None) -> li
         hechos.append({
             "tipo": "capital", "persona": None, "documento": cuit, "cargo": None,
             "valor": kmatch.group(1), "vigente_desde": fecha_acto,
-            "fuente_texto": _snippet(ambito, kmatch.start()),
+            "fecha_publicacion": fecha_publicacion, "fuente_texto": _snippet(ambito, kmatch.start()),
         })
 
     # --- disolución ---
@@ -549,7 +578,7 @@ def extraer_hechos(texto: str, razon_social: str, cuit: str | None = None) -> li
         hechos.append({
             "tipo": "disolucion", "persona": None, "documento": cuit, "cargo": None,
             "valor": None, "vigente_desde": fecha_acto,
-            "fuente_texto": _snippet(ambito, dismatch.start()),
+            "fecha_publicacion": fecha_publicacion, "fuente_texto": _snippet(ambito, dismatch.start()),
         })
 
     return hechos

@@ -95,6 +95,45 @@ def test_extraer_hechos_pagina_ocr_vieja_no_mezcla_sociedad_vecina():
     assert any("Jaime Szmuc" in p for p in presidentes)
 
 
+def test_extraer_hechos_fecha_publicacion_distinta_de_fecha_del_acto():
+    """MEJORAS #12/#40: `fecha_publicacion` (pie "e. DD/MM/AAAA Nº ...") es la fecha en que el
+    Boletín publicó el aviso, no la del acto (`vigente_desde`) — en este fixture son 6 meses y
+    medio distintas (acta 20/01/2014, publicación 04/08/2014)."""
+    texto = _leer("americana_alimentos_2014_designacion_dni.txt")
+    hechos = extraer_hechos(texto, RAZON_SOCIAL)
+    autoridades = [h for h in hechos if h["tipo"] == "autoridad"]
+    assert autoridades
+    assert all(h["vigente_desde"] == "2014-01-20" for h in autoridades)
+    assert all(h["fecha_publicacion"] == "2014-08-04" for h in autoridades)
+
+
+def test_extraer_hechos_renovacion_total_por_vencimiento_de_cargos():
+    """El fixture 2014 dice "por vencimiento de los cargos de los directores se decide
+    designar": es una renovación TOTAL (todos los cargos vencieron), aunque el texto no diga
+    literalmente "nuevo directorio"."""
+    texto = _leer("americana_alimentos_2014_designacion_dni.txt")
+    hechos = extraer_hechos(texto, RAZON_SOCIAL)
+    autoridades = [h for h in hechos if h["tipo"] == "autoridad"]
+    assert autoridades and all(h["renovacion_total"] is True for h in autoridades)
+
+
+def test_extraer_hechos_renovacion_total_nuevo_directorio_2016():
+    texto = _leer("americana_alimentos_2016_designacion.txt")
+    hechos = extraer_hechos(texto, RAZON_SOCIAL)
+    autoridades = [h for h in hechos if h["tipo"] == "autoridad"]
+    assert autoridades and all(h["renovacion_total"] is True for h in autoridades)
+    assert all(h["fecha_publicacion"] == "2016-12-21" for h in autoridades)
+
+
+def test_extraer_hechos_sin_pie_de_publicacion_fecha_publicacion_none():
+    """Un hecho sin el pie "e. .../ v. ..." en su ámbito relevante no debe inventar una fecha
+    de publicación (best-effort: ninguno de los fixtures de constitución/objeto la ejercita con
+    certeza, así que esto cubre el caso general sin ese pie)."""
+    from sobreprecios.sources.bo_sociedades import extraer_hechos as _eh
+    hechos = _eh("CARGO: Presidente: Alguien Random.", "ALGUIEN RANDOM SA")
+    assert hechos and hechos[0]["fecha_publicacion"] is None
+
+
 def test_extraer_hechos_texto_vacio_devuelve_lista_vacia():
     assert extraer_hechos("", RAZON_SOCIAL) == []
 
