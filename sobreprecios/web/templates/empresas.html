@@ -8,13 +8,13 @@ contexto societario (autoridades, socios, domicilios) cargado desde el Boletín 
     <div class="field" style="flex:1"><label>Buscar</label><input type="search" name="q" value="{{ q }}" placeholder="razón social o CUIT"></div>
     <button class="btn btn-primary">Buscar</button>
 </form>
-<div class="table-wrap"><table>
-<thead><tr><th>Empresa</th><th>CUIT</th><th class="num">Procesos</th><th class="num">Monto adjudicado</th><th class="num">Exceso estimado</th>
-<th>Primera / última adjudicación</th><th>Contexto</th></tr></thead>
+<div class="table-wrap"><table class="tabla-interactiva" data-tabla-id="empresas" data-limite="300">
+<thead><tr><th data-tipo="cat">Empresa</th><th data-tipo="texto">CUIT</th><th class="num" data-tipo="num">Procesos</th><th class="num" data-tipo="num">Monto adjudicado</th><th class="num" data-tipo="num">Exceso estimado</th>
+<th data-tipo="fecha" title="Ordena por la ultima adjudicacion">Primera / última adjudicación</th><th>Contexto</th></tr></thead>
 <tbody>{% for e in empresas %}
-<tr data-soft-key="emp:{{ e.cuit }}"><td><a href="/empresa/{{ e.cuit }}">{{ e.razon_social or e.cuit }}</a></td><td class="small">{{ e.cuit }}</td>
-<td class="num">{{ e.procesos }}</td><td class="num">{{ e.monto|millones }}</td><td class="num">{{ e.exceso|millones }}</td>
-<td class="small">{{ e.primera_adjudicacion|fecha if e.primera_adjudicacion else '—' }} / {{ e.ultima_adjudicacion|fecha if e.ultima_adjudicacion else '—' }}</td>
+<tr data-soft-key="emp:{{ e.cuit }}"><td data-valor="{{ e.razon_social or e.cuit or '' }}"><a href="/empresa/{{ e.cuit }}">{{ e.razon_social or e.cuit }}</a></td><td class="small">{{ e.cuit }}</td>
+<td class="num">{{ e.procesos }}</td><td class="num" data-valor="{{ e.monto if e.monto is not none else '' }}">{{ e.monto|millones }}</td><td class="num" data-valor="{{ e.exceso if e.exceso is not none else '' }}">{{ e.exceso|millones }}</td>
+<td class="small" data-valor="{{ e.ultima_adjudicacion or '' }}">{{ e.primera_adjudicacion|fecha if e.primera_adjudicacion else '—' }} / {{ e.ultima_adjudicacion|fecha if e.ultima_adjudicacion else '—' }}</td>
 <td class="small">{% if e.n_hechos %}{{ e.n_hechos }} datos{% else %}<span class="muted">sin buscar</span>{% endif %}</td></tr>
 {% endfor %}</tbody></table></div>
 {% endblock %}

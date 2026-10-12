@@ -18,16 +18,16 @@ de arriba, no algo que un humano pueda confirmar fila por fila). Si está mal (p
 línea, marca que no corresponde), marcala <b>✗ No</b> y se excluye del comparador — se recalculan los sobreprecios solos.</div>
 
 <div class="table-wrap">
-<table>
-<thead><tr><th>Edición</th><th>Programa</th><th>Vigencia</th><th class="num">Filas</th><th class="num">Revisadas</th><th class="num">Descartadas</th><th></th></tr></thead>
+<table class="tabla-interactiva" data-tabla-id="ediciones">
+<thead><tr><th data-tipo="texto">Edición</th><th data-tipo="cat">Programa</th><th data-tipo="fecha" title="Ordena por el inicio de vigencia">Vigencia</th><th class="num" data-tipo="num">Filas</th><th class="num" data-tipo="num">Revisadas</th><th class="num" data-tipo="num">Descartadas</th><th></th></tr></thead>
 <tbody>
 {% for e in ediciones %}
 <tr data-soft-key="ed:{{ e.fuente }}">
     <td title="id interno: {{ e.edicion_id }}">{{ e.etiqueta }}</td>
     <td>{{ PROGRAMA_TXT.get(e.programa, e.programa) }}</td>
-    <td class="small">{{ e.desde|fecha if e.desde else '—' }} a {{ e.hasta|fecha if e.hasta else '—' }}</td>
+    <td class="small" data-valor="{{ e.desde or '' }}">{{ e.desde|fecha if e.desde else '—' }} a {{ e.hasta|fecha if e.hasta else '—' }}</td>
     <td class="num">{{ e.n_filas }}</td>
-    <td class="num">{{ e.n_revisadas }}{% if e.n_filas %}<div class="muted small">{{ (100 * e.n_revisadas / e.n_filas)|round|int }}%</div>{% endif %}</td>
+    <td class="num" data-valor="{{ e.n_revisadas if e.n_revisadas is not none else '' }}">{{ e.n_revisadas }}{% if e.n_filas %}<div class="muted small">{{ (100 * e.n_revisadas / e.n_filas)|round|int }}%</div>{% endif %}</td>
     <td class="num">{{ e.n_descartadas }}</td>
     <td><a class="btn btn-sm" href="/precios-programa?edicion={{ e.fuente|urlencode }}">{% if abierta == e.fuente %}Cerrar{% else %}Ver filas{% endif %}</a></td>
 </tr>

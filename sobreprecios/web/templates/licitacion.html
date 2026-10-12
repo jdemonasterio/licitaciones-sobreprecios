@@ -140,10 +140,10 @@ descargable sin iniciar sesión (el botón "Ver" del sitio abre un visor de GDE 
 si no, el <b>mínimo de mercado</b> del mismo producto (envase igual al licitado cuando la norma lo indica).
 Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plazo de pago del Estado.</div>
 <div class="table-wrap">
-<table>
+<table class="tabla-interactiva" data-tabla-id="renglones">
 <thead><tr>
-    <th>Semáforo</th><th>Bien</th><th>Proveedor</th><th class="num">Cantidad</th><th class="num">Precio unitario</th>
-    <th class="num">Adjudicado por u. base</th><th class="num">Referencia</th><th class="num">Brecha ajustada</th><th class="num">Exceso</th><th class="num" title="Menor oferta presentada en el mismo renglón; su admisibilidad no está verificada">vs menor oferta presentada</th>
+    <th data-tipo="cat">Semáforo</th><th data-tipo="texto">Bien</th><th data-tipo="cat">Proveedor</th><th class="num" data-tipo="num">Cantidad</th><th class="num" data-tipo="num">Precio unitario</th>
+    <th class="num" data-tipo="num">Adjudicado por u. base</th><th class="num" data-tipo="num">Referencia</th><th class="num" data-tipo="num">Brecha ajustada</th><th class="num" data-tipo="num">Exceso</th><th class="num" data-tipo="num" title="Menor oferta presentada en el mismo renglón; su admisibilidad no está verificada">vs menor oferta presentada</th>
 </tr></thead>
 <tbody>
 {% for r in renglones %}
@@ -161,16 +161,16 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
     <td>{{ r.descripcion }}{% if r.marca %} <span class="tag">marca {{ r.marca }}</span>{% endif %}
         {% if r.producto_nombre %}<div class="small muted">→ {{ r.producto_nombre }}</div>{% else %}<div class="small muted">sin producto comparable</div>{% endif %}
         {% for a in r.alertas_list %}<div><span class="tag tag-alerta">{{ a }}</span></div>{% endfor %}</td>
-    <td class="small">{% if r.proveedor_cuit %}<a href="/empresa/{{ r.proveedor_cuit }}">{{ r.proveedor or r.proveedor_cuit }}</a><div class="muted">{{ r.proveedor_cuit }}</div>{% else %}{{ r.proveedor or '—' }}{% endif %}</td>
-    <td class="num">{{ r.cantidad|num }} <span class="muted small">{{ r.unidad_compra or '' }}</span></td>
-    <td class="num">{{ r.precio_unitario|ars(2) }}</td>
-    <td class="num">{{ r.precio_unidad_base|ars(2) }}<span class="muted small">/{{ r.unidad_base or '?' }}</span></td>
-    <td class="num">{{ r.ref_principal_valor|ars(2) }}<div class="muted small">{{ REF_TXT.get(r.ref_principal, r.ref_principal or '—') }}</div></td>
-    <td class="num {% if r.sobreprecio_ajustado_pct and r.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}">{{ r.sobreprecio_ajustado_pct|pct }}</td>
-    <td class="num">{{ r.exceso_ars|ars }}</td>
-    <td class="num {% if r.brecha_oferta_min_pct and r.brecha_oferta_min_pct > 0 %}pos{% endif %}">{% if r.n_ofertas %}{{ r.brecha_oferta_min_pct|pct }}<div class="muted small">{{ r.n_ofertas }} ofertas</div>{% if r.oferta_min_desestimada %}<div class="small"><span class="tag tag-alerta" title="{{ r.oferta_min_causa }}">la más baja fue desestimada</span></div>{% elif r.ofertas_implausibles %}<div class="small"><span class="tag tag-alerta">{{ r.ofertas_implausibles }} en otra unidad?</span></div>{% endif %}{% else %}—{% endif %}</td>
+    <td class="small" data-valor="{{ r.proveedor or r.proveedor_cuit or '' }}">{% if r.proveedor_cuit %}<a href="/empresa/{{ r.proveedor_cuit }}">{{ r.proveedor or r.proveedor_cuit }}</a><div class="muted">{{ r.proveedor_cuit }}</div>{% else %}{{ r.proveedor or '—' }}{% endif %}</td>
+    <td class="num" data-valor="{{ r.cantidad if r.cantidad is not none else '' }}">{{ r.cantidad|num }} <span class="muted small">{{ r.unidad_compra or '' }}</span></td>
+    <td class="num" data-valor="{{ r.precio_unitario if r.precio_unitario is not none else '' }}">{{ r.precio_unitario|ars(2) }}</td>
+    <td class="num" data-valor="{{ r.precio_unidad_base if r.precio_unidad_base is not none else '' }}">{{ r.precio_unidad_base|ars(2) }}<span class="muted small">/{{ r.unidad_base or '?' }}</span></td>
+    <td class="num" data-valor="{{ r.ref_principal_valor if r.ref_principal_valor is not none else '' }}">{{ r.ref_principal_valor|ars(2) }}<div class="muted small">{{ REF_TXT.get(r.ref_principal, r.ref_principal or '—') }}</div></td>
+    <td class="num {% if r.sobreprecio_ajustado_pct and r.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}" data-valor="{{ r.sobreprecio_ajustado_pct if r.sobreprecio_ajustado_pct is not none else '' }}">{{ r.sobreprecio_ajustado_pct|pct }}</td>
+    <td class="num" data-valor="{{ r.exceso_ars if r.exceso_ars is not none else '' }}">{{ r.exceso_ars|ars }}</td>
+    <td class="num {% if r.brecha_oferta_min_pct and r.brecha_oferta_min_pct > 0 %}pos{% endif %}" data-valor="{{ r.brecha_oferta_min_pct if (r.n_ofertas and r.brecha_oferta_min_pct is not none) else '' }}">{% if r.n_ofertas %}{{ r.brecha_oferta_min_pct|pct }}<div class="muted small">{{ r.n_ofertas }} ofertas</div>{% if r.oferta_min_desestimada %}<div class="small"><span class="tag tag-alerta" title="{{ r.oferta_min_causa }}">la más baja fue desestimada</span></div>{% elif r.ofertas_implausibles %}<div class="small"><span class="tag tag-alerta">{{ r.ofertas_implausibles }} en otra unidad?</span></div>{% endif %}{% else %}—{% endif %}</td>
 </tr>
-<tr data-soft-key="reng-det:{{ r.id }}"><td colspan="10" style="background:var(--surface)">
+<tr data-soft-key="reng-det:{{ r.id }}" data-fila-detalle><td colspan="10" style="background:var(--surface)">
     <details>
         <summary>Ver cómo se calculó y la evidencia de mercado</summary>
         <div class="card" style="margin-top:8px">
@@ -225,10 +225,10 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
             {% if r.producto_id %}<p class="small"><a href="/producto/{{ r.producto_id }}">Ver la serie de precios de {{ r.producto_nombre }} →</a></p>{% endif %}
             {% if r.ofertas %}
             <h3>Ofertas en este renglón ({{ r.ofertas|length }}) — COMPR.AR cuadro comparativo</h3>
-            <table class="small"><thead><tr><th>Oferente</th><th>Marca</th><th class="num">Precio unitario</th><th class="num">Total</th><th>Estado</th></tr></thead>
-            <tbody>{% for o in r.ofertas %}<tr><td>{{ o.proveedor }}<div class="muted">{{ o.cuit or '' }}</div></td><td>{{ o.marca or '—' }}</td>
-            <td class="num">{{ o.precio_unitario|ars(2) }}</td><td class="num">{{ o.total|millones }}</td>
-            <td>{% if o.ganadora %}<span class="sem sem-verde">ganó</span>{% elif o.estado == 'desestimada' %}<span class="sem sem-gris" title="{{ o.causa_desestimacion }}">desestimada</span><div class="muted small" style="max-width:360px">{{ o.causa_desestimacion }}</div>{% endif %}</td></tr>{% endfor %}</tbody></table>
+            <table class="small tabla-interactiva" data-tabla-id="ofertas-{{ r.id }}"><thead><tr><th data-tipo="cat">Oferente</th><th data-tipo="cat">Marca</th><th class="num" data-tipo="num">Precio unitario</th><th class="num" data-tipo="num">Total</th><th data-tipo="cat">Estado</th></tr></thead>
+            <tbody>{% for o in r.ofertas %}<tr><td data-valor="{{ o.proveedor or '' }}">{{ o.proveedor }}<div class="muted">{{ o.cuit or '' }}</div></td><td>{{ o.marca or '—' }}</td>
+            <td class="num" data-valor="{{ o.precio_unitario if o.precio_unitario is not none else '' }}">{{ o.precio_unitario|ars(2) }}</td><td class="num" data-valor="{{ o.total if o.total is not none else '' }}">{{ o.total|millones }}</td>
+            <td data-valor="{{ 'ganó' if o.ganadora else (o.estado or '') }}">{% if o.ganadora %}<span class="sem sem-verde">ganó</span>{% elif o.estado == 'desestimada' %}<span class="sem sem-gris" title="{{ o.causa_desestimacion }}">desestimada</span><div class="muted small" style="max-width:360px">{{ o.causa_desestimacion }}</div>{% endif %}</td></tr>{% endfor %}</tbody></table>
             <p class="muted small">"Menor oferta presentada": su admisibilidad no está verificada. Pudo haber sido desestimada
             con razón (no cumplía el pliego, documentación, plazos). Antes de concluir, leé el dictamen.</p>
             {% endif %}

@@ -53,13 +53,13 @@
 {% endif %}
 
 <h2>Adjudicaciones</h2>
-<div class="table-wrap"><table>
-<thead><tr><th>Fecha</th><th>Organismo</th><th>Bien</th><th class="num">Cantidad</th><th class="num">Precio unitario</th><th class="num">Monto</th><th class="num">Brecha</th><th>Semáforo</th></tr></thead>
+<div class="table-wrap"><table class="tabla-interactiva" data-tabla-id="adjudicaciones">
+<thead><tr><th data-tipo="fecha">Fecha</th><th data-tipo="cat">Organismo</th><th data-tipo="texto">Bien</th><th class="num" data-tipo="num">Cantidad</th><th class="num" data-tipo="num">Precio unitario</th><th class="num" data-tipo="num">Monto</th><th class="num" data-tipo="num">Brecha</th><th data-tipo="cat">Semáforo</th></tr></thead>
 <tbody>{% for a in e.adjudicaciones %}
-<tr><td>{{ a.fecha|fecha }}</td><td><a href="/licitacion/{{ a.proceso_id }}">{{ a.organismo or '—' }}</a><div class="muted small">{{ a.numero or '' }}</div></td>
-<td>{{ a.descripcion }}</td><td class="num">{{ a.cantidad|num }} <span class="muted small">{{ a.unidad_compra or '' }}</span></td>
-<td class="num">{{ a.precio_unitario|ars(2) }}</td><td class="num">{{ a.monto_total|millones }}</td>
-<td class="num {% if a.sobreprecio_ajustado_pct and a.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}">{{ a.sobreprecio_ajustado_pct|pct }}</td>
-<td><span class="sem sem-{{ a.semaforo or 'gris' }}">{{ SEMAFORO_TXT[a.semaforo or 'gris'] }}</span></td></tr>
+<tr><td data-valor="{{ a.fecha or '' }}">{{ a.fecha|fecha }}</td><td data-valor="{{ a.organismo or '' }}"><a href="/licitacion/{{ a.proceso_id }}">{{ a.organismo or '—' }}</a><div class="muted small">{{ a.numero or '' }}</div></td>
+<td>{{ a.descripcion }}</td><td class="num" data-valor="{{ a.cantidad if a.cantidad is not none else '' }}">{{ a.cantidad|num }} <span class="muted small">{{ a.unidad_compra or '' }}</span></td>
+<td class="num" data-valor="{{ a.precio_unitario if a.precio_unitario is not none else '' }}">{{ a.precio_unitario|ars(2) }}</td><td class="num" data-valor="{{ a.monto_total if a.monto_total is not none else '' }}">{{ a.monto_total|millones }}</td>
+<td class="num {% if a.sobreprecio_ajustado_pct and a.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}" data-valor="{{ a.sobreprecio_ajustado_pct if a.sobreprecio_ajustado_pct is not none else '' }}">{{ a.sobreprecio_ajustado_pct|pct }}</td>
+<td data-valor="{{ SEMAFORO_TXT[a.semaforo or 'gris'] }}"><span class="sem sem-{{ a.semaforo or 'gris' }}">{{ SEMAFORO_TXT[a.semaforo or 'gris'] }}</span></td></tr>
 {% endfor %}</tbody></table></div>
 {% endblock %}

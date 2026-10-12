@@ -32,11 +32,11 @@ una segunda opinión, no un veredicto.</p>
 <td class="num">{{ cnt.n }}</td></tr>{% endfor %}</tbody>
 </table></div>
 <h4 style="margin-top:14px">Ítems</h4>
-<div class="table-wrap"><table class="small">
-<thead><tr><th>Capa</th><th>Veredicto</th><th>Tipo de error</th><th>Explicación</th><th>Regla sugerida</th><th></th></tr></thead>
+<div class="table-wrap"><table class="small tabla-interactiva" data-tabla-id="juez-items-{{ c.id }}">
+<thead><tr><th data-tipo="cat">Capa</th><th data-tipo="cat">Veredicto</th><th data-tipo="cat">Tipo de error</th><th data-tipo="texto">Explicación</th><th data-tipo="texto">Regla sugerida</th><th></th></tr></thead>
 <tbody>{% for it in c["items"] %}<tr>
     <td>{{ it.capa }}</td>
-    <td>{% if it.veredicto == 'error' %}<span class="sem sem-rojo">error</span>{% elif it.veredicto == 'dudoso' %}<span class="sem sem-amarillo">dudoso</span>{% else %}<span class="sem sem-verde">{{ it.veredicto }}</span>{% endif %}</td>
+    <td data-valor="{{ it.veredicto }}">{% if it.veredicto == 'error' %}<span class="sem sem-rojo">error</span>{% elif it.veredicto == 'dudoso' %}<span class="sem sem-amarillo">dudoso</span>{% else %}<span class="sem sem-verde">{{ it.veredicto }}</span>{% endif %}</td>
     <td class="small">{{ it.tipo_error or '' }}</td>
     <td class="small">{{ it.explicacion or '' }}</td>
     <td class="small">{{ it.regla_sugerida or '' }}</td>

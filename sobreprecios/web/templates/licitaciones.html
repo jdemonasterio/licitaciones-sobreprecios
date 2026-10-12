@@ -62,25 +62,25 @@ VE el número, nunca el orden. Pasá el mouse sobre un monto para ver su equival
 adjudicaciones en el Boletín Oficial, o usá <a href="/investigar">＋ Investigar una licitación</a> para analizar un caso puntual.{% endif %}</div>
 {% else %}
 <div class="table-wrap">
-<table>
+<table class="tabla-interactiva" data-tabla-id="licitaciones" data-limite="200">
     <thead><tr>
-        <th>Semáforo</th><th>Fecha</th><th>Organismo</th><th>Proceso / norma</th><th>Proveedores</th>
-        <th>Productos</th><th class="num">Monto</th><th class="num">Peor brecha</th><th class="num">Exceso estimado</th><th class="num">vs oferta más baja</th><th>Revisión</th>
+        <th data-tipo="cat">Semáforo</th><th data-tipo="fecha">Fecha</th><th data-tipo="cat">Organismo</th><th data-tipo="texto">Proceso / norma</th><th data-tipo="cat" data-separador=", ">Proveedores</th>
+        <th data-tipo="cat" data-separador=", ">Productos</th><th class="num" data-tipo="num">Monto</th><th class="num" data-tipo="num">Peor brecha</th><th class="num" data-tipo="num">Exceso estimado</th><th class="num" data-tipo="num">vs oferta más baja</th><th data-tipo="cat">Revisión</th>
     </tr></thead>
     <tbody>
     {% for p in procesos %}
     <tr data-soft-key="proc:{{ p.id }}" class="row-link" onclick="location.href='/licitacion/{{ p.id }}'">
         <td><span class="sem sem-{{ p.peor_semaforo }}">{{ SEMAFORO_TXT[p.peor_semaforo] }}</span></td>
-        <td>{{ p.fecha|fecha if p.fecha else '—' }}</td>
+        <td data-valor="{{ p.fecha or '' }}">{{ p.fecha|fecha if p.fecha else '—' }}</td>
         <td>{{ p.organismo or '—' }}</td>
         <td><a href="/licitacion/{{ p.id }}">{{ p.numero or (p.norma or 'ver detalle') }}</a>
             {% if p.norma and p.numero %}<div class="muted small">{{ p.norma }}</div>{% endif %}</td>
-        <td class="small">{{ p.proveedores[:3]|join(', ') }}{% if p.proveedores|length > 3 %} y {{ p.proveedores|length - 3 }} más{% endif %}</td>
-        <td>{% for pr in p.productos[:4] %}<span class="tag">{{ pr.replace('_', ' ') }}</span>{% endfor %}</td>
-        <td class="num" title="≈ {{ p.monto_real|ars }} en pesos reales (así se ORDENA la lista)">{{ p.monto|millones(moneda) }}</td>
-        <td class="num {% if p.max_sobreprecio and p.max_sobreprecio > 0 %}pos{% else %}neg{% endif %}">{{ p.max_sobreprecio|pct }}</td>
-        <td class="num" title="≈ {{ p.exceso_real|ars }} en pesos reales (así se ORDENA la lista)">{{ p.exceso|millones(moneda) }}</td>
-        <td class="num {% if p.max_brecha_ofertas and p.max_brecha_ofertas > 0 %}pos{% endif %}">{{ p.max_brecha_ofertas|pct }}</td>
+        <td class="small" data-valor="{{ p.proveedores|join(', ') }}">{{ p.proveedores[:3]|join(', ') }}{% if p.proveedores|length > 3 %} y {{ p.proveedores|length - 3 }} más{% endif %}</td>
+        <td data-valor="{{ p.productos|map('replace', '_', ' ')|join(', ') }}">{% for pr in p.productos[:4] %}<span class="tag">{{ pr.replace('_', ' ') }}</span>{% endfor %}</td>
+        <td class="num" data-valor="{{ p.monto }}" title="≈ {{ p.monto_real|ars }} en pesos reales (el orden inicial de la lista usa SIEMPRE pesos reales; al hacer click en el encabezado se ordena por lo que se ve en pantalla)">{{ p.monto|millones(moneda) }}</td>
+        <td class="num {% if p.max_sobreprecio and p.max_sobreprecio > 0 %}pos{% else %}neg{% endif %}" data-valor="{{ p.max_sobreprecio if p.max_sobreprecio is not none else '' }}">{{ p.max_sobreprecio|pct }}</td>
+        <td class="num" data-valor="{{ p.exceso }}" title="≈ {{ p.exceso_real|ars }} en pesos reales (el orden inicial de la lista usa SIEMPRE pesos reales; al hacer click en el encabezado se ordena por lo que se ve en pantalla)">{{ p.exceso|millones(moneda) }}</td>
+        <td class="num {% if p.max_brecha_ofertas and p.max_brecha_ofertas > 0 %}pos{% endif %}" data-valor="{{ p.max_brecha_ofertas if p.max_brecha_ofertas is not none else '' }}">{{ p.max_brecha_ofertas|pct }}</td>
         <td class="small">{{ p.estado_revision or 'pendiente' }}</td>
     </tr>
     {% endfor %}

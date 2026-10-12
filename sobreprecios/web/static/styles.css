@@ -228,3 +228,48 @@ pre.texto { white-space: pre-wrap; font-size: var(--fs-xs); background: var(--su
   .meta-grid { grid-template-columns: 1fr; }
   .meta-grid dt { margin-top: var(--space-2, 8px); }
 }
+
+/* Tablas interactivas (tablas.js, jdemonasterio 2026-10-12): ordenar por columna + filtro categorico por
+   checklist, sin recargar la pagina. Opt-in por markup (class="tabla-interactiva" + th[data-tipo]). */
+.tabla-status { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin: var(--space-2) 0; }
+.tabla-status .btn[hidden] { display: none; }   /* .btn fija display:inline-flex, que pisaria [hidden] */
+th[data-tipo] { white-space: nowrap; }
+.tabla-th-btn {
+    display: inline-flex; align-items: center; gap: 4px; background: none; border: none; padding: 0;
+    margin: 0; font: inherit; font-weight: inherit; color: inherit; cursor: pointer; text-align: inherit;
+}
+.tabla-th-btn:hover { color: var(--accent-ink); }
+.tabla-th-arrow { display: inline-block; width: 9px; font-size: 10px; opacity: .45; }
+.tabla-th-arrow::before { content: "\2195"; }
+th[aria-sort="ascending"] .tabla-th-arrow { opacity: 1; color: var(--accent-ink); }
+th[aria-sort="ascending"] .tabla-th-arrow::before { content: "\25B2"; }
+th[aria-sort="descending"] .tabla-th-arrow { opacity: 1; color: var(--accent-ink); }
+th[aria-sort="descending"] .tabla-th-arrow::before { content: "\25BC"; }
+.tabla-filtro-btn {
+    display: inline-flex; align-items: center; gap: 3px; background: none; border: none;
+    border-radius: var(--radius-sm); padding: 2px 4px; margin-left: 2px; color: var(--text-3); cursor: pointer;
+    vertical-align: middle;
+}
+.tabla-filtro-btn:hover { background: var(--surface); color: var(--accent-ink); }
+.tabla-filtro-count {
+    display: inline-flex; align-items: center; justify-content: center; min-width: 14px; height: 14px;
+    padding: 0 3px; border-radius: var(--radius-pill); background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 700; line-height: 1;
+}
+.tabla-filtro-count[hidden] { display: none; }
+.tabla-filtro-panel {
+    position: fixed; z-index: 60; width: min(300px, calc(100vw - 16px)); max-height: min(380px, calc(100vh - 16px));
+    display: flex; flex-direction: column; gap: var(--space-2); background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 8px 24px rgba(0,0,0,.18);
+    padding: var(--space-3); overflow: hidden;
+}
+.tabla-filtro-panel[hidden] { display: none; }
+.tabla-filtro-busqueda { width: 100%; }
+.tabla-filtro-acciones { display: flex; gap: var(--space-2); }
+.tabla-filtro-lista { list-style: none; margin: 0; padding: 0; overflow-y: auto; flex: 1 1 auto; min-height: 40px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.tabla-filtro-item { padding: 3px 2px; }
+.tabla-filtro-item[hidden] { display: none; }
+.tabla-filtro-item label { display: flex; align-items: baseline; gap: 5px; cursor: pointer; font-size: var(--fs-sm); color: var(--text); margin: 0; }
+.tabla-filtro-item input[type=checkbox] { flex: none; margin: 2px 0 0; }
+.tabla-filtro-texto { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.tabla-filtro-footer { display: flex; justify-content: flex-end; }
