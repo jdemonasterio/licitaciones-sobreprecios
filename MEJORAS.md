@@ -240,6 +240,24 @@ DESIGN con la tolerancia real (±5 %). Pendiente, en orden:
    base sin consola.
 Como verificar: cada punto con su criterio en `_scratch/licitaciones/REVISION_PRIME_JOURNEYS.md` (local).
 
+**#50 — Decisiones de jdemonasterio sobre la revisión de journeys (2026-10-12), en curso.**
+- Revisor y analista son la misma persona; al periodista le llega UN HTML por licitación adjudicada: datos,
+  precios y resultados arriba; abajo cómo se construyeron (fuentes con URL, consideraciones para normalizar
+  productos y precios, inflación cuando no había precio de esa fecha, supuestos de precios de programa, preguntas
+  abiertas). Fechas explícitas de cada cosa, todo alineado al mismo mes calendario.
+- Lista y rankings ordenados por montos en pesos constantes (peras con peras entre años).
+- Precios trasladados por IPC (hasta 120 días) y precios de hoy llevados a la fecha con IPC (Investigar) SÍ pueden
+  dar rojo, con aviso claro y el método escrito en el reporte. El precio inferido del hueco 2024 (más de 120
+  días) sigue como máximo amarillo.
+- Precios de programa: supuestos escritos — se podía comprar a ese precio (pactado por el gobierno) y el precio
+  regulado es el piso del mercado (el productor quiere vender más caro, el gobierno lo empuja hacia abajo).
+- Documentos abiertos dentro de la misma pantalla; cola de revisión como lista de tareas inequívocas.
+- Investigación de UX de proyectos similares (transparencia, compras públicas, resultados electorales) y
+  refresco visual de la interfaz.
+- Tests de punta a punta de "corregir → recalcular → publicable" y validación final del prime con un caso
+  sintético, mostrado visualmente.
+Como verificar: cada punto con su test o captura en el simulador.
+
 **#41 — Domicilios: solo se ocultan los de personas humanas.** Los de empresas y organismos se muestran. Verificado 2026-10-12: la página de cada empresa muestra su domicilio legal y ningún filtro oculta domicilios de personas jurídicas; los reportes no exportan datos societarios.
 
 **#42 — Impuestos en los precios.** Registrar si cada fuente informa precio con o sin IVA; las promociones se
