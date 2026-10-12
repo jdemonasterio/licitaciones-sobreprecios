@@ -1,0 +1,2408 @@
+_nota: 'Árboles de decisión para validar casos paso a paso (revisores humanos y juez LLM). Generados por el LLM
+  prime (gpt-6-astra) el 2026-10-12 a pedido de jdemonasterio (P23), con sus decisiones de catálogo como regla;
+  nodo de leche ajustado a la decisión del mismo día (fortificada vs común con aviso). PENDIENTE DE CHECK. Cada
+  árbol: inicio -> nodos con pregunta/ayuda -> opciones que llevan a otro nodo (ir_a) o a un resultado.'
+arboles:
+- id: producto_leche_polvo_entera
+  titulo: Leche en polvo entera
+  aplica_a: leche_polvo_entera
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es leche en polvo entera?
+    ayuda: 'No alcanza con que diga leche: descremada, fórmula infantil, vegetal y sin lactosa quedan fuera. Ejemplo
+      válido: leche entera en polvo instantánea fortificada.'
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se puede confirmar
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Qué fortificación declara?
+    ayuda: Por decisión del dueño, sin mención de fortificación se carga común. Si dice hierro, zinc y ácido ascórbico,
+      registrar esos nutrientes. Cal-Nut por sí solo no acredita esa composición; A/D y hierro/zinc/C pueden coexistir.
+    opciones:
+    - respuesta: 'No menciona fortificación: cargar común'
+      ir_a: c
+      resultado: null
+    - respuesta: 'Declara nutrientes o una formulación identificada: cargarlos'
+      ir_a: c
+      resultado: null
+    - respuesta: Solo dice fortificada o da información parcial
+      ir_a: null
+      resultado: gris por fortificación incompleta; completar campo variedad
+  - id: c
+    pregunta: ¿La referencia es leche en polvo ENTERA comparable?
+    ayuda: 'Decisión del dueño (2026-10-12): la leche fortificada por Ley 25.459 no se vende al público; se compara
+      con leche en polvo entera común y el sistema muestra un aviso. No sirve una referencia descremada, deslactosada,
+      fórmula infantil o saborizada.'
+    opciones:
+    - respuesta: Sí, es leche en polvo entera (común o fortificada)
+      ir_a: e
+      resultado: null
+    - respuesta: 'No: descremada, sin lactosa, fórmula u otro producto'
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se puede saber por la descripción
+      ir_a: null
+      resultado: gris por referencia no verificable
+  - id: e
+    pregunta: ¿Contenido y presentación permiten comparar?
+    ayuda: La compra de 575 pesos por unidad no permite calcular pesos/kg sin gramos por unidad. La compra de 385,7176
+      pesos por kilogramo ya tiene unidad base. No usar 800 g de referencia como contenido supuesto. Exigir el envase
+      solo si lo pide la compra.
+    opciones:
+    - respuesta: Contenido conocido y presentación exigida cumplida, o no exigida
+      ir_a: null
+      resultado: comparable por producto; completar validaciones de instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación exigida
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta contenido o no se sabe qué unidad se pagó
+      ir_a: null
+      resultado: gris por contenido o unidad desconocidos; corregir campo envase
+- id: producto_leche_entera_fluida
+  titulo: Leche entera fluida
+  aplica_a: leche_entera_fluida
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es leche entera líquida?
+    ayuda: Excluir polvo, descremada, parcialmente descremada, chocolatada, condensada, deslactosada y fórmulas
+      infantiles. LECHE UAT P DESCR FORT no es entera.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra no lo es
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia no lo es
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se sabe
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Coincide el proceso de la leche?
+    ayuda: Distinguir larga vida/UAT de ultrapasteurizada refrigerada. Sachet, cartón o entera no prueban el proceso.
+      Registrar larga_vida o ultrapasteurizada según la documentación.
+    opciones:
+    - respuesta: Sí, proceso identificado y coincidente
+      ir_a: e
+      resultado: null
+    - respuesta: Son procesos distintos
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Alguno no informa el proceso
+      ir_a: null
+      resultado: gris por variedad desconocida
+  - id: e
+    pregunta: ¿Se conocen los litros y se cumple el envase pedido?
+    ayuda: Una caja de 12 unidades de 1 litro contiene 12 litros si el precio es por caja. Sin presentación exigida,
+      elegir el mínimo normalizado entre envases conocidos; no exigir sachet solo porque lo releva INDEC.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: El mercado incumple el envase exigido
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta contenido o alcance del precio
+      ir_a: null
+      resultado: gris por contenido o unidad desconocidos
+- id: producto_yerba_mate
+  titulo: Yerba mate
+  aplica_a: yerba_mate
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es yerba mate dentro del catálogo?
+    ayuda: 'Excluir mate cocido, saquitos, compuesta, saborizada, orgánica y endulzada. No excluir automáticamente
+      especial o suave: revisar sus atributos.'
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otra clase
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otra clase
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se sabe
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Dice con palo o sin palo?
+    ayuda: 'Leer la frase o el campo completo: PALO: CON significa con palo. Sin palo con menta no significa con
+      palo y además es saborizada. No hay default con palo.'
+    opciones:
+    - respuesta: 'Con palo en ambos: cargar con_palo'
+      ir_a: s
+      resultado: null
+    - respuesta: 'Sin palo o despalada en ambos: cargar sin_palo'
+      ir_a: s
+      resultado: null
+    - respuesta: No coinciden
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta el dato en alguno
+      ir_a: null
+      resultado: gris por presencia de palo desconocida
+  - id: s
+    pregunta: ¿Las menciones de suave están resueltas?
+    ayuda: Suave con palo informa dos atributos. No usar automáticamente esa referencia como yerba con palo común;
+      revisar el requisito y la ficha, sin borrar ninguno de los atributos.
+    opciones:
+    - respuesta: Sí, coinciden o está documentado que cumple el requisito
+      ir_a: e
+      resultado: null
+    - respuesta: La formulación no satisface lo pedido
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se puede decidir
+      ir_a: null
+      resultado: gris por variedad ambigua
+  - id: e
+    pregunta: ¿Se conocen los kilos y se cumple la presentación?
+    ayuda: 500 g son 0,5 kg. Si el pliego exige paquetes de 1 kg, no sustituirlos por 500 g; si no exige tamaño,
+      admitir ambos y tomar el mínimo por kg.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple lo exigido
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Contenido desconocido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_fideos_secos
+  titulo: Fideos secos
+  aplica_a: fideos_secos
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Son fideos secos simples del catálogo?
+    ayuda: Excluir frescos, rellenos, al huevo, integrales, sin TACC, de arroz o legumbres, con vegetales o salsa.
+      Una exigencia de otra composición no se resuelve comparando con pasta común.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra requiere otra composición
+      ir_a: null
+      resultado: corregir campo producto; gris por producto fuera del alcance
+    - respuesta: La referencia es otra composición
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Composición incierta
+      ir_a: null
+      resultado: gris por composición desconocida
+  - id: v
+    pregunta: ¿La compra pide una forma concreta?
+    ayuda: Tallarín no es spaghetti; tirabuzón no es mostachol. Registrar la forma exacta cuando esté escrita. Fideos
+      de sémola x 500 g no informa forma.
+    opciones:
+    - respuesta: Sí, y la referencia tiene esa forma
+      ir_a: e
+      resultado: null
+    - respuesta: Sí, pero la referencia tiene otra forma
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Solo pide guiseros, cortos, largos o soperos
+      ir_a: f
+      resultado: null
+    - respuesta: No informa forma ni familia, o el mercado no permite verificarla
+      ir_a: null
+      resultado: gris por forma desconocida
+  - id: f
+    pregunta: ¿La forma pertenece a la familia pedida?
+    ayuda: 'Guiseros/cortos: tirabuzón, mostachol, codito, moño o caracol. Largos: spaghetti, tallarín, cinta y
+      otros largos. Soperos: dedalito, munición, cabello de ángel o ave María. La familia no reemplaza una forma
+      exacta exigida.'
+    opciones:
+    - respuesta: Sí, y cumple los demás requisitos de composición
+      ir_a: e
+      resultado: null
+    - respuesta: 'No'
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se puede verificar
+      ir_a: null
+      resultado: gris por familia o composición desconocida
+  - id: e
+    pregunta: ¿Peso y presentación están confirmados?
+    ayuda: 500 g equivalen a 0,5 kg. Exigir ese paquete si está especificado; sin exigencia, elegir el mínimo entre
+      presentaciones conocidas. Sémola no permite completar automáticamente la forma faltante.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta contenido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_arroz_blanco
+  titulo: Arroz blanco
+  aplica_a: arroz_blanco
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es arroz blanco simple, no otro alimento?
+    ayuda: Excluir integral, parboilizado/parbolizado, inflado, harinas, pastas, golosinas y preparados. SC BIFE
+      CRIOLL ARROZ no es arroz seco. Ante listo o wok, comprobar si es una preparación y no solo una palabra comercial.
+    opciones:
+    - respuesta: Sí, blanco simple
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto o proceso
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto o proceso
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se puede confirmar el proceso o la preparación
+      ir_a: null
+      resultado: gris por producto o proceso desconocido
+  - id: v
+    pregunta: ¿Se aplicó la agrupación del dueño?
+    ayuda: 'No separar por tipo de grano: usar el grupo común de arroz blanco, con largo fino como clásico. TIPO
+      GRANO: DOBLE no crea por sí solo otro grupo. Conservar el texto original; 0000/00000 expresa calidad, no identifica
+      grano.'
+    opciones:
+    - respuesta: Sí; además están verificados los demás requisitos expresos
+      ir_a: e
+      resultado: null
+    - respuesta: Solo quedó gris por separar el tipo de grano
+      ir_a: null
+      resultado: 'corregir campo variedad: grupo común de arroz blanco; recalcular'
+    - respuesta: Falta acreditar una calidad u otro requisito expreso
+      ir_a: null
+      resultado: gris por requisito no verificado
+    - respuesta: La referencia incumple otro requisito expreso
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+  - id: e
+    pregunta: ¿El precio corresponde al peso y envase indicados?
+    ayuda: 'El caso de 726 pesos indica envase de 1 kg: no inventar un bulto para explicar la brecha de 6,6 veces.
+      Exigir 1 kg si lo pide la compra; sin exigencia, admitir otros tamaños conocidos.'
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar parseo y mínimo; una razón mayor que 4 sigue en revisar unidad
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se sabe qué cantidad cubre el precio
+      ir_a: null
+      resultado: gris por unidad desconocida
+- id: producto_harina_trigo_000
+  titulo: Harina de trigo 000
+  aplica_a: harina_trigo_000
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es harina de trigo 000?
+    ayuda: No confundir con 0000, integral, leudante, premezcla ni harina de otro cereal. Harina de trigo tipo 000
+      enriquecida según Ley 25.630 sigue siendo este producto.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otra harina
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otra harina
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma el tipo
+      ir_a: null
+      resultado: gris por tipo de harina desconocido
+  - id: v
+    pregunta: ¿Se registraron orgánica y enriquecida?
+    ayuda: Por decisión del dueño, si no dice orgánica se usa común no orgánica como default. Enriquecida es otro
+      atributo de variedad y puede coexistir con orgánica. No borrar el enriquecimiento de la compra real de 1 kg.
+    opciones:
+    - respuesta: Sí, y la referencia coincide o acredita los requisitos de la compra
+      ir_a: e
+      resultado: null
+    - respuesta: El formulario perdió orgánica o enriquecida
+      ir_a: null
+      resultado: corregir campo variedad
+    - respuesta: La referencia tiene una variedad incompatible
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Se exige enriquecimiento y no se verifica en la referencia
+      ir_a: null
+      resultado: gris por enriquecimiento no verificado
+  - id: e
+    pregunta: ¿Se cumple el tamaño exigido y se conocen los kilos?
+    ayuda: Una bolsa de 25 kg no sirve para una exigencia de paquetes de 1 kg. Si la compra no fija presentación,
+      ambas pueden participar del mínimo, normalizadas por kg.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple el tamaño exigido
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Contenido desconocido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_harina_trigo_0000
+  titulo: Harina de trigo 0000
+  aplica_a: harina_trigo_0000
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿La fuente confirma harina de trigo 0000?
+    ayuda: 000 y 0000 son productos distintos. Excluir leudante, integral, preparados, premezclas y sin TACC. No
+      completar los ceros faltantes por el precio.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otra harina
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otra harina
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se sabe
+      ir_a: null
+      resultado: gris por tipo de harina desconocido
+  - id: v
+    pregunta: ¿Coinciden las características expresamente pedidas?
+    ayuda: Este producto no tiene subvariantes configuradas. No inventarlas, pero verificar cualquier requisito
+      adicional del pliego, como enriquecimiento o una certificación.
+    opciones:
+    - respuesta: Sí, o no hay requisitos adicionales
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia no cumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta evidencia
+      ir_a: null
+      resultado: gris por requisito no verificado
+  - id: e
+    pregunta: ¿Peso y envase permiten comparar?
+    ayuda: Dividir el precio del paquete por sus kilos. Exigir tamaño y tipo de envase solo cuando la compra los
+      especifica; el tamaño de referencia no es un requisito.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación exigida
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Contenido desconocido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_harina_maiz
+  titulo: Harina de maíz o polenta
+  aplica_a: harina_maiz
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es harina de maíz o polenta simple?
+    ayuda: Excluir fécula, almidón, harina para arepas, tortillas, pochoclo y preparaciones saborizadas, como espinaca
+      crema.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se sabe
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Se agrupó sin separar el tiempo de cocción?
+    ayuda: 'El dueño decidió agrupar toda la harina de maíz simple: tradicional, rápida, precocida y sin detalle.
+      No dejar gris solo porque diga polenta ni usar Presto Pronta como prueba de precocción.'
+    opciones:
+    - respuesta: Sí, grupo único harina de maíz
+      ir_a: e
+      resultado: null
+    - respuesta: Se separó o bloqueó por cocción desconocida
+      ir_a: null
+      resultado: 'corregir campo variedad: grupo único harina de maíz; recalcular'
+  - id: e
+    pregunta: ¿Se conocen los kilos y se cumple el envase pedido?
+    ayuda: Si se exige envase de 1 kg, verificarlo. Sin exigencia, tomar el mínimo por kg entre presentaciones conocidas,
+      sin imponer el tamaño de referencia.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Contenido desconocido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_azucar
+  titulo: Azúcar blanca común
+  aplica_a: azucar
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es azúcar blanca común y no un alimento con azúcar?
+    ayuda: Excluir impalpable, mascabo, negra, rubia, orgánica, edulcorantes y sobres del alcance actual. Café torrado
+      con azúcar Cabrales no es azúcar.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se sabe
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Es la variedad blanca común en ambos lados?
+    ayuda: 'No hay subvariantes configuradas dentro de este producto. No excluir Chango ni una bolsa de 25 kg por
+      ser barata: primero revisar lectura, fecha y unidad.'
+    opciones:
+    - respuesta: Sí
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia es otra variedad
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta confirmar la variedad
+      ir_a: null
+      resultado: gris por variedad desconocida
+  - id: e
+    pregunta: ¿Se sabe cuánto azúcar cubre el precio?
+    ayuda: Una caja Abedul de 800 unidades requiere identificar cada unidad y su contenido; no son automáticamente
+      800 kg. Si son sobres, revisar además su exclusión. Solo exigir bolsa de 1 kg si el pliego lo dice.
+    opciones:
+    - respuesta: Sí, y cumple la presentación exigida o no existe exigencia
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta contenido o nivel de envase
+      ir_a: null
+      resultado: gris por contenido o unidad desconocidos
+- id: producto_aceite_girasol
+  titulo: Aceite puro de girasol
+  aplica_a: aceite_girasol
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es aceite puro de girasol?
+    ayuda: 'Excluir mezcla, oliva, maíz, soja, canola, alto oleico, orgánico y aerosol. Alto omega por sí solo no
+      demuestra que sea mezcla ni alto oleico: verificar la ficha.'
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro aceite
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro aceite
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Composición incierta
+      ir_a: null
+      resultado: gris por composición desconocida
+  - id: v
+    pregunta: ¿Cumple las características expresas de la compra?
+    ayuda: El caso real pide puro de girasol y libre de gluten. No basta con encontrar la palabra girasol en una
+      mezcla. No hay subvariantes adicionales configuradas.
+    opciones:
+    - respuesta: Sí
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia no cumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta verificar un requisito
+      ir_a: null
+      resultado: gris por requisito no verificado
+  - id: e
+    pregunta: ¿El precio cubre los litros correctos?
+    ayuda: '13.290 pesos por envase de 5 litros son 2.658 pesos/l, si esa es la unidad adjudicada. El caso exige
+      5 l y PET: verificar ambos. Sin exigencia de presentación, tomar el mínimo normalizado.'
+    opciones:
+    - respuesta: Sí, y la presentación exigida coincide
+      ir_a: null
+      resultado: comparable por producto; completar parseo y mínimo; si sigue superando 4 veces, revisar unidad,
+        nunca rojo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Se cargó el precio del envase como precio por litro
+      ir_a: null
+      resultado: corregir campo precio normalizado
+    - respuesta: No se conoce el contenido pagado
+      ir_a: null
+      resultado: gris por unidad desconocida
+- id: producto_aceite_mezcla
+  titulo: Aceite comestible mezcla
+  aplica_a: aceite_mezcla
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es aceite comestible mezcla del catálogo?
+    ayuda: El grupo corresponde a mezcla girasol-soja. No comparar con girasol puro, oliva ni aerosoles. Aceite
+      sin composición requiere ficha.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro aceite
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro aceite
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se sabe la composición
+      ir_a: null
+      resultado: gris por composición desconocida
+  - id: v
+    pregunta: ¿La mezcla satisface lo pedido?
+    ayuda: No hay subvariantes configuradas. Si el pliego fija componentes o proporciones, comprobarlos; compartir
+      la palabra mezcla no acredita una composición exigida.
+    opciones:
+    - respuesta: Sí, o no hay detalle adicional exigido
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia incumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se puede verificar un requisito
+      ir_a: null
+      resultado: gris por composición no verificable
+  - id: e
+    pregunta: ¿Litros y presentación están confirmados?
+    ayuda: 900 ml son 0,9 l, no 1 l. Exigir ese tamaño solo cuando esté pedido; de lo contrario admitir otros envases
+      conocidos y tomar el mínimo por litro.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple el envase exigido
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Contenido desconocido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_pure_tomate
+  titulo: Puré de tomate
+  aplica_a: pure_tomate
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿La denominación confirma puré de tomate?
+    ayuda: Salsa, concentrado, extracto, pulpa, triturado y tomate perita no son puré. La marca Salsati no debe
+      activar por sí sola la exclusión salsa.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otra elaboración
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otra elaboración
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Solo hay marca o descripción incompleta
+      ir_a: null
+      resultado: gris por elaboración desconocida
+  - id: v
+    pregunta: ¿Coinciden elaboración y composición relevantes?
+    ayuda: Registrar passata o tomate amarillo si corresponde y verificar la ficha. No convertirlos en puré común
+      por omisión de palabras ni aceptar concentraciones distintas cuando son exigidas.
+    opciones:
+    - respuesta: Sí, la documentación acredita equivalencia
+      ir_a: e
+      resultado: null
+    - respuesta: Son elaboraciones o variedades distintas
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta la información necesaria
+      ir_a: null
+      resultado: gris por variedad o concentración desconocida
+  - id: e
+    pregunta: ¿Se conoce el peso neto y se cumple el envase pedido?
+    ayuda: 520 g son 0,52 kg. No convertir ml a kg sin respaldo. Si no hay presentación exigida, elegir el mínimo
+      entre envases con peso conocido.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple el envase exigido
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta peso neto
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_arvejas_secas
+  titulo: Arvejas secas partidas
+  aplica_a: arvejas_secas
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Son arvejas secas para cocinar, no una preparación?
+    ayuda: El producto común es la legumbre seca en bolsa. Excluir medallones, pastas y platos preparados. Arvejas
+      secas remojadas x 340 g es conserva, aunque diga secas.
+    opciones:
+    - respuesta: Sí, secas sin preparar
+      ir_a: v
+      resultado: null
+    - respuesta: La compra dice remojadas o en conserva
+      ir_a: null
+      resultado: 'corregir campo producto: arvejas_conserva'
+    - respuesta: La referencia es conserva o un elaborado
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: La compra es otro elaborado
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: Estado incierto
+      ir_a: null
+      resultado: gris por estado seco o cocido desconocido
+  - id: v
+    pregunta: ¿Está confirmada la condición partida del producto?
+    ayuda: El producto canónico es arvejas secas partidas. Si solo dice arvejas secas, buscar ficha; una marca,
+      bolsa o gramaje no prueba por sí solo que sean partidas.
+    opciones:
+    - respuesta: Sí, y cumple la compra
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia tiene otra condición
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta confirmar
+      ir_a: null
+      resultado: gris por variedad no confirmada
+  - id: e
+    pregunta: ¿Peso y presentación están confirmados?
+    ayuda: 400 g equivalen a 0,4 kg. Respetar el peso o envase si está exigido; sin exigencia, tomar el mínimo por
+      kg entre presentaciones conocidas.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Contenido desconocido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_lentejas
+  titulo: Lentejas secas
+  aplica_a: lentejas
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Son lentejas secas sin elaborar?
+    ayuda: Medallones de Quinoa NUTREE Lentejas no son lentejas secas. Excluir hamburguesas, pastas, sopas, harina,
+      golosinas y conservas. El caso lentejas x 400 g corresponde al común seco si la fuente lo confirma.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es conserva o elaborado
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Solo hay marca y gramaje
+      ir_a: null
+      resultado: gris por estado seco o cocido desconocido
+  - id: v
+    pregunta: ¿Cumple las características expresamente pedidas?
+    ayuda: No hay subvariantes configuradas. No inventar una variedad por el precio o por 300/340/350 g; esos tamaños
+      no prueban que sea una conserva.
+    opciones:
+    - respuesta: Sí, o no hay otras características exigidas
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia incumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta verificar una exigencia
+      ir_a: null
+      resultado: gris por requisito no verificado
+  - id: e
+    pregunta: ¿Coincide la presentación cuando está exigida?
+    ayuda: La compra de QUINIENTOS (500) gramos cada uno exige 500 g; no sustituir por 400 g. Si no fija tamaño,
+      elegir el mínimo por kg. Una referencia de 265 días atrás no se habilita por coincidir el envase.
+    opciones:
+    - respuesta: Sí, o no hay exigencia; contenido conocido
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple el tamaño exigido
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta contenido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_porotos
+  titulo: Porotos secos
+  aplica_a: porotos
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Son porotos secos sin elaborar?
+    ayuda: Excluir conserva, remojados, hummus, pasta de poroto, medallones, soja y chauchas. La legumbre seca en
+      bolsa es el producto común; un ingrediente mencionado en un elaborado no lo convierte en porotos secos.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Estado incierto
+      ir_a: null
+      resultado: gris por estado seco o cocido desconocido
+  - id: v
+    pregunta: ¿Coincide la variedad de poroto?
+    ayuda: Registrar alubia, negro, manteca, pallar o colorado. El mínimo de negros o manteca no sirve para una
+      compra de alubia. No hay default de variedad.
+    opciones:
+    - respuesta: Sí, variedad identificada en ambos
+      ir_a: e
+      resultado: null
+    - respuesta: Son variedades distintas
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Alguno solo dice porotos
+      ir_a: null
+      resultado: gris por variedad desconocida
+  - id: e
+    pregunta: ¿Peso y envase permiten comparar?
+    ayuda: 400 g son 0,4 kg. Sin envase exigido, tomar el mínimo entre presentaciones conocidas; si está exigido,
+      no relajarlo por normalizar a kg.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Contenido desconocido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_choclo_conserva
+  titulo: Choclo en conserva
+  aplica_a: choclo_conserva
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es choclo en conserva?
+    ayuda: Excluir fresco, congelado, harina y sopa. La compra real dice granos de choclo amarillo tipo cremoso;
+      leer la denominación completa.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se sabe
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Coinciden color y forma de preparación?
+    ayuda: Distinguir amarillo cremoso, blanco cremoso y amarillo en grano entero. Choclo amarillo o choclo cremoso
+      solos no acreditan ambos atributos. La palabra granos no anula tipo cremoso.
+    opciones:
+    - respuesta: Sí, ambos atributos confirmados
+      ir_a: e
+      resultado: null
+    - respuesta: No coinciden
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta color o preparación
+      ir_a: null
+      resultado: gris por variedad incompleta
+  - id: e
+    pregunta: ¿Peso y presentación coinciden con lo pedido?
+    ayuda: TRESCIENTOS CINCUENTA (350) gramos cada una x 350 gramos expresa 350 g, no 350 por 350. Usar igual criterio
+      de peso neto o escurrido en ambos lados; sin exigencia de envase, admitir otros tamaños conocidos.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No está claro el peso utilizado
+      ir_a: null
+      resultado: gris por base de peso desconocida
+- id: producto_arvejas_conserva
+  titulo: Arvejas en conserva
+  aplica_a: arvejas_conserva
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Se confirma que son arvejas remojadas o cocidas en conserva?
+    ayuda: 'Arvejas secas remojadas x 340 g pertenece aquí: secas puede describir el ingrediente. Marca y envase
+      solos no prueban el estado; rem, remoj o lat requieren contexto de la fuente.'
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra son arvejas secas sin preparar
+      ir_a: null
+      resultado: 'corregir campo producto: revisar arvejas_secas'
+    - respuesta: La referencia es seca, congelada o un elaborado
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Estado no verificable
+      ir_a: null
+      resultado: gris por estado de conservación desconocido
+  - id: v
+    pregunta: ¿Cumple la preparación pedida?
+    ayuda: 'El caso LEGUMBRES; VARIEDAD: ARVEJA; ESTADO: REMOJADO EN CONSERVA identifica el producto. No crear una
+      variedad por marca; excluir partidas cuando correspondan al producto seco.'
+    opciones:
+    - respuesta: Sí
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia no cumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta verificar un requisito
+      ir_a: null
+      resultado: gris por preparación no verificada
+  - id: e
+    pregunta: ¿El peso se leyó una sola vez y con la misma base?
+    ayuda: 'ENVASE X 320 GR, PESO: 320 GR describe un envase de 320 g, no dos. Distinguir neto y escurrido. Para
+      una compra de 340 g exigidos, 350 g no es reemplazo; sin exigencia, tomar el mínimo normalizado.'
+    opciones:
+    - respuesta: Sí, y cumple la presentación exigida
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: El formulario duplicó o confundió el peso
+      ir_a: null
+      resultado: corregir campo contenido del envase
+    - respuesta: La referencia incumple el envase exigido
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta aclarar el peso
+      ir_a: null
+      resultado: gris por base de peso desconocida
+- id: producto_picadillo_carne
+  titulo: Picadillo de carne
+  aplica_a: picadillo_carne
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es picadillo de carne del catálogo?
+    ayuda: No comparar con pollo ni vegetal. Picadillo no es lo mismo que paté o corned beef; confirmar la denominación
+      en la etiqueta.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se sabe
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Se confirmó la formulación?
+    ayuda: Separar light, picante/chipotle e infantil/kids del estándar. Pueden coexistir atributos. No usar una
+      versión especial del ranking barato como mínimo estándar sin verificar; no hay default autorizado para descripciones
+      incompletas.
+    opciones:
+    - respuesta: Sí, formulación coincidente y documentada
+      ir_a: e
+      resultado: null
+    - respuesta: Las formulaciones difieren
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta información
+      ir_a: null
+      resultado: gris por formulación desconocida
+  - id: e
+    pregunta: ¿Se conocen los gramos y se cumple el envase pedido?
+    ayuda: 90 g son 0,09 kg. No suponer ese peso por ser el tamaño de referencia. Sin presentación exigida, tomar
+      el mínimo por kg entre envases conocidos.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Contenido desconocido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_carne_conserva
+  titulo: Carne vacuna en conserva
+  aplica_a: carne_conserva
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es carne vacuna en conserva?
+    ayuda: 'Corned beef puede identificar este producto. Carne envasada, por sí sola, también podría ser fresca:
+      verificar conserva y especie. Excluir picadillo, paté y pollo.'
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma especie o conservación
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Coinciden los requisitos de elaboración?
+    ayuda: 'No hay subvariantes configuradas. Si el pliego pide una elaboración concreta, la referencia debe acreditarla:
+      una lata con carne como ingrediente no basta.'
+    opciones:
+    - respuesta: Sí, o no hay requisitos adicionales
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia incumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta evidencia
+      ir_a: null
+      resultado: gris por elaboración no verificada
+  - id: e
+    pregunta: ¿Se conocen el peso y la presentación?
+    ayuda: Una lata de 320 g contiene 0,32 kg. Usar la misma base de peso en compra y mercado. Exigir formato solo
+      si está pedido; sin exigencia, tomar el mínimo normalizado.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Peso desconocido o ambiguo
+      ir_a: null
+      resultado: gris por base de peso desconocida
+- id: producto_merluza_conserva
+  titulo: Merluza en conserva
+  aplica_a: merluza_conserva
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es merluza en conserva?
+    ayuda: Excluir fresca, congelada, filet o rebozada. Merluza Puglisi ac o nat necesita respaldo de la misma presentación;
+      la marca sola no prueba que sea conserva.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Coincide el líquido de cobertura?
+    ayuda: Registrar al_natural o en_aceite. Ac y nat solo se interpretan con contexto verificable de esta familia.
+      No inferir cobertura por marca.
+    opciones:
+    - respuesta: Sí, cobertura conocida en ambos
+      ir_a: e
+      resultado: null
+    - respuesta: Una es natural y otra en aceite
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta cobertura
+      ir_a: null
+      resultado: gris por variedad desconocida
+  - id: e
+    pregunta: ¿Peso y envase son comparables?
+    ayuda: 380 g equivalen a 0,38 kg si se trata del peso usado en ambos lados. No mezclar neto con escurrido. Sin
+      envase exigido, admitir otras presentaciones conocidas.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación exigida
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta aclarar contenido o base del peso
+      ir_a: null
+      resultado: gris por base de peso desconocida
+- id: producto_atun_conserva
+  titulo: Atún en conserva
+  aplica_a: atun_conserva
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es atún en conserva para consumo humano?
+    ayuda: Excluir mascotas, incluso Félix, fresco, congelado, paté y ensaladas. El mínimo histórico contaminado
+      por comida para gatos no es una referencia válida.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto o alimento para mascotas
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se sabe
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Ambos son al aceite o ambos al agua?
+    ayuda: 'La decisión del dueño reduce la variedad a aceite o agua/al natural: no separar por corte ni sal. La
+      falta de corte no deja gris. Si aparecen aceite y agua como ingredientes, verificar la denominación de cobertura,
+      no elegir por una palabra aislada.'
+    opciones:
+    - respuesta: 'Ambos al aceite: cargar en_aceite'
+      ir_a: e
+      resultado: null
+    - respuesta: 'Ambos al agua/al natural: cargar al_agua'
+      ir_a: e
+      resultado: null
+    - respuesta: Coberturas diferentes o una es otra preparación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Cobertura no verificable
+      ir_a: null
+      resultado: gris por cobertura desconocida
+  - id: e
+    pregunta: ¿Se respeta la presentación expresamente exigida?
+    ayuda: El caso de 189 pesos exige sobre de 120 g; una lata no lo reemplaza. El de 1.101 pesos exige lata de
+      1,8 kg. Sin exigencia de formato, tomar el mínimo por kg; siempre distinguir neto de escurrido.
+    opciones:
+    - respuesta: Sí, o no hay exigencia; peso conocido y misma base
+      ir_a: null
+      resultado: comparable por producto; completar parseo y mínimo; una razón mayor que 4 nunca da rojo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Peso o alcance del precio desconocidos
+      ir_a: null
+      resultado: gris por contenido o unidad desconocidos
+- id: producto_caballa_conserva
+  titulo: Caballa en conserva
+  aplica_a: caballa_conserva
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es caballa en conserva?
+    ayuda: 'Excluir fresca y congelada. La compra real identifica ESPECIE: CABALLA, ESTADO: EN ACEITE, PESO: 380
+      GR, ENVASE: LATA.'
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Coincide aceite o agua/al natural?
+    ayuda: Por decisión del dueño, no separar por sal. Caballa en tomate no es referencia de caballa en aceite.
+      Natura requiere contexto. Si dice aceite y agua, verificar la denominación completa para asignar uno de los
+      dos grupos, sin hacerlo por longitud de frase.
+    opciones:
+    - respuesta: 'Ambos al aceite: cargar en_aceite'
+      ir_a: e
+      resultado: null
+    - respuesta: 'Ambos al agua/al natural: cargar al_agua'
+      ir_a: e
+      resultado: null
+    - respuesta: Coberturas diferentes u otra preparación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: La cobertura no permite asignar grupo
+      ir_a: null
+      resultado: gris por cobertura desconocida
+  - id: e
+    pregunta: ¿Se conocen el peso y la presentación exigida?
+    ayuda: La compra de 380 g en lata exige ambos datos. No sustituir por otro tamaño cuando está pedido. Sin exigencia
+      de envase, tomar el mínimo normalizado; no mezclar peso neto y escurrido.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta aclarar el peso
+      ir_a: null
+      resultado: gris por base de peso desconocida
+- id: producto_dulce_leche
+  titulo: Dulce de leche
+  aplica_a: dulce_leche
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es dulce de leche para untar?
+    ayuda: 'Excluir repostero, topping, salsa, postres, tabletas, alfajores, helados y galletitas. No excluir Milkaut
+      por ser una marca: hay productos correctos.'
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma formulación
+      ir_a: null
+      resultado: gris por formulación desconocida
+  - id: v
+    pregunta: ¿Qué presentación corresponde?
+    ayuda: Por decisión del dueño, si no dice nada usar pote y registrar que es un default. Balde y frasco son variantes;
+      monodosis requiere detalle. Bolsa nunca se admite dentro de esta comparación.
+    opciones:
+    - respuesta: Pote declarado o por default en ambos
+      ir_a: e
+      resultado: null
+    - respuesta: Balde, frasco o monodosis identificados y coincidentes
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia es bolsa o una variante distinta
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: La compra dice bolsa
+      ir_a: null
+      resultado: gris por presentación fuera de la regla del dueño; revisar producto
+    - respuesta: La descripción explícita es ambigua
+      ir_a: null
+      resultado: gris por presentación ambigua
+  - id: e
+    pregunta: ¿Se conocen los gramos totales pagados?
+    ayuda: Una caja de monodosis necesita número de unidades y gramos por unidad. Pote por default no autoriza suponer
+      400 g. Dentro de la variante admitida, exigir tamaño solo si lo pide la compra.
+    opciones:
+    - respuesta: Sí, y cumple lo expresamente pedido
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple el tamaño exigido
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta cantidad interna o peso
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_cacao_polvo
+  titulo: Cacao y preparación de cacao en polvo
+  aplica_a: cacao_polvo
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es cacao o preparación de cacao en polvo?
+    ayuda: Excluir dulce de batata, cremas como Nutella, cereales, barritas, galletitas y chocolate en tableta.
+      No excluir dulce o chocolate aisladamente si describen una preparación en polvo.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro alimento
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro alimento
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Coincide la formulación de cacao y azúcar?
+    ayuda: El dueño fijó default azucarada. Alimento a base de azúcar y cacao x 360 g confirma azucarada. Si dice
+      puro, sin azúcar o reducido, respetar ese dato y no aplicar el default. Registrar cuándo se usó el default.
+    opciones:
+    - respuesta: Ambos azucarados, declarados o por default
+      ir_a: e
+      resultado: null
+    - respuesta: Ambos de otra formulación explícita coincidente
+      ir_a: e
+      resultado: null
+    - respuesta: Las formulaciones difieren
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Hay información contradictoria
+      ir_a: null
+      resultado: gris por formulación ambigua
+  - id: e
+    pregunta: ¿Peso y presentación cumplen lo pedido?
+    ayuda: El caso instantáneo exige envase de 800 g de cartón; el otro indica 360 g. No mezclarlos cuando esas
+      presentaciones son exigidas. Sin exigencia, tomar el mínimo por kg con contenido conocido.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Contenido desconocido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_galletitas_agua
+  titulo: Galletitas de agua
+  aplica_a: galletitas_agua
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Son galletitas de agua simples?
+    ayuda: 'Excluir dulces, rellenas, chocolate, arroz, sin sal, miel, zapallo, salvado y semillas. La compra real
+      indica VARIEDAD: DE AGUA, RELLENO: SIN.'
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otra clase
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otra clase
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Se verificaron las características pedidas?
+    ayuda: 'No hay subvariantes adicionales configuradas. Leer sin sal como una frase; no confundir RELLENO: SIN
+      con sin sal. Los ajustes suministrados están truncados: no completar reglas ausentes.'
+    opciones:
+    - respuesta: Sí
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia incumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta verificar
+      ir_a: null
+      resultado: gris por requisito no verificado
+  - id: e
+    pregunta: ¿Se distinguió el paquete de la caja de transporte?
+    ayuda: 'ENVASE X 110 GR, ELEM. TRANSPORTE: CAJA no informa cuántos paquetes trae la caja ni prueba que el precio
+      sea por caja. Exigir 110 g si está pedido; sin exigencia, comparar otros tamaños conocidos.'
+    opciones:
+    - respuesta: Sí, contenido y unidad pagada confirmados
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se sabe si se pagó paquete o caja
+      ir_a: null
+      resultado: gris por unidad de compra desconocida
+- id: producto_pan_dulce
+  titulo: Pan dulce
+  aplica_a: pan_dulce
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es pan dulce y no budín?
+    ayuda: La compra pan dulce tipo veneciano x 700 g pertenece a revisar aquí. No reclasificar budín como pan dulce
+      por tener frutas o un envase similar.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Coinciden frutas, chips, relleno y cobertura?
+    ayuda: 'Usar frutado por default si no se especifica otra cosa, según el dueño. Registrar atributos explícitos
+      que pueden coexistir; sin frutas prevalece sobre el default. Veneciano solo no prueba ingredientes: conservar
+      la palabra y consultar la ficha si hay conflicto.'
+    opciones:
+    - respuesta: Sí, con datos explícitos o default frutado sin contradicciones
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia tiene una combinación distinta
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Hay una condición explícita que no puede verificarse
+      ir_a: null
+      resultado: gris por variedad incompleta o ambigua
+  - id: e
+    pregunta: ¿Peso y presentación son correctos?
+    ayuda: 199 pesos por pan de 700 g deben dividirse por 0,7 kg. Si el pliego exige 700 g, no reemplazar por 500
+      g; si no exige tamaño, tomar el mínimo por kg.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Contenido desconocido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_sal_fina
+  titulo: Sal fina
+  aplica_a: sal_fina
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es sal fina de mesa?
+    ayuda: Excluir gruesa, parrillera, dietética, light, baja en sodio y saborizada. No confundir un condimento
+      que contiene sal con sal fina.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Coinciden las variantes declaradas?
+    ayuda: 'Usar común básica cuando no se declara otra variante. Marina y yodada son atributos de variedad y pueden
+      coexistir: no borrar uno al cargar el otro.'
+    opciones:
+    - respuesta: Sí, común básica o atributos explícitos coincidentes
+      ir_a: e
+      resultado: null
+    - respuesta: Las variantes no coinciden
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Hay un atributo exigido sin verificar
+      ir_a: null
+      resultado: gris por variedad no verificada
+  - id: e
+    pregunta: ¿Se conoce el peso real del envase?
+    ayuda: Salero no acredita gramos, y 1 kg no acredita bolsa. Bolsa y caja son habituales, no datos para completar
+      de memoria. Exigir el formato solo si está pedido; sin exigencia, tomar el mínimo por kg.
+    opciones:
+    - respuesta: Sí, y cumple lo exigido
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Peso desconocido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_agua_mineral
+  titulo: Agua sin gas en botella
+  aplica_a: agua_mineral
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es agua potable sin gas en botella?
+    ayuda: 'Excluir con gas, saborizada, bidón, agua destilada, oxigenada y productos de limpieza. Si la descripción
+      dice TIPO: NO APLICA, buscar otra fuente para confirmar que sea sin gas.'
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es agua en bidón
+      ir_a: null
+      resultado: 'corregir campo producto: agua_bidon'
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma agua sin gas
+      ir_a: null
+      resultado: gris por producto o variedad no confirmados
+  - id: v
+    pregunta: ¿Cumple las características expresas de la compra?
+    ayuda: El catálogo agrupa agua mineral, de mesa y natural sin gas, pero un requisito explícito debe verificarse.
+      No deducir calidad o composición por la marca.
+    opciones:
+    - respuesta: Sí, o no hay exigencias adicionales
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia incumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta evidencia
+      ir_a: null
+      resultado: gris por requisito no verificado
+  - id: e
+    pregunta: ¿El precio es por botella o por paquete?
+    ayuda: 12 X ENVASE X 500 mL suma 6 litros por paquete. Si 6.996 pesos es el precio del paquete, son 1.166 pesos/l.
+      Verificar la unidad adjudicada, el paquete exigido y no retornable; sin exigencia, admitir otras presentaciones
+      conocidas.
+    opciones:
+    - respuesta: Está confirmado y la referencia cumple
+      ir_a: null
+      resultado: comparable por producto; completar parseo y mínimo; una razón mayor que 4 nunca da rojo
+    - respuesta: Se confundió botella con paquete
+      ir_a: null
+      resultado: corregir campo unidad de compra y precio normalizado
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se sabe qué se pagó
+      ir_a: null
+      resultado: gris por unidad de compra desconocida
+- id: producto_agua_bidon
+  titulo: Agua en bidón o botellón
+  aplica_a: agua_bidon
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Se compra agua y no un envase vacío o servicio?
+    ayuda: Separar agua de botellón vacío, dispenser, alquiler y comodato. Si el precio incluye conceptos inseparables,
+      no tratar todo como agua por litro.
+    opciones:
+    - respuesta: Sí, agua identificada
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto o servicio
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es envase vacío u otro servicio
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se puede separar qué se vende
+      ir_a: null
+      resultado: gris por alcance del precio desconocido
+  - id: v
+    pregunta: ¿Coincide la condición retornable?
+    ayuda: El dueño fijó no retornable por default para agua en botellón o botella dentro de este grupo. Leer NO
+      RETORNABLE como frase completa. El caso de 20 l dice RETORNABLE y no admite el default contrario.
+    opciones:
+    - respuesta: Ambos retornables, declarado
+      ir_a: s
+      resultado: null
+    - respuesta: Ambos no retornables, declarado o por default
+      ir_a: s
+      resultado: null
+    - respuesta: No coinciden
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Hay datos contradictorios
+      ir_a: null
+      resultado: gris por retornabilidad ambigua
+  - id: s
+    pregunta: ¿Están aclarados depósito, recarga y servicios?
+    ayuda: 4.650 pesos por bidón retornable de 20 l podrían corresponder a recarga o incluir un depósito. Registrar
+      conceptos respaldados; no descontar depósitos inventados ni excluir por geografía.
+    opciones:
+    - respuesta: Sí, se compara el mismo alcance económico
+      ir_a: e
+      resultado: null
+    - respuesta: Hay importes separados que faltan cargar
+      ir_a: null
+      resultado: corregir campo alcance del precio y cargos separados
+    - respuesta: La referencia vende otra operación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Los conceptos no se pueden separar
+      ir_a: null
+      resultado: gris por precio conjunto no separable
+  - id: e
+    pregunta: ¿Se conocen los litros y se cumple la presentación exigida?
+    ayuda: El caso real exige 20 l, policarbonato y retornable. Sin tamaño o material exigidos, tomar el mínimo
+      por litro dentro de la variante, siempre con contenido conocido.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple lo exigido
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Capacidad desconocida
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_lavandina
+  titulo: Lavandina
+  aplica_a: lavandina
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es lavandina líquida simple?
+    ayuda: Excluir gel, aditivada, perfumada y para ropa de color. Hipoclorito de sodio puede corresponder, pero
+      todavía falta verificar concentración.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otra formulación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Se verificó la concentración de cloro?
+    ayuda: LAVANDINA, ENVASE X 5 L no informa gramos de cloro por litro. No equiparar automáticamente lavandina
+      doméstica con hipoclorito industrial ni convertir diferencias de concentración solo dividiendo por litros.
+    opciones:
+    - respuesta: Sí, concentraciones comparables y requisito cumplido
+      ir_a: e
+      resultado: null
+    - respuesta: Las concentraciones o formulaciones no son equivalentes
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta concentración en alguno
+      ir_a: null
+      resultado: gris por concentración desconocida
+  - id: e
+    pregunta: ¿Litros y presentación están confirmados?
+    ayuda: 4.576 pesos por envase de 5 l son 915,20 pesos/l si se paga ese envase. No usar el litro de referencia
+      del catálogo como contenido. Exigir 5 l si está pedido; sin exigencia, tomar el mínimo normalizado.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Contenido o unidad desconocidos
+      ir_a: null
+      resultado: gris por contenido o unidad desconocidos
+- id: producto_detergente
+  titulo: Detergente lavavajillas
+  aplica_a: detergente
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es detergente para lavar vajilla?
+    ayuda: 'Excluir ropa, lavarropas, polvo, jabón líquido y desengrasante. Ariel es una señal contextual, no una
+      prueba universal. LIMPIADORES; TIPO: DETERGENTE; ENVASE X 4 L necesita confirmar el uso.'
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra tiene otro uso
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia tiene otro uso
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Uso no confirmado
+      ir_a: null
+      resultado: gris por uso desconocido
+  - id: v
+    pregunta: ¿Formulación y concentración son equivalentes?
+    ayuda: El dueño pidió validar concentración. Ultra no define una concentración uniforme. Detergente doméstico
+      y detergente aniónico declarado 100% no se vuelven equivalentes por expresarse en litros.
+    opciones:
+    - respuesta: Sí, ficha o documentación suficiente
+      ir_a: e
+      resultado: null
+    - respuesta: No son equivalentes
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta información crítica
+      ir_a: null
+      resultado: gris por formulación o concentración desconocida
+  - id: e
+    pregunta: ¿Se confirmó el volumen que cubre el precio?
+    ayuda: 276 pesos por 4 l son 69 pesos/l; 20.446,17 por 5 l son 4.089,234 pesos/l, si el precio es por esos envases.
+      Respetar presentación exigida; sin exigencia, tomar el mínimo por litro.
+    opciones:
+    - respuesta: Sí, y la presentación cumple
+      ir_a: null
+      resultado: comparable por producto; completar parseo y mínimo; si la razón sigue mayor que 4, revisar unidad,
+        nunca rojo
+    - respuesta: El formulario confundió envase y litro
+      ir_a: null
+      resultado: corregir campo precio normalizado
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Volumen o unidad desconocidos
+      ir_a: null
+      resultado: gris por contenido o unidad desconocidos
+- id: producto_jabon_polvo
+  titulo: Jabón en polvo para ropa
+  aplica_a: jabon_polvo
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es jabón en polvo para lavar ropa?
+    ayuda: Excluir líquido y jabón de tocador. No convertir un detergente líquido para ropa a este producto porque
+      comparta marca o uso.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Cumple las características expresamente pedidas?
+    ayuda: No hay subvariantes configuradas. Si se exige uso en máquina, baja espuma o una concentración determinada,
+      verificarlo; compartir la denominación jabón en polvo no acredita requisitos adicionales.
+    opciones:
+    - respuesta: Sí, o no hay requisitos adicionales
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia incumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta evidencia
+      ir_a: null
+      resultado: gris por requisito no verificado
+  - id: e
+    pregunta: ¿Se conocen los kilos y se cumple el envase pedido?
+    ayuda: 800 g son 0,8 kg. No comparar precio de bolsa con precio por kg sin convertir. Sin presentación exigida,
+      admitir otros tamaños conocidos y tomar el mínimo.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple la presentación
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Contenido desconocido
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: producto_jabon_tocador
+  titulo: Jabón de tocador
+  aplica_a: jabon_tocador
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es jabón de tocador en barra?
+    ayuda: Excluir líquido y polvo. El caso ARTÍCULOS DE TOCADOR; JABÓN DE TOCADOR; BARRA X 90 GR identifica el
+      producto, pero no el peso de una caja completa.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro producto
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Coincide la formulación del jabón?
+    ayuda: El dueño restableció default estándar. Registrar infantil, antibacterial y glicerina cuando están declarados;
+      pueden coexistir. No usar el default para borrar una formulación explícita.
+    opciones:
+    - respuesta: Sí, estándar declarado o por default en ambos
+      ir_a: e
+      resultado: null
+    - respuesta: Sí, atributos especiales coincidentes
+      ir_a: e
+      resultado: null
+    - respuesta: Las formulaciones difieren
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Hay información contradictoria
+      ir_a: null
+      resultado: gris por formulación ambigua
+  - id: e
+    pregunta: ¿Se distinguieron barra, paquete y caja?
+    ayuda: 572 pesos por barra de 90 g se divide por 0,09 kg. Una caja necesita número de barras y gramos por barra.
+      El formato comercial no excluye si no está exigido; si la compra exige barras de 90 g, verificar ese contenido.
+    opciones:
+    - respuesta: Sí, contenido conocido y requisitos cumplidos
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: La referencia incumple una presentación expresamente exigida
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se conoce el contenido de la unidad pagada
+      ir_a: null
+      resultado: gris por contenido o unidad desconocidos
+- id: producto_resma_a4
+  titulo: Papel A4 por hoja
+  aplica_a: resma_a4
+  inicio: p
+  nodos:
+  - id: p
+    pregunta: ¿Es papel blanco A4 para impresión o fotocopia?
+    ayuda: Excluir oficio, carta, A3, fotográfico, color, cartulina, autoadhesivo y papel madera. Resma no prueba
+      por sí sola el tamaño A4.
+    opciones:
+    - respuesta: Sí
+      ir_a: v
+      resultado: null
+    - respuesta: La compra es otro papel
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia es otro papel
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se confirma tamaño o tipo
+      ir_a: null
+      resultado: gris por producto no confirmado
+  - id: v
+    pregunta: ¿Cumple gramaje y demás requisitos escritos?
+    ayuda: No hay subvariantes configuradas, pero una exigencia de gramaje o certificación debe verificarse. A4
+      indica tamaño de hoja, no gramos por metro cuadrado ni cantidad de hojas.
+    opciones:
+    - respuesta: Sí, o no hay requisitos adicionales
+      ir_a: e
+      resultado: null
+    - respuesta: La referencia incumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta evidencia
+      ir_a: null
+      resultado: gris por requisito no verificado
+  - id: e
+    pregunta: ¿Se conoce cuántas hojas cubre el precio?
+    ayuda: La unidad base es una hoja, no una resma. Dividir por 500 solo si se confirman 500 hojas; para una caja,
+      multiplicar resmas por hojas. Sin presentación exigida, tomar el mínimo por hoja entre formatos conocidos.
+    opciones:
+    - respuesta: Sí, y se cumple la presentación exigida
+      ir_a: null
+      resultado: comparable por producto; completar instrucciones, parseo y mínimo
+    - respuesta: Se usó resma como unidad base
+      ir_a: null
+      resultado: 'corregir campo unidad base y precio normalizado: pesos por hoja'
+    - respuesta: La referencia incumple la presentación exigida
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta cantidad de hojas
+      ir_a: null
+      resultado: gris por contenido desconocido
+- id: validar_minimo
+  titulo: Validar cada referencia y el mínimo de mercado
+  aplica_a: minimo
+  inicio: m1
+  nodos:
+  - id: m1
+    pregunta: ¿El precio tiene una fuente identificable?
+    ayuda: Revisar cada observación candidata, no solo la más barata. Guardar ID, cadena, fecha, enlace o archivo
+      y contenido original. No presentar como observado un precio reconstruido o sugerido por un modelo.
+    opciones:
+    - respuesta: Es un precio real documentado
+      ir_a: m2
+      resultado: null
+    - respuesta: Es un precio de programa oficial
+      ir_a: mp
+      resultado: null
+    - respuesta: Es un promedio INDEC, precio estimado o inferido
+      ir_a: mi
+      resultado: null
+    - respuesta: No hay respaldo verificable
+      ir_a: null
+      resultado: gris por referencia sin respaldo; excluir del mínimo hasta aclarar
+  - id: m2
+    pregunta: ¿La pantalla reproduce correctamente la fuente?
+    ayuda: Comparar precio, unidad, producto, variedad, envase, fecha y marca. Si una caja se leyó como una unidad,
+      marcar mal leído. Un precio realmente bajo no es por sí solo una mala lectura.
+    opciones:
+    - respuesta: Sí
+      ir_a: m3
+      resultado: null
+    - respuesta: No, hay un error comprobable
+      ir_a: null
+      resultado: marcar referencia como mal leído; corregir los campos afectados y volver a validar
+    - respuesta: La fuente no permite decidir
+      ir_a: null
+      resultado: gris por lectura no verificable
+  - id: m3
+    pregunta: ¿Pasa el árbol de producto y las instrucciones?
+    ayuda: Comprobar mismo producto, variedad según decisiones del dueño, marca cuando corresponda y envase si fue
+      exigido. Un alimento para gatos nunca fija el mínimo de atún. Sin envase exigido, admitir presentaciones conocidas
+      y normalizar.
+    opciones:
+    - respuesta: Sí
+      ir_a: m4
+      resultado: null
+    - respuesta: Es otro producto o incumple una exigencia
+      ir_a: null
+      resultado: marcar referencia como no equivalente; recalcular sin ella
+    - respuesta: Falta un atributo necesario
+      ir_a: null
+      resultado: gris por equivalencia no verificable; no usar como mínimo válido
+  - id: m4
+    pregunta: ¿El precio es del día de compra o de los 15 días anteriores?
+    ayuda: No usar precios posteriores ni extender la ventana con IPC. Las referencias a 488, 1.157 o 1.812 días
+      de los ejemplos no sirven. Conservar fecha original y ajuste al mes de compra por IPC.
+    opciones:
+    - respuesta: Sí, fecha comprobada
+      ir_a: m5
+      resultado: null
+    - respuesta: La fecha fue mal copiada
+      ir_a: null
+      resultado: marcar referencia como mal leído; corregir campo fecha
+    - respuesta: Está fuera de ventana
+      ir_a: null
+      resultado: descartar de este mínimo por fecha; gris por sin datos si no queda otra referencia admisible
+    - respuesta: Falta fecha de compra o de observación
+      ir_a: null
+      resultado: gris por fecha desconocida
+  - id: m5
+    pregunta: ¿Unidad, contenido e impuestos tienen una base común?
+    ayuda: Comparar pesos/kg, pesos/l o pesos/hoja, según producto. Confirmar si ambos precios incluyen impuestos;
+      no asumirlo por tratarse del mismo producto. No convertir ml a kg sin respaldo ni mezclar neto y escurrido.
+    opciones:
+    - respuesta: Sí, cálculo e impuestos verificados
+      ir_a: m6
+      resultado: null
+    - respuesta: Hay un error de lectura o conversión
+      ir_a: null
+      resultado: marcar referencia como mal leído cuando corresponda; corregir campo precio normalizado o impuestos
+    - respuesta: Falta contenido, peso comparable o tratamiento impositivo
+      ir_a: null
+      resultado: gris por base de precio desconocida
+  - id: m6
+    pregunta: ¿Hay una anomalía sin resolver?
+    ayuda: 'Revisar precios absurdos con la fuente: decimal, bulto, fecha o producto. La cuarentena nueva está en
+      backlog; no inventar un filtro obligatorio ni una regla de mediana. Si ya existe una retención de la observación,
+      revisar su motivo antes de rehabilitarla.'
+    opciones:
+    - respuesta: No, o la anomalía fue aclarada con evidencia
+      ir_a: m7
+      resultado: null
+    - respuesta: Se confirma otro producto
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Se confirma mala lectura
+      ir_a: null
+      resultado: marcar referencia como mal leído; corregir y recalcular
+    - respuesta: Sigue siendo sospechosa sin explicación
+      ir_a: null
+      resultado: gris por referencia sospechosa pendiente; no confirmar mínimo ni rojo con ella
+  - id: m7
+    pregunta: ¿Es el menor precio de todas las referencias admisibles?
+    ayuda: Marcar equivalente solo tras confirmar el producto. Elegir el mínimo normalizado, no promedio ni mediana.
+      Por decisión del dueño no filtrar por geografía, promoción, stock o compra mínima; sí leer correctamente qué
+      precio y cantidad se publicaron.
+    opciones:
+    - respuesta: Sí; IDs y exclusiones quedan registrados
+      ir_a: m8
+      resultado: null
+    - respuesta: Hay otra referencia admisible más barata
+      ir_a: null
+      resultado: corregir campo referencia mínima; guardar todos los IDs y recalcular
+    - respuesta: No queda ningún precio real admisible
+      ir_a: mp
+      resultado: null
+  - id: m8
+    pregunta: ¿El mínimo usado para rojo está corroborado por dos cadenas?
+    ayuda: Dos sucursales, dos capturas o dos sitios de la misma cadena no son dos cadenas. Guardar todos los IDs
+      del par y de la ventana. Si los precios difieren, documentar la referencia efectiva y la regla de corroboración;
+      no declarar confirmado el menor por tener cualquier segundo precio.
+    opciones:
+    - respuesta: Sí, dos cadenas independientes y corroboración verificable
+      ir_a: m9
+      resultado: null
+    - respuesta: Solo hay una cadena o no hay corroboración suficiente
+      ir_a: ma
+      resultado: null
+    - respuesta: No se explica cómo se obtuvo la referencia efectiva
+      ir_a: null
+      resultado: gris por mínimo confirmado no verificable; conservar solo la condición de mínimo observado si está
+        validado
+  - id: m9
+    pregunta: ¿La razón de precios supera 4 veces?
+    ayuda: Usar los precios comparables ya normalizados. En aceite, agua y detergente aparecen razones de 25,1,
+      12,6 y 4,8 antes de revisar. Mayor que 4 activa revisar unidad aunque ambos valores parezcan bien leídos.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: gris por revisar unidad; nunca rojo; verificar compra y referencia
+    - respuesta: 'No'
+      ir_a: mr
+      resultado: null
+  - id: mr
+    pregunta: ¿La brecha sigue en 20% o más con dos meses de plazo?
+    ayuda: Verificar factor compuesto, IPC y referencia efectiva del par, no una confianza heredada de otra referencia.
+      Rojo requiere además parseo e instrucciones válidos y ausencia de monto_inconsistente. Una brecha no prueba
+      irregularidad.
+    opciones:
+    - respuesta: Sí, y se cumplen todas las condiciones
+      ir_a: null
+      resultado: comparable; mínimo corroborado; candidato a rojo sujeto a revisión humana y advertencias
+    - respuesta: No alcanza 20% con dos meses
+      ir_a: ma
+      resultado: null
+    - respuesta: Hay monto inconsistente o un ajuste sin verificar
+      ir_a: null
+      resultado: gris por monto o ajuste no verificado; bloquear rojo y solicitar revisión
+  - id: ma
+    pregunta: ¿La brecha llega a 8% con un mes de plazo?
+    ayuda: Amarillo puede basarse en mínimo observado de una cadena, pero no en una referencia incompatible. Verificar
+      factor compuesto. La regla de mayor que 4 veces y los bloqueos de datos tienen prioridad.
+    opciones:
+    - respuesta: La razón supera 4 veces
+      ir_a: null
+      resultado: gris por revisar unidad; nunca rojo
+    - respuesta: Sí, con datos válidos
+      ir_a: null
+      resultado: comparable; amarillo contra mínimo observado; no afirmar mínimo confirmado sin par válido
+    - respuesta: 'No'
+      ir_a: null
+      resultado: comparable; sin señal por los umbrales informados
+    - respuesta: No se puede verificar el cálculo
+      ir_a: null
+      resultado: gris por ajuste o base de cálculo desconocidos
+  - id: mp
+    pregunta: ¿Corresponde usar un precio de programa como último recurso?
+    ayuda: Verificar que no haya precios reales de mercado utilizables en la fecha y ventana admitidas, y documentar
+      la búsqueda. Precios Cuidados/Justos/Máximos son pisos pactados, no mínimos reales. Deben acreditar vigencia,
+      producto, marca cuando aplique, envase y unidad.
+    opciones:
+    - respuesta: Sí, ausencia de mercado documentada y programa válido
+      ir_a: null
+      resultado: referencia de programa revisable a mano; mostrar origen y advertencias; no presentarla como mínimo
+        real ni habilitar rojo por sí sola
+    - respuesta: Existe una referencia real admisible
+      ir_a: null
+      resultado: 'corregir campo fuente de referencia: priorizar mercado real'
+    - respuesta: El programa no coincide o no estaba vigente
+      ir_a: null
+      resultado: descartar de este mínimo; gris por sin referencia válida
+    - respuesta: No se puede verificar
+      ir_a: null
+      resultado: gris por precio de programa no verificable
+  - id: mi
+    pregunta: ¿Qué parte del precio o presentación fue inferida?
+    ayuda: INDEC es promedio mensual, no mínimo. Presentación oficial puede permitir normalizar; presentación inferida
+      necesita corroboración, y desconocida no se usa. Leche en polvo 800 g y azúcar 1 kg figuran como inferidas;
+      la serie de dulce de leche figura desconocida.
+    opciones:
+    - respuesta: Es promedio INDEC con presentación verificable
+      ir_a: null
+      resultado: referencia contextual, no mínimo de mercado; nunca rojo por INDEC solo; conservar fuente y advertencia
+    - respuesta: La presentación inferida se confirmó con documentación
+      ir_a: null
+      resultado: corregir campo evidencia de presentación; sigue siendo promedio si proviene de INDEC, no mínimo
+        observado
+    - respuesta: Contenido o precio siguen siendo una estimación sin respaldo
+      ir_a: null
+      resultado: gris por precio o presentación inferidos; no usar como mínimo confirmado
+    - respuesta: La presentación INDEC es desconocida
+      ir_a: null
+      resultado: no usar la serie para comparar; gris por contenido desconocido si es la única referencia
+- id: validar_parseo
+  titulo: Validar cantidades, unidades y montos
+  aplica_a: parseo
+  inicio: p1
+  nodos:
+  - id: p1
+    pregunta: ¿El formulario corresponde al renglón y proveedor correctos?
+    ayuda: 'Usar el documento que acredita la decisión: no mezclar presupuesto, oferta alternativa, dictamen, contrato
+      y pago. Guardar IDs y estado documental. Si dos alternativas adjudicadas empatan en precio, elegir al menos
+      una según la decisión del dueño, conservando las alternativas y la advertencia.'
+    opciones:
+    - respuesta: Sí, renglón y estado documental identificados
+      ir_a: p2
+      resultado: null
+    - respuesta: Hay empate, pero la adjudicación está acreditada
+      ir_a: pt
+      resultado: null
+    - respuesta: Se mezclaron documentos, proveedor o renglón
+      ir_a: null
+      resultado: corregir campo renglón, proveedor y estado documental
+    - respuesta: No se acredita adjudicación o el documento falta
+      ir_a: null
+      resultado: gris por estado documental no verificado; no afirmar precio pagado
+  - id: pt
+    pregunta: ¿El empate afecta producto, envase o monto?
+    ayuda: Elegir una alternativa no autoriza inventar su contenido. Guardar los IDs de todas las alternativas empatadas
+      y una regla de selección reproducible. Si ofrecen envases distintos, el precio coincidente no resuelve la
+      unidad.
+    opciones:
+    - respuesta: No; las alternativas son iguales para esta comparación
+      ir_a: p2
+      resultado: null
+    - respuesta: Sí, y el documento permite identificar la correcta
+      ir_a: null
+      resultado: corregir campo alternativa seleccionada; guardar IDs y volver a validar
+    - respuesta: Sí, pero no se puede resolver
+      ir_a: null
+      resultado: gris por alternativa adjudicada ambigua para normalizar; conservar adjudicación acreditada
+  - id: p2
+    pregunta: ¿Fecha, moneda y números están bien leídos?
+    ayuda: 1,8 kg significa 1,8, no 18; 385.7176 puede usar punto decimal según la fuente. No corregir separadores
+      por intuición. Registrar fecha pertinente a la compra y distinguir pesos nominales de pesos reales o dólares.
+    opciones:
+    - respuesta: Sí
+      ir_a: p3
+      resultado: null
+    - respuesta: Hay un error comprobable
+      ir_a: null
+      resultado: corregir campo fecha, moneda o valor numérico afectado
+    - respuesta: Falta fecha o moneda
+      ir_a: null
+      resultado: gris por fecha o moneda desconocidas
+  - id: p3
+    pregunta: ¿El importe es unitario o total?
+    ayuda: Leer encabezados y notas. Precio unitario por unidad no significa automáticamente precio por kg. Si el
+      importe cubre varios renglones o servicios, no repartirlo por partes iguales.
+    opciones:
+    - respuesta: Es precio unitario del renglón
+      ir_a: p4
+      resultado: null
+    - respuesta: Es total de este renglón
+      ir_a: pq
+      resultado: null
+    - respuesta: Es total conjunto de varios productos o servicios
+      ir_a: pc
+      resultado: null
+    - respuesta: No se puede determinar
+      ir_a: null
+      resultado: gris por alcance del importe desconocido
+  - id: pc
+    pregunta: ¿Existe un desglose documental del monto conjunto?
+    ayuda: Buscar anexos, oferta, dictamen y contrato. No deducir el precio del alimento de un total que también
+      incluye envases, equipos o servicios sin importes separables.
+    opciones:
+    - respuesta: Sí, permite recuperar precio o total del renglón
+      ir_a: null
+      resultado: corregir campo importe del renglón con el desglose y reiniciar parseo
+    - respuesta: 'No'
+      ir_a: null
+      resultado: gris por monto conjunto no separable; sugerir revisión humana con todos los documentos relevantes
+  - id: pq
+    pregunta: ¿Se conoce la cantidad a la que corresponde ese total?
+    ayuda: Precio unitario = total del renglón dividido por cantidad de unidades compradas, siempre que ambos cubran
+      lo mismo. No dividir un total de cajas por cantidad de botellas ni un monto con cargos distintos sin conciliarlos.
+    opciones:
+    - respuesta: Sí, cantidad y alcance coinciden
+      ir_a: p4
+      resultado: null
+    - respuesta: La cantidad se leyó mal
+      ir_a: null
+      resultado: corregir campo cantidad
+    - respuesta: No se conoce la cantidad
+      ir_a: null
+      resultado: gris por sin precio unitario calculable; solicitar completar cantidad
+  - id: p4
+    pregunta: ¿Qué se compra por cada unidad pagada?
+    ayuda: Distinguir kilogramo, litro, hoja, envase, paquete, caja y bulto. En leche en polvo comprada por kilogramos
+      no volver a dividir por el peso de un envase. En 12 envases de 500 ml comprobar si se paga botella o paquete.
+    opciones:
+    - respuesta: Ya es kg, litro o hoja de la unidad base correcta
+      ir_a: p7
+      resultado: null
+    - respuesta: Es envase, paquete, caja o bulto identificado
+      ir_a: p5
+      resultado: null
+    - respuesta: Unidad está mal cargada
+      ir_a: null
+      resultado: corregir campo unidad de compra
+    - respuesta: Solo dice unidad y no se puede resolver
+      ir_a: null
+      resultado: gris por unidad de compra desconocida
+  - id: p5
+    pregunta: ¿Se conocen contenido y cantidad interna?
+    ayuda: 'Contenido total = unidades internas por contenido de cada una. 12 × 500 ml = 6 l. No multiplicar menciones
+      repetidas: ENVASE 320 GR, PESO 320 GR sigue siendo 320 g. Caja de transporte no implica que el precio sea
+      por caja.'
+    opciones:
+    - respuesta: Sí
+      ir_a: p6
+      resultado: null
+    - respuesta: Se duplicó contenido o se omitió un multiplicador
+      ir_a: null
+      resultado: corregir campo contenido del envase y unidades internas
+    - respuesta: Falta un dato
+      ir_a: null
+      resultado: gris por contenido desconocido; no usar tamaño de referencia como supuesto
+  - id: p6
+    pregunta: ¿La conversión a unidad base es correcta?
+    ayuda: Gramos/1.000 = kg; ml/1.000 = l. Precio por unidad base = precio de la unidad pagada dividido por contenido
+      base de esa unidad. Resma A4 se divide por hojas. En conservas usar igual criterio de peso; ml no son kg automáticamente.
+    opciones:
+    - respuesta: Sí
+      ir_a: p7
+      resultado: null
+    - respuesta: Hay un error de cálculo
+      ir_a: null
+      resultado: corregir campo precio normalizado
+    - respuesta: Falta densidad, peso comparable u otro dato indispensable
+      ir_a: null
+      resultado: gris por conversión no verificable
+  - id: p7
+    pregunta: ¿Impuestos y cargos están identificados?
+    ayuda: Verificar precio final frente a precio sin impuestos. Aunque la alícuota legal sea igual, una publicación
+      puede mostrar otra base. Separar cargos solo con respaldo; no inventar flete, depósito o bonificación.
+    opciones:
+    - respuesta: Sí, base comparable o ajuste documentado
+      ir_a: p8
+      resultado: null
+    - respuesta: Hay campos o cálculos erróneos
+      ir_a: null
+      resultado: corregir campo impuestos y cargos
+    - respuesta: No se conoce la base del precio
+      ir_a: null
+      resultado: gris por impuestos o cargos no verificables
+  - id: p8
+    pregunta: ¿Cantidad, precio unitario y total son consistentes?
+    ayuda: Comprobar cantidad × precio unitario contra el total del mismo alcance, explicando redondeos y cargos
+      documentados. No inventar una tolerancia. Cantidad desconocida no impide por sí sola comparar un precio unitario
+      válido.
+    opciones:
+    - respuesta: Sí, o la diferencia está conciliada documentalmente
+      ir_a: p9
+      resultado: null
+    - respuesta: Falta cantidad, pero el precio unitario está acreditado
+      ir_a: null
+      resultado: comparable por precio unitario si supera las otras validaciones; exceso_ars = null; sugerir completar
+        cantidad
+    - respuesta: Los montos se contradicen
+      ir_a: null
+      resultado: gris por monto_inconsistente; bloquear rojo; solicitar revisión con toda la información relevante
+    - respuesta: Hay un error de transcripción identificado
+      ir_a: null
+      resultado: corregir campo cantidad, precio unitario o total según la fuente
+  - id: p9
+    pregunta: ¿El exceso total se calcula con cantidades compatibles?
+    ayuda: Si la diferencia está en pesos/kg, multiplicar por kg totales, no por número de envases. No llamar pagado
+      a un monto solo adjudicado. Pesos reales y dólares CCL sirven para agregación posterior, con fecha y factor
+      conservados, no para mezclar bases en la brecha.
+    opciones:
+    - respuesta: Sí
+      ir_a: null
+      resultado: parseo validado; continuar instrucciones, producto y mínimo; guardar cálculo e IDs de origen
+    - respuesta: Se mezclaron envases con kg/l/hojas o monedas
+      ir_a: null
+      resultado: corregir campo cantidad base, exceso_ars o conversión monetaria
+    - respuesta: Falta cantidad total verificable
+      ir_a: null
+      resultado: exceso_ars = null; sugerir revisión humana para completar cantidad
+- id: validar_instrucciones
+  titulo: Leer el pliego y aplicar las reglas de revisión
+  aplica_a: instrucciones
+  inicio: i1
+  nodos:
+  - id: i1
+    pregunta: ¿Se reunieron los documentos necesarios?
+    ayuda: Leer renglón, pliego, anexos, aclaraciones, oferta y acto de adjudicación disponible. Separar exigido,
+      ofrecido y adjudicado. Las decisiones explícitas del dueño mandan sobre defaults o separaciones anteriores;
+      no completar partes truncadas del material recibido.
+    opciones:
+    - respuesta: Sí
+      ir_a: i2
+      resultado: null
+    - respuesta: Falta un documento que puede cambiar producto o precio
+      ir_a: null
+      resultado: gris por documentación insuficiente; solicitar revisión humana
+    - respuesta: Se confundió dictamen, contrato o pago
+      ir_a: null
+      resultado: corregir campo estado_documental y textos del caso
+  - id: i2
+    pregunta: ¿El renglón es el producto completo y no un ingrediente?
+    ayuda: 'Antes de buscar coincidencias, descartar mascotas, juguetes y preparados. Medallones de Quinoa NUTREE
+      Lentejas y SC BIFE CRIOLL ARROZ no son legumbres o arroz secos. Leer negaciones localmente: sin palo con menta
+      no contiene una afirmación con palo.'
+    opciones:
+    - respuesta: Sí, producto identificado sin conflicto
+      ir_a: i3
+      resultado: null
+    - respuesta: La compra fue clasificada por un ingrediente
+      ir_a: null
+      resultado: corregir campo producto
+    - respuesta: La referencia fue clasificada por un ingrediente
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Hay empate entre productos o descripción ambigua
+      ir_a: null
+      resultado: gris por producto ambiguo; revisión humana o juez LLM con evidencia
+  - id: i3
+    pregunta: ¿La marca está exigida, es orientativa o solo fue ofrecida?
+    ayuda: Guardar por separado marca exigida, ofrecida y adjudicada. Una marca ofrecida no se vuelve exigencia
+      del pliego. Marca X o equivalente abre la revisión de equivalencia; no autoriza aceptar cualquier producto.
+    opciones:
+    - respuesta: Marca obligatoria sin equivalentes
+      ir_a: im
+      resultado: null
+    - respuesta: Marca seguida de o equivalente
+      ir_a: ieq
+      resultado: null
+    - respuesta: No hay marca exigida; quizá solo ofrecida o adjudicada
+      ir_a: i4
+      resultado: null
+    - respuesta: La cláusula no es clara
+      ir_a: null
+      resultado: gris por alcance de marca desconocido
+  - id: im
+    pregunta: ¿La referencia corresponde a la marca obligatoria?
+    ayuda: Con marca estrictamente exigida, la búsqueda del mínimo queda dentro de esa marca y de los demás requisitos.
+      No sustituirla porque otra sea más barata; comprobar también la línea o formulación.
+    opciones:
+    - respuesta: Sí
+      ir_a: i4
+      resultado: null
+    - respuesta: 'No'
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No hay mercado verificable de esa marca
+      ir_a: null
+      resultado: gris por sin referencia de marca exigida
+  - id: ieq
+    pregunta: ¿La otra marca acredita la equivalencia pedida?
+    ayuda: Comparar especificaciones que usa el pliego para o equivalente. No basta misma unidad kg/l ni una afirmación
+      del vendedor. Guardar ficha, criterio y decisión del revisor.
+    opciones:
+    - respuesta: Sí, o es la misma marca y cumple las especificaciones
+      ir_a: i4
+      resultado: null
+    - respuesta: No cumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: No se puede verificar
+      ir_a: null
+      resultado: gris por equivalencia de marca no acreditada
+  - id: i4
+    pregunta: ¿Qué variedad y requisitos técnicos están escritos?
+    ayuda: 'Aplicar el árbol del producto. Respetar defaults del dueño: leche en polvo común, cacao azucarado, pan
+      dulce frutado, dulce de leche en pote, agua en bidón no retornable y jabón estándar, entre otros. Registrar
+      default frente a dato explícito; no convertir un default en evidencia técnica.'
+    opciones:
+    - respuesta: Están cargados y la referencia cumple el árbol del producto
+      ir_a: i5
+      resultado: null
+    - respuesta: Se omitió o inventó un atributo
+      ir_a: null
+      resultado: corregir campo variedad o requisitos técnicos
+    - respuesta: La referencia incumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: Falta un atributo crítico y no existe default autorizado
+      ir_a: null
+      resultado: gris por atributo desconocido; no comparar con otra variedad
+  - id: i5
+    pregunta: ¿El pliego exige tamaño, material o forma de envase?
+    ayuda: Aceite ENVASE X 5 L, PET; atún SOBRE, 120 GR; y jabón BARRA X 90 GR son exigencias explícitas. Tamano_referencia
+      del catálogo no lo es. Distinguir envase primario de caja de transporte.
+    opciones:
+    - respuesta: Sí, y la referencia cumple cada requisito aplicable
+      ir_a: i6
+      resultado: null
+    - respuesta: Sí, pero la referencia incumple
+      ir_a: null
+      resultado: marcar referencia como no equivalente
+    - respuesta: 'No exige presentación: admitir la mínima normalizada con contenido conocido'
+      ir_a: i6
+      resultado: null
+    - respuesta: No se puede determinar la exigencia o verificarla
+      ir_a: null
+      resultado: gris por presentación exigida no verificable
+  - id: i6
+    pregunta: ¿La entrega o los servicios cambian lo que cubre el precio?
+    ayuda: Registrar entregas parciales, logística especial, depósitos o servicios incluidos que puedan explicar
+      la brecha. El dueño descartó filtros por geografía, promociones, stock y compra mínima. No inventar recargos
+      ni descontar servicios sin desglose.
+    opciones:
+    - respuesta: No cambian el alcance, o solo requieren una advertencia explicativa
+      ir_a: i7
+      resultado: null
+    - respuesta: Hay cargos separados y documentados
+      ir_a: i7
+      resultado: null
+    - respuesta: El precio mezcla productos o servicios inseparables
+      ir_a: null
+      resultado: gris por monto conjunto no separable; revisar parseo
+    - respuesta: Se aplicó un filtro prohibido por geografía, promo, stock o compra mínima
+      ir_a: null
+      resultado: corregir selección de referencias; recalcular sin ese filtro
+  - id: i7
+    pregunta: ¿Se registraron los plazos y la base impositiva?
+    ayuda: 'Conservar el plazo contractual y las condiciones de pago como explicación, sin reemplazar silenciosamente
+      los escenarios del comparador: un mes para amarillo y dos para rojo, con factor compuesto. Verificar impuestos
+      incluidos o no; no deducirlo del proveedor.'
+    opciones:
+    - respuesta: Sí, y los cálculos usan una base verificable
+      ir_a: i8
+      resultado: null
+    - respuesta: El plazo contractual no aparece, pero se documentan los escenarios estándar
+      ir_a: i8
+      resultado: null
+    - respuesta: Se mezclaron bases o se calculó mal el plazo
+      ir_a: null
+      resultado: corregir campo impuestos, plazo o factor de ajuste
+    - respuesta: No se puede verificar la base impositiva o el ajuste necesario
+      ir_a: null
+      resultado: gris por base impositiva o ajuste no verificable
+  - id: i8
+    pregunta: ¿La decisión y sus límites quedan visibles?
+    ayuda: Equivalente significa mismo producto conforme a estas reglas; no asegura fecha ni precio correcto. No
+      es el mismo producto corresponde a incompatibilidad comprobada; mal leído a transcripción errónea. La incertidumbre
+      deja el caso pendiente/gris, sin forzar una etiqueta falsa.
+    opciones:
+    - respuesta: Sí; evidencia, IDs, defaults y motivos están guardados
+      ir_a: i9
+      resultado: null
+    - respuesta: Faltan pruebas, IDs o motivos
+      ir_a: null
+      resultado: corregir campos de evidencia y trazabilidad antes de cerrar la revisión
+  - id: i9
+    pregunta: ¿El revisor entiende qué puede comunicar?
+    ayuda: Una brecha no prueba irregularidad. Mostrar estado documental, supuestos, referencias de programa o inferidas,
+      faltantes y explicaciones posibles. El humano decide publicable; no imponer un bloqueo automático de exportación,
+      pero no ocultar advertencias ni llamar pagado a lo solo adjudicado.
+    opciones:
+    - respuesta: Sí; decide publicar con advertencias claras
+      ir_a: null
+      resultado: instrucciones validadas; registrar decisión humana de publicación y advertencias; conservar semáforo
+        técnico sin alterarlo
+    - respuesta: Prefiere completar información
+      ir_a: null
+      resultado: mantener en revisión; sugerir campos y documentos faltantes
+    - respuesta: El texto afirma irregularidad o pago sin respaldo
+      ir_a: null
+      resultado: corregir campo texto del caso y estado documental
