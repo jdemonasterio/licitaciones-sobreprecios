@@ -625,7 +625,7 @@ def test_comprobante_de_renglon_muestra_dato_normalizacion_y_escenarios(page, se
     cuerpo = comp.locator("body").inner_text()
     assert "Comprobante de cálculo" in cuerpo
     assert "Apertura de ofertas" in cuerpo
-    assert "Escenario amarillo" in cuerpo and "Escenario rojo" in cuerpo
+    assert "Escenario de 1 mes de plazo" in cuerpo and "Escenario de 2 meses de plazo" in cuerpo and "habilita rojo" in cuerpo
     assert "Explicaciones alternativas revisadas" in cuerpo
     comp.close()
 

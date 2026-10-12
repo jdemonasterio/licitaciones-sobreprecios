@@ -78,8 +78,8 @@
 <h2>e. Factores IPC</h2>
 <div class="card">
     <p class="small">Cada precio de mercado se lleva al mes de la compra con el IPC del mes exacto (si falta el
-    índice de alguno de los dos meses, el precio queda sin ajustar y rotulado). Ajuste financiero por el plazo de
-    pago del Estado: <b>{{ c.ajuste_financiero_pct|num(1) }}%</b>.</p>
+    índice de alguno de los dos meses, el precio queda sin ajustar y rotulado). Es un ajuste entre FECHAS, distinto
+    del costo financiero de la sección f.</p>
     {% if c.evidencia %}
     <div class="table-wrap"><table class="small">
         <thead><tr><th>Fuente</th><th>Fecha de la observación</th><th class="num">$/u. base</th><th>Mes IPC usado</th></tr></thead>
@@ -92,9 +92,17 @@
 <h2>f. Escenarios financieros</h2>
 <div class="card">
     <dl class="meta-grid">
+        <dt>Costo financiero por pagar a plazo</dt><dd>{{ c.ajuste_financiero_pct|num(1) }}% <span class="muted small">(inflación
+            mensual supuesta, compuesta por los meses de plazo de pago: el Estado paga después y ese precio vale menos)</span></dd>
         <dt>Sin ajustar</dt><dd>{{ c.sobreprecio_pct|pct }}</dd>
-        <dt>Escenario amarillo (1 mes de plazo de pago)</dt><dd>{{ c.sensibilidad.get('1m')|pct }} vs. referencia principal</dd>
-        <dt>Escenario rojo (2 meses de plazo, mínimo confirmado)</dt><dd>{{ c.sobreprecio_corroborado_pct|pct if c.sobreprecio_corroborado_pct is not none else '—' }} vs. mínimo confirmado</dd>
+        <dt>Escenario de 1 mes de plazo</dt><dd>{{ c.sensibilidad.get('1m')|pct }} vs. referencia principal
+            ({{ c.ref_principal_valor|ars(2) }}) — habilita amarillo si llega a {{ cfg.get('umbral_amarillo_pct', 8) }}%</dd>
+        <dt>Escenario de 2 meses de plazo</dt><dd>{{ c.sobreprecio_corroborado_pct|pct if c.sobreprecio_corroborado_pct is not none else '—' }}
+            vs. mínimo confirmado{% if c.ref_corroborada %} ({{ c.ref_corroborada|ars(2) }}){% endif %} — habilita rojo si llega a
+            {{ cfg.get('umbral_rojo_pct', 20) }}% (escenario más prudente: plazo más largo y referencia confirmada por dos
+            grupos comerciales que difieren menos de {{ ((cfg.get('corroboracion_tolerancia', 0.05)) * 100)|round|int }}%)</dd>
+        <dt>Exceso estimado</dt><dd>{{ c.exceso_ars|ars }} <span class="muted small">(escenario de 1 mes contra la referencia
+            principal × cantidad comprada; no es la diferencia sin ajustar ni el escenario que decide el rojo)</span></dd>
     </dl>
     <p class="muted small">Sensibilidad completa (brecha contra la referencia principal según el plazo de pago supuesto):
     0 meses {{ c.sensibilidad.get('0m')|pct }} · 1 mes {{ c.sensibilidad.get('1m')|pct }} ·

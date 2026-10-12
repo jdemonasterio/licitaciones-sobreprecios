@@ -344,6 +344,7 @@ def _expediente_html(titulo: str, proc: dict, resumen: dict, comprobantes: list[
             + (f" ({esc(corr['nota'])})" if corr.get("nota") else "") + f" — {esc(corr.get('autor') or 'sin autor')}</li>"
             for campo, corr in (c.get("correcciones") or {}).items())
         ipc_notas = []
+        _cmp = config.settings().get("comparacion") or {}
         if c.get("motivo") and "PRECIO INFERIDO" in c["motivo"]:
             ipc_notas.append("PRECIO INFERIDO: no había dato de mercado real en la fecha de la compra; se usó el "
                             "primer dato posterior disponible, llevado hacia atrás con el IPC (confianza baja, nunca rojo).")
@@ -351,7 +352,13 @@ def _expediente_html(titulo: str, proc: dict, resumen: dict, comprobantes: list[
             ipc_notas.append("Referencia de precio de programa (Precios Cuidados/Justos/Máximos): se usó como "
                             "piso de mercado porque no había ningún precio mayorista/minorista real en la fecha; "
                             "en el mercado libre suelen cobrarse precios MÁS altos que el programa, no más bajos.")
-        ipc_notas.append(f"Ajuste financiero por el plazo de pago del Estado: {esc(fmt.num(c.get('ajuste_financiero_pct'), 1))}%.")
+        ipc_notas.append(f"Costo financiero por pagar a plazo: {esc(fmt.num(c.get('ajuste_financiero_pct'), 1))}% (inflación "
+                         "mensual supuesta, compuesta por los meses de plazo; es distinto del ajuste por IPC entre fechas). "
+                         f"Amarillo desde {_cmp.get('umbral_amarillo_pct', 8)}% en el escenario de 1 mes contra la referencia "
+                         f"principal; rojo desde {_cmp.get('umbral_rojo_pct', 20)}% en el de 2 meses contra el mínimo "
+                         f"confirmado por dos grupos comerciales (que difieren menos de "
+                         f"{round(float(_cmp.get('corroboracion_tolerancia', 0.05)) * 100)}%). "
+                         "El exceso estimado usa el escenario de 1 mes.")
         explic_pendientes = [revision_humana.EXPLICACION_TXT[item] for item in revision_humana.EXPLICACIONES_ITEMS
                             if (c.get("explicaciones") or {}).get(item, {}).get("estado", "pendiente") == "pendiente"]
         preguntas = list(explic_pendientes)

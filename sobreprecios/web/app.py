@@ -305,7 +305,7 @@ def renglon_comprobante(request: Request, renglon_id: int):
         data = revision_humana.comprobante(conn, renglon_id)
         if not data:
             return _redirect("/", "No existe ese renglón")
-    return _render(request, "comprobante.html", c=data)
+    return _render(request, "comprobante.html", c=data, cfg=config.settings().get("comparacion") or {})
 
 
 @app.post("/licitacion/{proceso_id}/expediente")
