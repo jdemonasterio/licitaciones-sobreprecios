@@ -46,8 +46,8 @@
         <dt>Objeto</dt><dd>{{ p.objeto or '—' }}</dd>
         <dt>Categoría</dt><dd>{{ (p.categoria or '—')|replace('_', ' ') }}</dd>
         <dt>Plazo de pago (pliego)</dt><dd>{% if p.plazo_pago_dias is not none %}{{ p.plazo_pago_dias }} días corridos<div class="muted small">{{ p.plazo_pago_texto }}</div>{% else %}sin dato <span class="muted small">(no se encontró como texto en COMPR.AR; se usa el supuesto general de {{ cfg.plazo_pago_meses|num(0) }} mes/es)</span>{% endif %}</dd>
-        <dt>Monto total del proceso</dt><dd>{{ p.monto_total|ars }}{% if p.monto_total and (equiv.usd or equiv.real) %}
-            <div class="muted small">{% if equiv.usd %}≈ {{ equiv.usd|millones('usd') }} en {{ equiv.usd_txt }} a {{ equiv.tasa|ars(2) }}{% endif %}{% if equiv.real %}{% if equiv.usd %} · {% endif %}≈ {{ equiv.real|millones }} en {{ equiv.real_txt }}{% endif %}</div>{% endif %}
+        <dt>Monto total {{ {'dictamen': 'recomendado (dictamen)', 'adjudicado': 'adjudicado', 'contratado': 'contratado'}.get(p.estado_documental, 'adjudicado') }} del proceso</dt><dd>{{ p.monto_total|ars }}{% if p.monto_total and (equiv.usd or equiv.real) %}
+            <div class="muted small">{% if equiv.usd %}≈ {{ equiv.usd|millones('usd') }} en {{ equiv.usd_txt }} a {{ equiv.tasa|ars(2) }}{% endif %}{% if equiv.real %}{% if equiv.usd %} · {% endif %}≈ {{ equiv.real|millones }} en {{ equiv.real_txt }}{% endif %}</div>{% endif %}</dd>
             <div class="muted small">(declarado en la norma; puede diferir de la suma de los renglones analizados — ver síntesis arriba)</div></dd>
         <dt>Fuente</dt><dd>{% if p.url %}<a href="{{ p.url }}" target="_blank" rel="noopener">Aviso en el Boletín Oficial ↗</a>{% else %}carga manual{% endif %}
             {% if p.numero and '-' in p.numero %} · <a href="https://comprar.gob.ar/BuscarAvanzado.aspx" target="_blank" rel="noopener">Buscar {{ p.numero }} en COMPR.AR ↗</a>{% endif %}
@@ -134,7 +134,8 @@ descargable sin iniciar sesión (el botón "Ver" del sitio abre un visor de GDE 
 <td>{{ o.tipo }}</td><td>{{ o.estado }}</td><td class="num">{{ o.monto|ars }}</td></tr>{% endfor %}</tbody></table></div>
 {% endif %}
 
-<h2>Renglones {% if renglones and renglones[0].extraccion_metodo == 'comprar' %}recomendados en el dictamen{% else %}adjudicados{% endif %}</h2>
+<h2>Renglones {% if renglones and renglones[0].estado_documental == 'dictamen' %}recomendados en el dictamen{% elif renglones and renglones[0].estado_documental == 'contratado' %}contratados{% else %}adjudicados{% endif %}</h2>
+{% if renglones and renglones[0].estado_documental %}<p class="muted small">Estado documental: {{ ESTADO_DOCUMENTAL_TXT.get(renglones[0].estado_documental, renglones[0].estado_documental) }}.</p>{% endif %}
 <div class="help">Cada precio se lleva a $/kg, $/litro o $/unidad. La referencia es la misma marca si la norma la nombra;
 si no, el <b>mínimo de mercado</b> del mismo producto (envase igual al licitado cuando la norma lo indica).
 Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plazo de pago del Estado.</div>

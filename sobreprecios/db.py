@@ -521,6 +521,23 @@ MIGRATIONS = [
     # `proceso_id` ata el expediente a UNA licitacion puntual (un reporte normal no tiene una).
     ("reportes", "tipo", "TEXT"),
     ("reportes", "proceso_id", "INTEGER"),
+    # 2026-10-12 (jdemonasterio, ver DESIGN_sobreprecios.md): ids de precios_mercado que forman cada
+    # referencia ("minimo" / "par_corroborado"), ver pipeline/compare.compare().
+    ("comparaciones", "obs_ids_json", "TEXT"),
+    # Marca exigida por el pliego vs marca ofrecida por el ganador: misma_marca solo es la referencia
+    # PRINCIPAL cuando la licitación EXIGIÓ esa marca (sin "o equivalente"); ver pipeline/compare.py y
+    # pipeline/extract.py (parse_marca_exigida).
+    ("renglones", "marca_exigida", "TEXT"),
+    ("renglones", "marca_equivalente_ok", "INTEGER"),
+    # Estado documental de la fuente del precio pagado: dictamen (recomendación COMPR.AR) | adjudicado
+    # (acto/resolución) | contratado (hay orden de compra) | desconocido. Ver
+    # pipeline/comprar_import.estado_documental y pipeline/compare.run().
+    ("renglones", "estado_documental", "TEXT"),
+    ("procesos", "estado_documental", "TEXT"),
+    # IPC con fecha de publicación y versión (MEJORAS #30/#45): permite el modo "disponible a la fecha"
+    # (config/settings.yml -> comparacion.ipc_modo), ver sources/indec.py y pipeline/compare.py.
+    ("indices", "fecha_publicacion", "TEXT"),
+    ("indices", "version", "TEXT"),
 ]
 
 

@@ -331,7 +331,12 @@ def explicaciones_vigentes(conn: sqlite3.Connection, renglon_id: int) -> dict[st
 
 GRIS_MOTIVOS_REVISAR = ("atributo_desconocido", "sin_referencia_variante", "sin_referencia_presentacion",
                         "sin_datos", "revisar_unidad")
-ORIGENES = ("gris", "equivalencia", "rojo", "juez", "manual")
+# "monto" (jdemonasterio 2026-10-12): el renglón tiene la alerta `monto_inconsistente` (cantidad x
+# precio no cierra con el monto del aviso) — entra a la cola aunque el semáforo sea amarillo/verde,
+# porque mientras no se complete el dato el rojo queda bloqueado (ver pipeline/compare.run()) y nadie
+# se entera salvo que abra el caso. El color sigue mandando sobre "monto" (un rojo con esta alerta
+# rarísimo, pero si pasara, sigue siendo "rojo" en la cola).
+ORIGENES = ("gris", "equivalencia", "rojo", "juez", "manual", "monto")
 # Etiqueta CORTA del motivo (distinta de format.MOTIVO_CODIGO_TXT, que es la explicación larga):
 # para el resumen de una línea de la cola ("Aceite de girasol 1,5 L — revisar unidad", pedido de
 # jdemonasterio tras la revisión de journeys). Vive acá (no en web/format.py) porque la arma
@@ -348,7 +353,7 @@ def _detectar(conn: sqlite3.Connection) -> list[dict]:
     """Casos que el comparador o el juez externo dejaron para revisar HOY (ver docstring del módulo)."""
     placeholders = ",".join("?" for _ in GRIS_MOTIVOS_REVISAR)
     rows = conn.execute(
-        "SELECT r.id renglon_id, k.semaforo, k.motivo_codigo, jv.veredicto juez_veredicto "
+        "SELECT r.id renglon_id, r.alertas, k.semaforo, k.motivo_codigo, jv.veredicto juez_veredicto "
         "FROM renglones r LEFT JOIN comparaciones k ON k.renglon_id = r.id "
         "LEFT JOIN ("
         "  SELECT jv1.item_id, jv1.veredicto FROM juez_veredictos jv1 "
@@ -358,13 +363,17 @@ def _detectar(conn: sqlite3.Connection) -> list[dict]:
         f"WHERE (k.semaforo = 'gris' AND k.motivo_codigo IN ({placeholders})) "
         "   OR k.motivo_codigo = 'equivalencia_por_verificar' "
         "   OR k.semaforo = 'rojo' "
-        "   OR jv.veredicto IN ('error', 'dudoso')",
+        "   OR jv.veredicto IN ('error', 'dudoso') "
+        "   OR r.alertas LIKE '%monto_inconsistente%'",
         GRIS_MOTIVOS_REVISAR).fetchall()
     out = []
     for r in rows:
-        # El color manda (un rojo con veredicto del juez sigue contando como rojo; revisión del prime #48).
+        # El color manda (un rojo con veredicto del juez o con monto_inconsistente sigue contando
+        # como rojo; revisión del prime #48).
         if r["semaforo"] == "rojo":
             origen = "rojo"
+        elif r["alertas"] and "monto_inconsistente" in r["alertas"]:
+            origen = "monto"
         elif r["motivo_codigo"] == "equivalencia_por_verificar":
             origen = "equivalencia"
         elif r["juez_veredicto"] in ("error", "dudoso"):

@@ -40,6 +40,50 @@ _RENGLON_RE = re.compile(
     r"[^$(]{0,80}?por\s+(?:un\s+|el\s+)?monto\s+total\s+de\s+PESOS[^($]*\(\s*\$\s*(?P<total>[\d.,]+)",
     re.I | re.S)
 _MARCA_RE = re.compile(r",\s*marca\s+(?P<marca>[^,;]+?)\s*,?\s*$", re.I)
+# Marca EXIGIDA por el pliego/descripción (jdemonasterio 2026-10-12, distinto de `marca`/_MARCA_RE que
+# es la OFRECIDA por el ganador). Dos patrones, ambos conservadores a propósito ("un resultado falso
+# es peor que ninguno" — si no está clarísimo, no se asume ninguna exigencia):
+#   - "marca X" (con o sin "o equivalente/similar" después): "marca" es casi siempre, en este corpus,
+#     el marcador explícito de una marca (nunca se usa para otro atributo).
+#   - "tipo X o equivalente/similar": "tipo" SOLO cuenta como marca cuando viene seguido de "o
+#     equivalente/similar" en la misma frase — sin eso, "tipo" casi siempre describe otro atributo
+#     (ej. ficha SIByS "TIPO: GRANO LARGO-FINO", "TIPO: CON PALO"), no una marca.
+#   - una sola palabra siempre; una segunda SOLO si no es un conector/token no-marca ("o", "u",
+#     "equivalente", "similar", "x" de envase, o puramente numérica) — sin este freno, "GALLO O
+#     EQUIVALENTE" se capturaba entero como nombre de marca y se perdía el "o equivalente" que
+#     define si es exigencia estricta (bug encontrado armando los tests).
+_MARCA_NOMBRE = (r"[A-Za-zÁÉÍÓÚÑáéíóúñ0-9][\w.\-]*"
+                r"(?:\s+(?!(?:[oOuU]|equivalente|similar|[Xx]|\d+)\b)[A-Za-zÁÉÍÓÚÑáéíóúñ0-9][\w.\-]*)?")
+_MARCA_EXIGIDA_RE = re.compile(rf"\bmarca\s*:?\s+(?P<marca>{_MARCA_NOMBRE})", re.I)
+_TIPO_EXIGIDO_EQUIV_RE = re.compile(
+    rf"\btipo\s*:?\s+(?P<marca>{_MARCA_NOMBRE})\s+[oOuU]\s+(?:equivalente|similar)s?\b", re.I)
+_MARCA_EQUIVALENTE_RE = re.compile(r"\b[oOuU]\s+(?:equivalente|similar)s?\b", re.I)
+
+
+def parse_marca_exigida(descripcion: str | None) -> tuple[str | None, bool | None]:
+    """(marca_exigida, marca_equivalente_ok) a partir del texto del renglón/pliego.
+
+    `marca_equivalente_ok`:
+      - False: el texto dice "marca X" SIN "o equivalente/similar" cerca -> exigencia estricta
+        (pipeline.compare.compare() puede usar `misma_marca` como referencia PRINCIPAL).
+      - True: dice "marca X o equivalente/similar" o "tipo X o equivalente/similar" -> el pliego
+        acepta otra marca, no es exigencia estricta (la marca ofrecida por el ganador queda solo
+        como contexto, nunca referencia principal).
+      - None (con marca_exigida None): no se encontró ninguno de los dos patrones — no se asume nada.
+    Ventana corta (40 caracteres después del nombre) para decidir si hay "o equivalente/similar" tras
+    "marca X": ni todo el renglón (podría hablar de otra cosa) ni solo la palabra siguiente.
+    """
+    if not descripcion:
+        return None, None
+    m = _MARCA_EXIGIDA_RE.search(descripcion)
+    if m:
+        marca = m.group("marca").strip().rstrip(",.;:")
+        ventana = descripcion[m.end():m.end() + 40]
+        return marca, bool(_MARCA_EQUIVALENTE_RE.search(ventana))
+    m = _TIPO_EXIGIDO_EQUIV_RE.search(descripcion)
+    if m:
+        return m.group("marca").strip().rstrip(",.;:"), True
+    return None, None
 _ENVASE_RE = re.compile(r"contenido\s+neto\s+de\s+(?:[A-ZÁÉÍÓÚÑ\s]+)?\(?\s*([\d.,]+)\s*\)?\s*(kilogramos?|gramos?|litros?|mililitros?|cc|kg|g|l)\b", re.I)
 _PROCESO_RE = re.compile(r"\b(\d{1,3}-\d{4}-[A-Z]{2,4}\d{2})\b")
 _TIPO_RE = [
@@ -309,10 +353,12 @@ def store_extraction(conn: sqlite3.Connection, doc: sqlite3.Row, extraction: dic
     # importados de Quijote 2021): la fuente de verdad es el aviso original.
     conn.execute("DELETE FROM renglones WHERE proceso_id=?", (proceso_id,))
     for r in rows:
+        descripcion_renglon = r.get("descripcion") or f"renglón {r.get('renglon')} (sin descripción en el BO)"
+        marca_exigida, marca_equivalente_ok = parse_marca_exigida(descripcion_renglon)
         db.upsert(conn, "renglones", {
             "proceso_id": proceso_id,
             "nro_renglon": r.get("renglon"),
-            "descripcion": r.get("descripcion") or f"renglón {r.get('renglon')} (sin descripción en el BO)",
+            "descripcion": descripcion_renglon,
             "cantidad": r.get("cantidad"),
             "unidad_compra": r.get("unidad"),
             "precio_unitario": r.get("precio_unitario"),
@@ -320,6 +366,8 @@ def store_extraction(conn: sqlite3.Connection, doc: sqlite3.Row, extraction: dic
             "proveedor": r.get("proveedor"),
             "proveedor_cuit": r.get("cuit"),
             "marca": r.get("marca"),
+            "marca_exigida": marca_exigida,
+            "marca_equivalente_ok": marca_equivalente_ok,
             "match_razon": None,
             "alertas": json.dumps(r.get("alertas") or [], ensure_ascii=False) or None,
             "extraccion_metodo": extraction.get("metodo"),

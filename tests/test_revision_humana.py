@@ -123,13 +123,14 @@ def test_correccion_mas_reciente_gana(tmp_path):
 
 # ── Cola de revisión ─────────────────────────────────────────────────────────
 
-def _seed_comparacion(conn, renglon_id, proceso_id, semaforo, motivo_codigo, producto_id="yerba_mate"):
+def _seed_comparacion(conn, renglon_id, proceso_id, semaforo, motivo_codigo, producto_id="yerba_mate",
+                      alertas=None):
     db.upsert(conn, "procesos", {"fuente": "bo_primera", "external_id": f"p{proceso_id}",
                                  "organismo": "ORGANISMO X", "fecha_publicacion": "2021-06-07",
                                  "created_at": db.now_iso(), "updated_at": db.now_iso()},
              ("fuente", "external_id"))
-    conn.execute("INSERT INTO renglones (id, proceso_id, descripcion, producto_id, external_key) "
-                "VALUES (?, ?, 'yerba', ?, ?)", (renglon_id, proceso_id, producto_id, f"k{renglon_id}"))
+    conn.execute("INSERT INTO renglones (id, proceso_id, descripcion, producto_id, external_key, alertas) "
+                "VALUES (?, ?, 'yerba', ?, ?, ?)", (renglon_id, proceso_id, producto_id, f"k{renglon_id}", alertas))
     conn.execute("INSERT INTO comparaciones (renglon_id, semaforo, motivo_codigo, evidencia_json) "
                 "VALUES (?, ?, ?, '[]')", (renglon_id, semaforo, motivo_codigo))
 
@@ -157,6 +158,25 @@ def test_cola_no_pisa_una_decision_humana_ya_tomada(tmp_path):
         datos = rh.cola(conn)   # el caso sigue siendo gris: no debe volver a 'pendiente'
     item = next(it for it in datos["items"] if it["renglon_id"] == 1)
     assert item["estado"] == "descartado"
+
+
+def test_cola_detecta_monto_inconsistente_aunque_no_sea_gris_ni_rojo(tmp_path):
+    """jdemonasterio 2026-10-12: la alerta `monto_inconsistente` entra a la cola con origen "monto"
+    aunque el semáforo haya quedado amarillo o verde (compare.run() ya bloquea el rojo para estos,
+    pero nadie se entera de que falta completar el dato salvo que abra el caso)."""
+    import json
+    with db.session(tmp_path / "t.db") as conn:
+        _seed_comparacion(conn, 1, 1, "amarillo", "ok",
+                          alertas=json.dumps(["monto_inconsistente: cantidad x precio = 100 vs monto 200"]))
+        _seed_comparacion(conn, 2, 1, "rojo", "ok",
+                          alertas=json.dumps(["monto_inconsistente: cantidad x precio = 100 vs monto 200"]))
+        _seed_comparacion(conn, 3, 1, "verde", "ok")   # sin alerta: no entra
+        datos = rh.cola(conn)
+    origenes = {it["renglon_id"]: it["origen"] for it in datos["items"]}
+    assert origenes[1] == "monto"
+    assert origenes[2] == "rojo"   # el color manda sobre la alerta de monto
+    assert 3 not in origenes
+    assert datos["counts"]["monto"] == 1
 
 
 def test_cola_filtra_por_estado_y_producto(tmp_path):

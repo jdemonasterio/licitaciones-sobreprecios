@@ -40,6 +40,7 @@ from starlette.background import BackgroundTask
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .. import backup, config, db, reports, revision_humana
+from ..pipeline.comprar_import import ESTADO_DOCUMENTAL_TXT
 from ..sources.precios_programa import PROGRAMA_TXT
 from . import _background, format as fmt, queries
 
@@ -111,7 +112,8 @@ templates.env.globals.update(SEMAFORO_TXT=fmt.SEMAFORO_TXT, REF_TXT=fmt.REF_TXT,
                              EXPLICACION_TXT=revision_humana.EXPLICACION_TXT,
                              EXPLICACION_ESTADOS=revision_humana.EXPLICACION_ESTADOS,
                              EXPLICACION_ESTADO_TXT=revision_humana.EXPLICACION_ESTADO_TXT,
-                             TIPO_INVESTIGACION_TXT=TIPO_INVESTIGACION_TXT, PROGRAMA_TXT=PROGRAMA_TXT)
+                             TIPO_INVESTIGACION_TXT=TIPO_INVESTIGACION_TXT, PROGRAMA_TXT=PROGRAMA_TXT,
+                             ESTADO_DOCUMENTAL_TXT=ESTADO_DOCUMENTAL_TXT)
 
 
 # ── Seguridad mínima ───────────────────────────────────────────────────────

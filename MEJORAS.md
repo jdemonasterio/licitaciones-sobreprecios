@@ -124,6 +124,9 @@ La serie hoy es fuente + descripción normalizada (provisional); el par que
 confirma el mínimo se guarda solo como las 2 primeras filas de la evidencia.
 Como verificar: cada comparación guarda los ids de `precios_mercado` que la
 forman y la corroboración usa EAN cuando existe.
+*Parcialmente hecho (2026-10-12): `comparaciones.obs_ids_json` guarda los ids del mínimo usado
+y del par corroborado (`pipeline/compare.py`, `Resultado.obs_ids`). Sigue sin EAN: la clave de
+serie sigue siendo (fuente, descripción normalizada) — ver límite conocido en DESIGN_sobreprecios.md.*
 
 **#28 — Cuarentena de precios sospechosos en vez de borrarlos por mediana.**
 Prime (riesgos ronda 2): el filtro de outliers descarta datos sin probar el
@@ -134,11 +137,17 @@ error. Como verificar: una observación fuera de rango queda visible con
 Los textos todavía dicen "el Estado pagó" para recomendaciones de dictamen.
 Como verificar: cada renglón y reporte dice "recomendado", "contratado" o
 "pagado" según la fuente.
+*Hecho (2026-10-12): `renglones.estado_documental` / `procesos.estado_documental`
+(dictamen|adjudicado|contratado|desconocido, `pipeline/comprar_import.
+actualizar_estado_documental`, se recalcula al final de `compare.run()`). Nunca
+"pagado" — no hay fuente de pagos reales. Visible en `/licitacion/<id>` y en
+`reports.py` (columna "Estado documental"; "Precio $/u. base" en vez de "Pagó").*
 
 **#30 — Índices con fecha de publicación y versión (decidido en #45).**
 Prime P20: guardar cuándo se publicó cada IPC y permitir el modo "lo que se
 sabía a la fecha". Como verificar: tabla `indices` con `fecha_publicacion` y
 `version`; el comparador puede elegir modo.
+*Hecho (2026-10-12): ver #45.*
 
 **#31 — Exportación externa que rechace lo no publicable.**
 Hoy los reportes llevan banner BORRADOR INTERNO pero se pueden mandar igual.
@@ -182,6 +191,13 @@ Como verificar: una compra de 2021 sin SEPA se compara contra la lista vigente c
 Navegar procesos viejos (probar con 4-5) para encontrar el acto de adjudicación y las órdenes de compra; parsear
 las ofertas desestimadas con su causa; leer el plazo de pago del pliego y usarlo en el ajuste financiero en
 lugar del supuesto de 1 mes. Como verificar: test con fixtures de procesos viejos y la causa visible en el detalle.
+*Dos agregados del owner (2026-10-12), fuera del alcance original pero en la misma área (dictamen/pliego):
+(1) empate de ofertas del mismo proveedor al precio del dictamen -> se elige UNA (antes quedaban ambas
+pendientes/NULL), `pipeline/comprar_import.ofertas_ganadoras_y_pendientes`. (2) marca EXIGIDA por el pliego
+("marca X" / "tipo X o equivalente") vs. OFRECIDA por el ganador -> `misma_marca` solo es referencia principal
+si la marca fue exigida sin "o equivalente", `pipeline/extract.parse_marca_exigida` +
+`pipeline/compare.compare(marca_exigida=..., marca_equivalente_ok=...)`. Detalle y tests en
+DESIGN_sobreprecios.md §2 (entrada "Comparador v3").*
 
 **#38 — Mayoristas: priorizar datos del pasado (P9).**
 Averiguar si Diarco y otros mayoristas tienen historial (o solo precio actual); el valor está en el pasado
@@ -215,6 +231,12 @@ puede elegir o responder "no sé". Como verificar: E2E que descarta una referenc
 
 **#45 — IPC con fecha de publicación y versión, modo "disponible a la fecha" (P20, decidido).**
 Ver #30: se implementa. Como verificar: test que muestra que una compra del 5 de un mes no usa el IPC de ese mes.
+*Hecho (2026-10-12): `indices.fecha_publicacion` (estimada, 15 del mes siguiente — la API de INDEC no
+trae la fecha real) y `version` (timestamp de la bajada), `sources/indec.py`. `config/settings.yml ->
+comparacion.ipc_modo`: `retrospectivo` (default) | `disponible_a_fecha` (el ajuste financiero y el
+temporal por IPC solo usan meses ya publicados a la fecha de la compra). Test:
+`tests/test_compare.py::test_monthly_inflation_disponible_a_fecha_no_usa_el_mes_que_todavia_no_se_publico`
+(una compra del 20/7 no usa julio, publicado el 15/8).*
 
 **#46 — Política de precios por período (jdemonasterio 2026-10-12).**
 2020-2023: listas de Precios Cuidados/Justos/Máximos (en 2023 son la única fuente: sumar también recortes de
@@ -330,12 +352,32 @@ Google News a la nota original y pasarle al juez el primer párrafo. Como verifi
 8. — **PARCIAL (2026-10-12)**: vista de impacto antes/después construida (`sobreprecios/impacto.py`, `/impacto`).
    El paquete para el periodista, el checklist de explicaciones alternativas y el backup/restauración sin
    consola siguen pendientes (no se tocaron en esta ronda).
+
+5. Investigar: separar comparación histórica de la extrapolación con precios de hoy (contexto, nunca rojo) ~~y~~
+   *(punto "nunca rojo" REVERTIDO 2026-10-12 por decisión explícita del coordinador: un precio de HOY
+   trasladado por IPC SÍ puede habilitar rojo si corrobora con 2 fuentes, pero solo con el override
+   `comparacion.rojo_con_ajuste_ipc_hasta_dias` explícito — nunca automático por default. El comparador ya
+   etiqueta "precio de HOY" distinto en el motivo; falta que Investigar (otro agente) decida si pasa ese
+   override. Ver DESIGN_sobreprecios.md §2 "Comparador v3".)* decir qué tipo de documento se importó (pliego,
+   dictamen, adjudicación, OC); estado "procesado, sin comparación" con motivos y próximos pasos (sigue
+   pendiente).
+6. Analítica auditable: cobertura por organismo (comparables / total / publicables), n por mes, ponderación; aviso
+   cuando un ranking mezcla años en pesos de cada fecha.
+7. Nombres legibles (ediciones de programa, tipos de importación), fechas dd/mm/aaaa y controles en español.
+8. Lo que agregaría: vista de impacto antes/después de un cambio de reglas o catálogo; paquete para el periodista
+   (expediente congelado con fuentes); checklist de explicaciones alternativas por caso; backup/restauración de la
+   base sin consola.
 Como verificar: cada punto con su criterio en `_scratch/licitaciones/REVISION_PRIME_JOURNEYS.md` (local).
 
 **#41 — Domicilios: solo se ocultan los de personas humanas.** Los de empresas y organismos se muestran. Verificado 2026-10-12: la página de cada empresa muestra su domicilio legal y ningún filtro oculta domicilios de personas jurídicas; los reportes no exportan datos societarios.
 
 **#42 — Impuestos en los precios.** Registrar si cada fuente informa precio con o sin IVA; las promociones se
 toman como el precio vigente; stock y compra mínima no se consideran.
+*Hecho (2026-10-12): `config/settings.yml -> impuestos.incluye_iva` (mapa canal/fuente -> bool) +
+`config.incluye_iva(canal)`. Documental, no cambia cálculos: el owner confirmó que el IVA es el
+mismo para todos los productos/proveedores de este catálogo (mayorista/minorista/programa/oficial/
+estado: todos con IVA incluido, consumidor final). Promociones y stock/compra mínima: confirmado
+que no se ajustan, decisión explícita.*
 
 **#43 — Plan de uso por Quijote.** Lo operan ellos con claude.ai de punta a punta (iterar el software y las
 validaciones humanas); costo extra estimado bajo. Enviar documentos públicos a proveedores de IA está bien: es

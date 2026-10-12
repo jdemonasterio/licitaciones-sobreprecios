@@ -33,10 +33,15 @@ class Producto:
     indec: dict = field(default_factory=dict)
     variantes: dict = field(default_factory=dict)        # nombre -> tuple de frases
     variante_default: str | None = None
-    # Variante de la compra -> variantes del mercado que la satisfacen ("guisero" acepta cualquier forma corta).
+    # Variante de la compra -> variantes del mercado que la satisfacen ("guisero" acepta cualquier forma corta;
+    # también sirve para mapear una variante no vendida al público, ej. leche fortificada Ley 25.459, contra la
+    # variante "comun"/default del mercado — jdemonasterio 2026-10-12).
     compatibles: dict = field(default_factory=dict)
     # El atributo no puede quedar "no exigido": sin dato en la compra, gris (lavandina: cloro activo).
     atributo_obligatorio: bool = False
+    # nombre de variante -> texto que pipeline.compare.compare() suma al motivo cuando esa variante de la compra
+    # se usó (ej. advertir que la fortificada se comparó contra la común porque no se vende al público).
+    nota_equivalencia: dict = field(default_factory=dict)
 
     def indec_contenido_base(self) -> float | None:
         """Contenido (en unidad_base) de la presentación que releva INDEC."""
@@ -85,10 +90,14 @@ def load_catalog(raw: dict | None = None, con_ajustes: bool = True) -> dict[str,
             spec = dict(spec)
             spec["excluye"] = list(spec.get("excluye") or []) + list(aj.get("excluye_extra") or [])
             spec["incluye"] = list(spec.get("incluye") or []) + list(aj.get("incluye_extra") or [])
-            if aj.get("variantes"):
-                spec["variantes"] = aj["variantes"]
+            if "variantes" in aj:
+                # `variantes: {}` explícito BORRA las del catálogo base (ej. arroz_blanco, harina_maiz:
+                # jdemonasterio 2026-10-12 decidió no separar por variante); antes un diccionario vacío
+                # (falsy) se ignoraba y dejaba las del base puestas, lo que no permitía "sacar" una variante
+                # sin reemplazarla por otra.
+                spec["variantes"] = aj.get("variantes") or {}
                 spec["variante_default"] = aj.get("variante_default")
-            for k in ("compatibles", "atributo_obligatorio"):
+            for k in ("compatibles", "atributo_obligatorio", "nota_equivalencia"):
                 if k in aj:
                     spec[k] = aj[k]
         ref = spec.get("tamano_referencia")
@@ -106,6 +115,7 @@ def load_catalog(raw: dict | None = None, con_ajustes: bool = True) -> dict[str,
             variante_default=spec.get("variante_default"),
             compatibles={k: tuple(v) for k, v in (spec.get("compatibles") or {}).items()},
             atributo_obligatorio=bool(spec.get("atributo_obligatorio")),
+            nota_equivalencia=dict(spec.get("nota_equivalencia") or {}),
         )
     return catalog
 

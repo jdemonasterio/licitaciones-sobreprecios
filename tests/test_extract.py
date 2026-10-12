@@ -3,7 +3,8 @@ from pathlib import Path
 import pytest
 
 from sobreprecios.pipeline.extract import (extract_document, flatten_llm, numero_proceso,
-                                           regex_extract, resolutive_part, validate_renglon)
+                                           parse_marca_exigida, regex_extract, resolutive_part,
+                                           validate_renglon)
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -32,6 +33,30 @@ def test_extract_document_without_llm_validates_amounts(mds_735):
     assert result["tipo_procedimiento"] == "emergencia"
     assert result["numero_proceso"] == "Contratación por Emergencia COVID-19 Nº 24/21"
     assert all(r["alertas"] == [] for r in result["renglones"])
+
+
+# ── Marca exigida por el pliego (jdemonasterio 2026-10-12, distinta de `marca`/la ofrecida) ─────
+
+@pytest.mark.parametrize("descripcion,marca,equivalente_ok", [
+    ("ARROZ BLANCO; MARCA: GALLO O EQUIVALENTE", "GALLO", True),
+    ("Leche en polvo marca La Serenisima o similar x 800 g", "La Serenisima", True),
+    ("Detergente marca Magistral, envase x 750 ml", "Magistral", False),
+    ("ARROZ BLANCO; TIPO GALLO O EQUIVALENTE, PRESENTACION: 1 KG", "GALLO", True),
+    ("Yerba mate tipo Taragui o similar x 1 kg", "Taragui", True),
+    ("ARROZ; MARCA: GALLO, PRESENTACION 1 KG", "GALLO", False),
+    ("Yerba mate marca Playadito x 1 kg", "Playadito", False),
+    (None, None, None),
+    ("Arroz blanco comun x 1 kg", None, None),   # sin "marca"/"tipo ... equivalente": no se asume nada
+])
+def test_parse_marca_exigida_casos(descripcion, marca, equivalente_ok):
+    assert parse_marca_exigida(descripcion) == (marca, equivalente_ok)
+
+
+def test_parse_marca_exigida_tipo_sin_equivalente_no_es_marca():
+    """'tipo' sin "o equivalente/similar" describe casi siempre OTRO atributo (ficha SIByS), no una
+    marca — el falso positivo real que motivó separar el patrón de "marca"."""
+    assert parse_marca_exigida("ARROZ; TIPO GRANO: LARGO-FINO, PRESENTACION: 1 KG") == (None, None)
+    assert parse_marca_exigida("YERBA MATE; TIPO: CON PALO, CERTIFICADO FORESTAL: SIN") == (None, None)
 
 
 def test_resolutive_part_starts_at_decide():

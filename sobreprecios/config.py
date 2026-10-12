@@ -54,6 +54,14 @@ def cache_dir(*parts: str) -> Path:
     return path
 
 
+def incluye_iva(canal: str) -> bool | None:
+    """Si el canal/fuente de precio informa el valor CON IVA (MEJORAS #42, config/settings.yml →
+    impuestos.incluye_iva). Puramente informativo: no cambia ningún cálculo (jdemonasterio
+    2026-10-12 — el IVA es el mismo para todos los productos/proveedores de este catálogo).
+    `None` si el canal no está en el mapa (dato desconocido, no "sin IVA")."""
+    return ((settings().get("impuestos") or {}).get("incluye_iva") or {}).get(canal)
+
+
 def scratch_path(project: str, filename: str) -> Path:
     """Ruta en _scratch/<project>/ para goldens y análisis (nunca commiteados).
 
