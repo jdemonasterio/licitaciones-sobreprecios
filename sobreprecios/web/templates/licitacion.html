@@ -28,6 +28,8 @@
     <p class="small" style="margin-top:8px"><b>Qué falta para publicar:</b>
     {% if resumen.bloqueantes %}{{ resumen.bloqueantes|join('; ') }}.{% else %}nada pendiente detectado automáticamente — igual revisá a mano antes de compartir.{% endif %}</p>
 </div>
+<div class="help" style="margin-bottom:12px"><b>Qué se importó:</b> {{ tipo_importado.etiqueta }}.
+{{ tipo_importado.explicacion }}{% for e in tipo_importado.extra %} {{ e }}{% endfor %}</div>
 
 <div class="grid-2">
 <div class="card">
@@ -36,9 +38,9 @@
         <dt>Procedimiento</dt><dd>{{ (p.tipo_procedimiento or 'sin dato')|replace('_', ' ') }}</dd>
         <dt>Número</dt><dd>{{ p.numero or 'sin dato' }}</dd>
         <dt>Fechas</dt><dd>
-            <div>Apertura de ofertas: <b>{{ p.fecha_apertura or 'sin dato' }}</b>{% if p.fecha_apertura %} <span class="muted small">(fecha de comparación)</span>{% endif %}</div>
-            <div>Adjudicación: {{ p.fecha_adjudicacion or 'sin dato' }}</div>
-            <div>Publicación: {{ p.fecha_publicacion or 'sin dato' }}</div>
+            <div>Apertura de ofertas: <b>{{ p.fecha_apertura|fecha if p.fecha_apertura else 'sin dato' }}</b>{% if p.fecha_apertura %} <span class="muted small">(fecha de comparación)</span>{% endif %}</div>
+            <div>Adjudicación: {{ p.fecha_adjudicacion|fecha if p.fecha_adjudicacion else 'sin dato' }}</div>
+            <div>Publicación: {{ p.fecha_publicacion|fecha if p.fecha_publicacion else 'sin dato' }}</div>
             {% if not p.fecha_apertura %}<div class="muted small">Sin fecha de apertura: se compara contra {{ 'la adjudicación' if p.fecha_adjudicacion else 'la publicación' }}.</div>{% endif %}
         </dd>
         <dt>Objeto</dt><dd>{{ p.objeto or '—' }}</dd>
@@ -117,7 +119,7 @@ compra registran el contrato (no lo pagado). Una prórroga puede estar prevista 
 <h2>Actos administrativos — COMPR.AR</h2>
 <div class="table-wrap"><table class="small">
 <thead><tr><th>Acto</th><th>Número</th><th>Fecha</th><th></th></tr></thead>
-<tbody>{% for a in p.actos %}<tr><td>{{ a.descripcion or a.tipo }}</td><td>{{ a.numero }}</td><td>{{ a.fecha or '—' }}</td>
+<tbody>{% for a in p.actos %}<tr><td>{{ a.descripcion or a.tipo }}</td><td>{{ a.numero }}</td><td>{{ a.fecha|fecha if a.fecha else '—' }}</td>
 <td>{% if a.url %}<a href="{{ a.url }}" target="_blank" rel="noopener">Abrir en COMPR.AR ↗</a>
 {{ m.doc_viewer(a.url, 'Ver acá (sección actos)', 'doc-acto-' ~ a.id) }}{% endif %}</td></tr>{% endfor %}</tbody></table></div>
 <p class="muted small">El link abre el proceso en COMPR.AR en la sección "Actos administrativos": no hay PDF
@@ -128,7 +130,7 @@ descargable sin iniciar sesión (el botón "Ver" del sitio abre un visor de GDE 
 <h2>Órdenes de compra (contrato) — COMPR.AR</h2>
 <div class="table-wrap"><table class="small">
 <thead><tr><th>Número</th><th>Proveedor</th><th>CUIT</th><th>Fecha</th><th>Tipo</th><th>Estado</th><th class="num">Monto</th></tr></thead>
-<tbody>{% for o in p.ordenes %}<tr><td>{{ o.numero_oc }}</td><td>{{ o.proveedor }}</td><td>{{ o.cuit or '' }}</td><td>{{ o.fecha }}</td>
+<tbody>{% for o in p.ordenes %}<tr><td>{{ o.numero_oc }}</td><td>{{ o.proveedor }}</td><td>{{ o.cuit or '' }}</td><td>{{ o.fecha|fecha }}</td>
 <td>{{ o.tipo }}</td><td>{{ o.estado }}</td><td class="num">{{ o.monto|ars }}</td></tr>{% endfor %}</tbody></table></div>
 {% endif %}
 
@@ -144,10 +146,12 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
 </tr></thead>
 <tbody>
 {% for r in renglones %}
-<tr data-soft-key="reng:{{ r.id }}">
+<tr data-soft-key="reng:{{ r.id }}" id="reng-{{ r.id }}">
     <td><span class="sem sem-{{ r.semaforo or 'gris' }}">{{ SEMAFORO_TXT[r.semaforo or 'gris'] }}</span>{% if r.motivo_codigo == 'equivalencia_por_verificar' %}
         <div><span class="tag tag-alerta" title="La brecha llega a rojo contra productos parecidos, pero no se pudo verificar que sea el mismo producto, variedad o envase">⚠ equivalencia por verificar</span></div>{% endif %}
         <div class="muted small" style="max-width:220px">{{ explicar_semaforo(r) }}</div>
+        {% if r.evidencia and r.evidencia[0].factor_ipc and r.gap_dias and r.gap_dias > 15 %}
+        <div><span class="tag tag-alerta" title="La referencia usa una observación de mercado lejana a la fecha de la compra (en la práctica, el precio de HOY) llevada hacia atrás con IPC. Puede habilitar un color igual que un precio de la fecha real: revisar antes de concluir">⚠ referencia extrapolada por IPC</span></div>{% endif %}
         {% if r.confianza %}<div class="muted small">confianza {{ r.confianza }}</div>{% endif %}
         {% set val = validaciones.get(r.id) %}
         {% if val %}<div class="small"><span class="tag {% if val.resumen == 'con objeciones' %}tag-alerta{% endif %}">{{ val.resumen }}</span></div>{% endif %}
@@ -200,16 +204,16 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
                 <dt>Misma marca</dt><dd>{{ r.ref_misma_marca|ars(2) }} ({{ r.ref_n_misma_marca or 0 }} obs.)</dd>
                 <dt>INDEC (promedio minorista)</dt><dd>{{ r.ref_indec|ars(2) }}</dd>
                 <dt>Sin ajustar / ajuste financiero</dt><dd>{{ r.sobreprecio_pct|pct }} / {{ r.ajuste_financiero_pct|num(1) }}%</dd>
-                <dt>Fecha de comparación</dt><dd>{{ r.fecha_compra or '—' }} <span class="muted">(apertura de ofertas; si no hay, adjudicación)</span></dd>
+                <dt>Fecha de comparación</dt><dd>{{ r.fecha_compra|fecha if r.fecha_compra else '—' }} <span class="muted">(apertura de ofertas; si no hay, adjudicación)</span></dd>
                 <dt>Antigüedad del precio de mercado</dt><dd>{{ r.gap_dias if r.gap_dias is not none else '—' }} días como máximo respecto de esa fecha</dd>
-                <dt>Extracción</dt><dd>{{ r.extraccion_metodo or '—' }} · macheo: {{ r.match_metodo or '—' }} ({{ r.match_razon or '' }})</dd>
+                <dt>Extracción</dt><dd>{{ r.extraccion_metodo|extraccion_txt }} · macheo: {{ r.match_metodo or '—' }} ({{ r.match_razon or '' }})</dd>
             </dl>
             <div>
             {% if r.evidencia %}
             <table class="small">
                 <thead><tr><th>Fuente</th><th>Fecha</th><th>Producto en góndola</th><th class="num">$/u. base</th><th>Mes IPC usado</th></tr></thead>
                 <tbody>{% for o in r.evidencia[:25] %}
-                <tr><td>{{ o.fuente }}<div class="muted">{{ o.canal }}</div></td><td>{{ o.fecha }}{% if o.posterior %}<div class="muted">posterior a la compra</div>{% endif %}</td>
+                <tr><td>{{ o.fuente }}<div class="muted">{{ o.canal }}</div></td><td>{{ o.fecha|fecha }}{% if o.posterior %}<div class="muted">posterior a la compra</div>{% endif %}</td>
                     <td>{% if o.url %}<a href="{{ o.url }}" target="_blank" rel="noopener">{{ o.descripcion }}</a>{% else %}{{ o.descripcion }}{% endif %}</td>
                     <td class="num">{{ o.precio_ub|ars(2) }}</td>
                     <td class="small">{% if o.factor_ipc %}{{ o.fecha[:7] }} → {{ r.fecha_compra[:7] if r.fecha_compra else '?' }} (x{{ '%.3f'|format(o.factor_ipc) }}){% elif o.fecha and r.fecha_compra and o.fecha[:7] == r.fecha_compra[:7] %}mismo mes{% else %}sin ajuste{% endif %}</td></tr>

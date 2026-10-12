@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Impacto de un cambio · Sobreprecios{% endblock %}
+{% block content %}
+<h1>Impacto de un cambio</h1>
+<p class="muted small">Cada vez que un botón de "Datos y fuentes", una corrección en "Revisión" o un veredicto en
+"Precios de programa" vuelve a calcular sobreprecios, se guarda una foto de ANTES. Esta pantalla lista esas
+corridas y, al abrir una, qué renglón cambió de color, cuánto cambió el exceso estimado y qué marcas
+"publicable" quedaron revocadas (nunca se reafirman solas: hay que volver a revisarlas a mano).</p>
+
+{% if not corridas %}
+<div class="help">Todavía no hay corridas de recálculo registradas. Van a aparecer acá la próxima vez que se
+toque una regla, una corrección manual o un veredicto de precios de programa.</div>
+{% else %}
+<div class="table-wrap">
+<table>
+<thead><tr><th>#</th><th>Disparado por</th><th>Cuándo</th><th>Renglones en la foto</th><th>Estado</th><th></th></tr></thead>
+<tbody>
+{% for c in corridas %}
+<tr>
+    <td>{{ c.id }}</td>
+    <td class="small">{{ c.origen or '—' }}</td>
+    <td>{{ c.started_at|fecha(con_hora=True) }}</td>
+    <td class="num">{{ c.n_items or 0 }}</td>
+    <td>{% if c.estado == 'ok' %}<span class="sem sem-verde">ok</span>{% elif c.estado == 'error' %}<span class="sem sem-rojo">error</span>{% else %}<span class="sem sem-gris">{{ c.estado or 'corriendo' }}</span>{% endif %}</td>
+    <td><a class="btn btn-sm btn-primary" href="/impacto/{{ c.id }}">Ver qué cambió</a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endif %}
+{% endblock %}

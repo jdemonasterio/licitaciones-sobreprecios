@@ -31,6 +31,7 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Sucesión de organismos | `sobreprecios/organismos_historia.py` | Grafo de renombres/absorciones (tabla `organismos_sucesion`), confirmado con búsqueda web + LLM barato (CLI `organismos-historia`) |
 | Archivo SEPA | `sources/sepa_archivo.py` | Volcados diarios SEPA 2024-08 → hoy (archivo comunitario preciazo), mediana por cadena |
 | Compuerta | `sobreprecios/revision.py` | "publicable" atado a una huella del cálculo; se revoca solo |
+| Impacto | `sobreprecios/impacto.py` | Foto antes/después de un recálculo disparado desde el webui; `/impacto` muestra qué cambió |
 | PDFs | `sobreprecios/pdf_text.py` | pdfplumber por columnas → OCR → LLM (benchmark 2026-10-11) |
 | Juez externo | `auditoria/juez.py` | Auditoría LLM fuera del programa, solo lectura, TSV + reglas sugeridas |
 | Simulador | `tests/e2e/`, `scripts/simular.py`, `simular.bat` | Recorridos de usuario reales en el navegador: compuerta antes de entregar |
@@ -498,6 +499,84 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   - Verificado con el simulador (`tests/e2e/test_user_journeys.py`, escenarios 13-18) y ~70 tests nuevos
     (`test_web_format.py`, `test_web_queries.py`, `test_backup.py`, `test_reports.py`, `test_web_app.py`, más
     casos agregados a `test_revision_humana.py`).
+- **2026-10-12 · Revisión de journeys del prime, lo pendiente de MEJORAS #49 (jdemonasterio)**: alcance de esta
+  ronda — Investigar, Analítica, nombres legibles de precios de programa, fechas/i18n y una vista de impacto
+  antes/después. Cambios, archivo por archivo:
+  - **Investigar (#49.5)**: `queries.tipo_importado()` banner arriba de `/licitacion/<id>` ("Qué se importó":
+    dictamen de COMPR.AR = recomendado, acto del BO = adjudicado, nunca "pagado"; suma una nota si además hay
+    órdenes de compra o actos administrativos). `investigar._resumen_comparacion()` detecta cuando NINGÚN
+    renglón quedó con semáforo y cambia el estado de la investigación a `sin_comparacion` (nunca el "listo"
+    verde): agrupa los motivos grises (`_MOTIVO_CORTO`) y agrega un próximo paso (`/revision/<renglon_id>`,
+    sumar el producto a `config/productos.yml`). `investigar.lista()` agrupa reintentos del MISMO caso
+    (`_clave_caso`: mismo aviso del BO con o sin `?busqueda=1` normaliza a la misma clave en
+    `normalizar_entrada`) mostrando "N intentos" y conservando el `proceso_id` de un intento anterior si el más
+    reciente no tiene. **Decisión del owner, pisa un borrador anterior de esta misma ronda**: el precio de HOY
+    llevado hacia atrás por IPC para una compra vieja (gap ensanchado en `investigar.py`, `gap_maximo=3*365`) SÍ
+    puede habilitar un semáforo rojo como cualquier otra referencia — la adaptación del comparador para eso
+    queda para otro agente; esta ronda solo rotula el resultado (`investigar._nota_extrapolado()`, lee
+    `evidencia_json`/`gap_dias` de la comparación y agrega "ADVERTENCIA — referencia: precio de hoy (<fecha
+    obs>) llevado a <fecha compra> con IPC (×factor)" al mensaje final) y marca un tag "⚠ referencia
+    extrapolada por IPC" en `/licitacion/<id>` cuando `gap_dias` supera la ventana directa y hay `factor_ipc` en
+    la evidencia. Se descartó (y se revirtió del todo, sin dejar código muerto) un diseño previo que forzaba
+    gris con `motivo_codigo="extrapolado_contexto"`: quedó solo como nota en el docstring de
+    `pipeline/compare.compare()` para quien adapte el núcleo.
+  - **Analítica auditable (#49.6)**: `queries.agrupado()` suma `publicables` (comparados que además están en
+    un proceso "publicable") y `convertidos`/`sin_convertir` (cuántos renglones no se pudieron pasar a la
+    moneda elegida); las tablas de `/analitica` muestran esas columnas y aclaran que "brecha promedio" es un
+    promedio SIMPLE por renglón, no ponderado por monto. El tooltip del gráfico mensual (`ch-mes`) ahora
+    muestra cuántos renglones comparados tiene cada punto. Si el rango de fechas abarca más de un año Y la
+    moneda es "nominal", un aviso (`aviso_multi_anio`, calculado en `web/app.py:analitica()`) sugiere pesos
+    reales con un link que preserva el resto de los filtros — nunca cambia el default solo. Los títulos de
+    ranking ("Por organismo", "Renglones con mayor brecha") suman la aclaración "(entre los renglones
+    comparados con estos filtros...)" para no leerse como un ranking representativo de todo el universo.
+  - **Pedido del owner, por fuera del alcance original — orden en pesos constantes (#49, feedback 2026-10-12)**:
+    `normalize/moneda.registrar_real()` registra `conv_real(monto, fecha)` SIEMPRE (con fallback al nominal si
+    todavía no hay IPC cargado), independiente de qué moneda esté eligiendo la pantalla. `queries.list_procesos()`
+    y `queries.agrupado()` ahora ORDENAN "exceso"/"monto" por esa columna `_real()` por default — la columna que
+    se MUESTRA sigue respetando el selector "Montos en" (nominal por default); un tooltip en cada celda muestra
+    el equivalente en pesos reales. Motivo: con inflación alta, un exceso nominal grande de 2025 no es
+    necesariamente "peor" que uno nominal chico de 2019 una vez ajustado — el ranking tiene que compararlos
+    "peras con peras". Dicho explícitamente en la página (`licitaciones.html`, `analitica.html`).
+  - **Precios de programa, nombres legibles y supuestos explícitos (#49.7 + feedback del owner)**:
+    `sources/precios_programa.etiqueta_edicion()` traduce `"programa:precios_cuidados:precios_cuidados_2021_01"`
+    a "Precios Cuidados — enero 2021 (lista nacional)" (el id interno queda en un `title=` tooltip); se usa en
+    `queries.precios_programa_ediciones()` y en la página. El texto de `/precios-programa` ahora deja explícitos
+    los dos supuestos de trabajo (pedido del owner, no estaban escritos antes): (a) se asume que el producto se
+    podía comprar a ese precio porque era el pactado por el gobierno; (b) se asume que el precio regulado es el
+    PISO del mercado (el productor siempre quiere vender más caro). El botón "✓ Ok" dice explícitamente que
+    valida la TRANSCRIPCIÓN y el producto/envase asignado, no que el precio sea el real de góndola.
+  - **Nombres legibles varios (#49.7)**: `web/app.py` suma `TIPO_INVESTIGACION_TXT` (nunca mostrar
+    "comprar_url"/"comprar_numero" crudo en `/investigar`) y `_extraccion_txt()` (el método de extracción de un
+    renglón, "dictamen de evaluación (COMPR.AR)" en vez de `"comprar"`, "lectura con IA del aviso (<modelo>)" en
+    vez de `"llm:<modelo>"`).
+  - **Fechas dd/mm/aaaa (#49.7, "dates/i18n")**: filtro Jinja `fecha` (`web/app.py:_fecha`, con `con_hora=True`
+    para fechas con hora) aplicado a toda fecha que se MUESTRA en texto en licitaciones/analítica/producto/
+    empresas/revisión/reportes/fuentes/precios de programa/investigar — nunca a un `<input type="date" value=...>`
+    (esos tienen que seguir en ISO, el navegador los traduce al formato local). `base.html` pasa `lang="es-AR"`.
+  - **Producto (parte de #49, item 3)**: la serie mensual de `/producto/<id>` ahora se rotula explícitamente
+    como CONTEXTO (resumen mensual sin distinguir envase/variedad/marca), nunca la referencia exacta de cada
+    semáforo; la tabla de adjudicaciones agrega el id de renglón con link a `/licitacion/<id>#reng-<id>` (ancla
+    nueva en la fila de `licitacion.html`) para distinguir dos compras del mismo organismo el mismo día.
+  - **Vista de impacto antes/después (#49.8, item 5)**: `sobreprecios/impacto.py` (tabla nueva
+    `comparaciones_snapshot`, corrida de tipo `'recalculo'` en `corridas`). `impacto.recalcular_con_impacto()`
+    envuelve los disparadores de recálculo del webui — `web/app.py:_job_runner` (botones de "Datos y fuentes"),
+    `_recalcular_proceso` (guardar/deshacer una corrección o una validación de mercado en `/revision`) y el
+    veredicto "No" de `/precios-programa` — sacando una foto de `semaforo`/`sobreprecio_ajustado_pct`/
+    `exceso_ars`/`motivo_codigo`/`estado_revision` de cada renglón ANTES de llamar a `compare.run()`. Una
+    ingesta nueva (pipeline sobre renglones sin comparación previa) o un caso de `investigar.py` recién creado
+    no se envuelven: no hay "antes" útil. `/impacto` lista esas corridas; `/impacto/<id>` compara la foto contra
+    el estado actual y muestra qué renglón cambió de color, cuánto cambió el exceso y qué "publicable" se
+    revocó (el mismo gate de `sobreprecios/revision.py`, nunca se reafirma solo).
+  - **Hallazgo del simulador (regresión real, corregida en esta misma ronda)**: el aviso `aviso_multi_anio` de
+    Analítica, armado con la clase `.banner` (pensada para alertas cortas de una línea, `display:flex` SIN
+    `flex-wrap`), recién se ve en una corrida real del simulador completo (la investigación de texto pegado
+    agrega un segundo proceso y hace que el rango de fechas abarque más de un año) — ahí rompió el layout a
+    390px: con `flex-wrap: nowrap` (el default) un párrafo largo no pasa a la línea siguiente y el contenedor
+    desborda horizontal. Arreglo con dos capas: el aviso de Analítica pasa a `<p class="help">` (bloque, no
+    flex) en vez de `.banner`, y se agrega `flex-wrap: wrap` a `.banner` en `styles.css` como defensa general
+    (no cambia los banners cortos existentes, pero evita que un futuro banner con texto largo repita esto).
+    `tests/e2e/test_user_journeys.py::test_layout_mobile_390px_sin_scroll_horizontal` lo cubre corriendo
+    después de un journey que crea ese escenario multi-año; simulador en 21/21.
 
 ## 3. Cómo operar
 
@@ -532,6 +611,8 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Completar el checklist de explicaciones alternativas de un caso | `/revision/<id>` → tarjeta "Explicaciones alternativas" (logística, impuestos, especificaciones, plazo de pago, error de publicación) |
 | Descargar / restaurar una copia de la base sin consola | botones en `/fuentes` → "Descargar copia de seguridad" / "Restaurar copia" (deshabilitado si `LIC_MODO_PUBLICO=1`) |
 | Antes de entregar | `simular.bat` / `python scripts/simular.py`: 26 recorridos de usuario tienen que dar OK |
+| Ver qué cambió un recálculo (webui/revisión) | `/impacto` → elegir corrida → "Ver qué cambió" |
+| Antes de entregar | `simular.bat` / `python scripts/simular.py`: 21 recorridos de usuario tienen que dar OK |
 
 ## 4. Tests
 
@@ -571,6 +652,17 @@ de "programa" ✗ y verla excluida del comparador. `test_web_format.py`/`test_we
 `explicar_semaforo()` y `resumen_proceso()` como funciones puras; `test_backup.py` prueba el backup/restauración
 sobre bases en `tmp_path` (nunca la real); `test_reports.py` prueba `advertencias()` y `crear_expediente()`;
 `test_web_app.py` prueba las rutas nuevas y que `LIC_MODO_PUBLICO=1` bloquee backup/restore (`TestClient`).
+
+Ronda de Investigar/Analítica/precios de programa/fechas/impacto (2026-10-12, MEJORAS #49): `tests/test_impacto.py`
+(foto antes/después, re-levanta la excepción del recálculo, diff de color/exceso/publicable revocado, ignora
+renglones borrados), `tests/test_queries.py` (orden por pesos constantes en `list_procesos`/`agrupado` aunque la
+pantalla muestre nominal, cobertura/publicables, `tipo_importado`), `tests/test_investigar.py` (agrupar reintentos
+del mismo caso, "Procesado; sin comparación" con motivos agrupados, advertencia de referencia extrapolada por IPC),
+`tests/test_moneda.py` (`registrar_real` fijo sin importar la moneda de pantalla), `tests/test_precios_programa.py`
+(`etiqueta_edicion`), y `tests/test_webui_smoke.py` (TestClient sin Playwright sobre las páginas tocadas: atrapa
+errores de Jinja — filtro mal usado, variable faltante — en cada `pytest -q` normal, no solo con `LIC_E2E=1`). El
+simulador (`tests/e2e/`) suma `/impacto` (disparar un recálculo desde "Datos y fuentes" y ver la corrida) y
+assertions sobre los nombres legibles en el journey de Investigar.
 
 ## 5. Límites conocidos
 
@@ -614,3 +706,11 @@ sobre bases en `tmp_path` (nunca la real); `test_reports.py` prueba `advertencia
 - Precios de programa: abr-dic 2023 sin edición encontrada (ver decisión 2026-10-12); PDF de 2022-01 pierde ~3 %
   de filas de aceite por una omisión de palabra en la fuente misma (ver esa decisión); el PDF nacional de
   2022-01 con ~30.000 precios (12,6 MB) no se incorporó, solo el de CABA.
+- Vista de impacto (`/impacto`): solo cubre recálculos disparados DESDE el webui (botones de "Datos y fuentes",
+  revisión humana, veredictos de precios de programa); una corrida del CLI (`python -m sobreprecios.cli
+  pipeline`/`comparar`) o un caso nuevo de `investigar.py` no quedan registrados ahí (no tienen un "antes" útil
+  o no pasan por esos puntos del webui). `comparaciones_snapshot` no se limpia solo (no hay purga automática
+  de corridas viejas todavía).
+- Orden por pesos constantes (`conv_real`, `web/queries.py`): si `indices.ipc_general` todavía no tiene datos
+  (instalación nueva, antes de correr "Actualizar IPC"), el orden de "exceso"/"monto" cae al nominal (fallback
+  explícito, no un error) hasta que se cargue el IPC.

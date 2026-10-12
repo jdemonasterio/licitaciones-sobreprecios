@@ -2,9 +2,20 @@
 {% block title %}Precios de programa · Sobreprecios{% endblock %}
 {% block content %}
 <h1>Precios de programa (Precios Cuidados / Justos / Máximos)</h1>
-<div class="help">Estos precios son PACTADOS entre el Estado y las empresas (o máximos fijados por norma), no un relevamiento de góndola. Criterio del equipo (jdemonasterio): suelen estar cerca del mínimo de mercado, porque en el mercado libre las empresas tienden a cobrar más, no menos; pero no prueban que el producto estuviera disponible a ese precio. El comparador los usa SOLO cuando no hay ningún precio real de mayorista o supermercado en la fecha
-(ver <code>DESIGN_sobreprecios.md</code>). Revisá cada fila: si está mal (producto distinto, precio de otra línea,
-marca que no corresponde), marcala <b>✗ No</b> y se excluye del comparador — se recalculan los sobreprecios solos.</div>
+<div class="help">Estos precios son PACTADOS entre el Estado y las empresas (o máximos fijados por norma), no un relevamiento de góndola. El comparador los usa SOLO cuando no hay ningún precio real de mayorista o supermercado en la fecha
+(ver <code>DESIGN_sobreprecios.md</code>).</div>
+<div class="help"><b>Dos supuestos de trabajo, explícitos</b> (así cualquiera puede objetarlos, no quedan
+escondidos en el código):
+<ol style="margin:6px 0 0 20px;padding:0">
+    <li><b>(a)</b> asumimos que el producto se podía comprar a ese precio porque era el precio pactado por el gobierno;</li>
+    <li><b>(b)</b> asumimos que el precio regulado es el PISO del mercado: el productor siempre quiere vender más caro, y el gobierno lo empuja hacia abajo.</li>
+</ol>
+Ninguno de los dos está verificado contra la góndola real: por eso esta lista es un fallback (solo cuando no hay
+otro dato) y no un piso garantizado.</div>
+<div class="help">Revisá cada fila: <b>✓ Ok</b> valida que la TRANSCRIPCIÓN (texto, precio) y el producto/envase
+asignado estén bien leídos — NO que el precio sea el que de verdad se pagó en góndola (eso es el supuesto (a)/(b)
+de arriba, no algo que un humano pueda confirmar fila por fila). Si está mal (producto distinto, precio de otra
+línea, marca que no corresponde), marcala <b>✗ No</b> y se excluye del comparador — se recalculan los sobreprecios solos.</div>
 
 <div class="table-wrap">
 <table>
@@ -12,9 +23,9 @@ marca que no corresponde), marcala <b>✗ No</b> y se excluye del comparador —
 <tbody>
 {% for e in ediciones %}
 <tr data-soft-key="ed:{{ e.fuente }}">
-    <td>{{ e.edicion_id }}</td>
-    <td>{{ e.programa }}</td>
-    <td class="small">{{ e.desde }} a {{ e.hasta }}</td>
+    <td title="id interno: {{ e.edicion_id }}">{{ e.etiqueta }}</td>
+    <td>{{ PROGRAMA_TXT.get(e.programa, e.programa) }}</td>
+    <td class="small">{{ e.desde|fecha if e.desde else '—' }} a {{ e.hasta|fecha if e.hasta else '—' }}</td>
     <td class="num">{{ e.n_filas }}</td>
     <td class="num">{{ e.n_revisadas }}{% if e.n_filas %}<div class="muted small">{{ (100 * e.n_revisadas / e.n_filas)|round|int }}%</div>{% endif %}</td>
     <td class="num">{{ e.n_descartadas }}</td>
@@ -29,7 +40,7 @@ Cuidados/Justos 2020-2023".</td></tr>
 </div>
 
 {% if abierta %}
-<h2>Filas de {{ abierta }}</h2>
+<h2>Filas de {{ abierta_etiqueta or abierta }}</h2>
 <div class="table-wrap">
 <table>
 <thead><tr>
@@ -63,8 +74,10 @@ Cuidados/Justos 2020-2023".</td></tr>
             <input type="hidden" name="obs_key" value="{{ f.obs_key }}">
             <textarea name="nota" placeholder="Comentario (opcional)" style="min-height:40px;width:220px;font-size:12px">{{ f.humano.nota if f.humano else '' }}</textarea>
             <div style="display:flex;gap:4px;margin-top:4px">
-                <button class="btn btn-sm" type="submit" name="veredicto" value="ok">✓ Ok</button>
-                <button class="btn btn-sm" type="submit" name="veredicto" value="no">✗ No</button>
+                <button class="btn btn-sm" type="submit" name="veredicto" value="ok"
+                        title="Valida la transcripción (texto, precio) y el producto/envase asignado — no que el precio sea el real de góndola">✓ Ok</button>
+                <button class="btn btn-sm" type="submit" name="veredicto" value="no"
+                        title="Excluye esta fila del comparador: producto distinto, precio de otra línea o marca que no corresponde">✗ No</button>
                 <button class="btn btn-sm" type="submit" name="veredicto" value="no_se">? No sé</button>
             </div>
         </form>

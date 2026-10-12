@@ -4,11 +4,15 @@
 <h1>Licitaciones analizadas</h1>
 <p class="muted small">Compras del Estado con renglones comparables contra precios de mercado a la misma fecha.
 Ordenadas por el exceso estimado (lo adjudicado por encima de la referencia, ya descontado el costo financiero; montos de cada fecha salvo que elijas pesos constantes o dólares).</p>
+<p class="help"><b>El orden por "exceso estimado" y "monto" es SIEMPRE en pesos constantes (ajustados por
+inflación)</b>, aunque la columna se muestre en pesos de cada fecha (el default): si no, una compra de 2019 y
+una de 2025 se comparan como si $1 valiera lo mismo en las dos — el selector "Montos en" solo cambia cómo se
+VE el número, nunca el orden. Pasá el mouse sobre un monto para ver su equivalente en pesos reales.</p>
 <p class="help">{{ LEGENDA_INVESTIGACION }}</p>
 
 <div class="kpis">
     <div class="kpi"><div class="label">Procesos</div><div class="value">{{ kpis.procesos or 0 }}</div>
-        <div class="sub">{{ kpis.desde or '—' }} a {{ kpis.hasta or '—' }}</div></div>
+        <div class="sub">{{ kpis.desde|fecha if kpis.desde else '—' }} a {{ kpis.hasta|fecha if kpis.hasta else '—' }}</div></div>
     <div class="kpi"><div class="label">Renglones comparados</div><div class="value">{{ kpis.comparados or 0 }}</div>
         <div class="sub">de {{ kpis.renglones or 0 }} renglones</div></div>
     <div class="kpi"><div class="label">Con sobreprecio alto / moderado</div>
@@ -45,7 +49,7 @@ Ordenadas por el exceso estimado (lo adjudicado por encima de la referencia, ya 
         </select></div>
     <div class="field"><label>Ordenar por</label>
         <select name="orden">
-        {% for k, t in [('exceso','Exceso estimado'),('sobreprecio','% sobreprecio'),('ofertas','Ganó más cara que la oferta más baja'),('fecha','Más recientes'),('monto','Monto')] %}
+        {% for k, t in [('exceso','Exceso estimado (pesos reales)'),('sobreprecio','% sobreprecio'),('ofertas','Ganó más cara que la oferta más baja'),('fecha','Más recientes'),('monto','Monto (pesos reales)')] %}
         <option value="{{ k }}" {% if orden == k %}selected{% endif %}>{{ t }}</option>{% endfor %}
         </select></div>
     <button class="btn btn-primary" type="submit">Filtrar</button>
@@ -67,15 +71,15 @@ adjudicaciones en el Boletín Oficial, o usá <a href="/investigar">＋ Investig
     {% for p in procesos %}
     <tr data-soft-key="proc:{{ p.id }}" class="row-link" onclick="location.href='/licitacion/{{ p.id }}'">
         <td><span class="sem sem-{{ p.peor_semaforo }}">{{ SEMAFORO_TXT[p.peor_semaforo] }}</span></td>
-        <td>{{ p.fecha or '—' }}</td>
+        <td>{{ p.fecha|fecha if p.fecha else '—' }}</td>
         <td>{{ p.organismo or '—' }}</td>
         <td><a href="/licitacion/{{ p.id }}">{{ p.numero or (p.norma or 'ver detalle') }}</a>
             {% if p.norma and p.numero %}<div class="muted small">{{ p.norma }}</div>{% endif %}</td>
         <td class="small">{{ p.proveedores[:3]|join(', ') }}{% if p.proveedores|length > 3 %} y {{ p.proveedores|length - 3 }} más{% endif %}</td>
         <td>{% for pr in p.productos[:4] %}<span class="tag">{{ pr.replace('_', ' ') }}</span>{% endfor %}</td>
-        <td class="num">{{ p.monto|millones(moneda) }}</td>
+        <td class="num" title="≈ {{ p.monto_real|ars }} en pesos reales (así se ORDENA la lista)">{{ p.monto|millones(moneda) }}</td>
         <td class="num {% if p.max_sobreprecio and p.max_sobreprecio > 0 %}pos{% else %}neg{% endif %}">{{ p.max_sobreprecio|pct }}</td>
-        <td class="num">{{ p.exceso|millones(moneda) }}</td>
+        <td class="num" title="≈ {{ p.exceso_real|ars }} en pesos reales (así se ORDENA la lista)">{{ p.exceso|millones(moneda) }}</td>
         <td class="num {% if p.max_brecha_ofertas and p.max_brecha_ofertas > 0 %}pos{% endif %}">{{ p.max_brecha_ofertas|pct }}</td>
         <td class="small">{{ p.estado_revision or 'pendiente' }}</td>
     </tr>

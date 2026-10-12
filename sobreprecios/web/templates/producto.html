@@ -7,6 +7,11 @@
 precio mayorista MÍNIMO de cada mes (sin precios absurdos: se descartan los menores a 0,4 veces la mediana) y precio
 promedio minorista de INDEC. El gráfico muestra el período de las compras ±6 meses; un mes sin
 relevamiento queda como hueco (no se inventa la línea).</p>
+<p class="help"><b>Esta serie es contexto, no la referencia exacta de cada semáforo.</b> Es un resumen MENSUAL
+(mínimo del mes, sin distinguir envase, variedad ni marca); cada renglón de la tabla de abajo se comparó con
+su propia referencia puntual (misma fecha, mismo envase, misma variedad si la compra la exige, par que
+corrobora el mínimo) — esa referencia puede no coincidir con el punto del gráfico de ese mes. Para el cálculo
+exacto de un renglón, abrí su licitación y desplegá "Ver cómo se calculó y la evidencia de mercado".</p>
 <p class="help">{{ LEGENDA_INVESTIGACION }}</p>
 
 <p class="small">Precios en: {% for k, t in monedas %}{% if moneda == k %}<strong>{{ t }}</strong>{% else %}<a href="?moneda={{ k }}">{{ t }}</a>{% endif %}{% if not loop.last %} · {% endif %}{% endfor %}
@@ -25,9 +30,14 @@ se puede ver si el producto se encareció de verdad o solo acompañó la inflaci
 <div class="grid-2">
 <div>
 <h3>Adjudicaciones ({{ serie.estado|length }})</h3>
+<p class="muted small">Cada fila es UN renglón (con su id): dos compras del mismo organismo el mismo día no se
+confunden entre sí.</p>
 <div class="table-wrap"><table class="small">
-<thead><tr><th>Fecha</th><th>Proveedor</th><th class="num">$/{{ prod.unidad_base }}</th><th>Semáforo</th></tr></thead>
-<tbody>{% for e in serie.estado %}<tr><td><a href="/licitacion/{{ e.proceso_id }}">{{ e.fecha }}</a></td><td>{{ e.proveedor or '—' }}</td>
+<thead><tr><th>Fecha</th><th>Renglón</th><th>Proveedor</th><th class="num">$/{{ prod.unidad_base }}</th><th>Semáforo</th></tr></thead>
+<tbody>{% for e in serie.estado %}<tr><td>{{ e.fecha|fecha }}</td>
+<td><a href="/licitacion/{{ e.proceso_id }}#reng-{{ e.renglon_id }}" title="Ir al renglón {{ e.renglon_id }} en su licitación">
+    {% if e.nro_renglon %}renglón {{ e.nro_renglon }}{% else %}#{{ e.renglon_id }}{% endif %}</a></td>
+<td>{{ e.proveedor or '—' }}</td>
 <td class="num">{{ e.precio|ars(2, moneda) }}</td><td><span class="sem sem-{{ e.semaforo or 'gris' }}">{{ SEMAFORO_TXT[e.semaforo or 'gris'] }}</span></td></tr>{% endfor %}</tbody>
 </table></div>
 </div>

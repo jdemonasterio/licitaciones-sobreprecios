@@ -24,7 +24,7 @@ una segunda opinión, no un veredicto.</p>
 {% for c in corridas %}
 <details class="card" data-soft-key="corrida:{{ c.id }}" {% if loop.first %}open{% endif %}>
 <summary><b>{{ c.carpeta }}</b> · {{ c.modelo or 'modelo sin dato' }} · {{ c.modo }} · {{ c.n_items }} ítems
-· USD {{ c.usd|num(2) if c.usd is not none else '—' }} · importada {{ c.importada_at[:16] if c.importada_at else '' }}</summary>
+· USD {{ c.usd|num(2) if c.usd is not none else '—' }} · importada {{ c.importada_at|fecha(con_hora=True) if c.importada_at else '' }}</summary>
 <div class="table-wrap" style="margin-top:8px"><table class="small">
 <thead><tr><th>Capa</th><th>Veredicto</th><th class="num">Cantidad</th></tr></thead>
 <tbody>{% for cnt in c.conteos %}<tr><td>{{ cnt.capa }}</td>

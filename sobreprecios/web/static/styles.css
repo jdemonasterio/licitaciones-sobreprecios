@@ -195,7 +195,8 @@ pre.texto { white-space: pre-wrap; font-size: var(--fs-xs); background: var(--su
    aviso lateral .help): pensada para una aclaración puntual sobre un caso o reporte. */
 .callout { display: flex; gap: var(--space-3); align-items: flex-start; background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 0 var(--radius) var(--radius) 0; padding: var(--space-3) var(--space-4); margin: var(--space-3) 0; font-size: var(--fs-sm); box-shadow: var(--shadow); }
 .callout::before { content: "ℹ"; font-weight: 700; color: var(--accent-ink); flex: none; }
-.banner { display: flex; gap: var(--space-3); align-items: center; padding: var(--space-3) var(--space-4); border-radius: var(--radius); background: var(--warning-bg); margin: var(--space-3) 0; }
+/* flex-wrap: un .banner con texto largo desbordaba a 390px (simulador 2026-10-12). */
+.banner { display: flex; gap: var(--space-3); align-items: center; flex-wrap: wrap; padding: var(--space-3) var(--space-4); border-radius: var(--radius); background: var(--warning-bg); margin: var(--space-3) 0; }
 .banner.ok { background: var(--good-bg); }
 .banner.error { background: var(--critical-bg); }
 .spinner { width: 14px; height: 14px; border: 2px solid var(--text-3); border-top-color: transparent; border-radius: 50%; animation: spin 0.9s linear infinite; }

@@ -22,9 +22,9 @@
         <dt>Proveedor</dt><dd>{% if c.proveedor_cuit %}<a href="/empresa/{{ c.proveedor_cuit }}">{{ c.proveedor or c.proveedor_cuit }}</a> ({{ c.proveedor_cuit }}){% else %}{{ c.proveedor or '—' }}{% endif %}</dd>
         <dt>Marca</dt><dd>{{ c.marca or '—' }}</dd>
         <dt>Fechas</dt><dd>
-            <div>Apertura de ofertas: <b>{{ c.fecha_apertura or 'sin dato' }}</b>{% if c.fecha_apertura %} <span class="muted small">(con esta se compara)</span>{% endif %}</div>
-            <div>Adjudicación: {{ c.fecha_adjudicacion or 'sin dato' }}</div>
-            <div>Publicación: {{ c.fecha_publicacion or 'sin dato' }}</div>
+            <div>Apertura de ofertas: <b>{{ c.fecha_apertura|fecha if c.fecha_apertura else 'sin dato' }}</b>{% if c.fecha_apertura %} <span class="muted small">(con esta se compara)</span>{% endif %}</div>
+            <div>Adjudicación: {{ c.fecha_adjudicacion|fecha if c.fecha_adjudicacion else 'sin dato' }}</div>
+            <div>Publicación: {{ c.fecha_publicacion|fecha if c.fecha_publicacion else 'sin dato' }}</div>
         </dd>
         <dt>Producto asignado</dt><dd>{{ c.producto_nombre or 'sin producto comparable' }}{% if c.match_razon %}<div class="muted">{{ c.match_razon }}</div>{% endif %}</dd>
     </dl>
@@ -80,7 +80,7 @@
         <dt>Cuenta</dt><dd>{{ c.precio_unitario|ars(2) }} por {{ c.unidad_compra or 'unidad' }}{% if c.contenido_base %} ÷ {{ c.contenido_base|num(3) }} {{ c.unidad_base }} = {{ c.precio_unidad_base|ars(2) }} por {{ c.unidad_base }}{% endif %} → contra {{ c.ref_principal_valor|ars(2) }} por {{ c.unidad_base or 'u.' }}</dd>
         <dt>Brecha ajustada</dt><dd class="{% if c.sobreprecio_ajustado_pct and c.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}">{{ c.sobreprecio_ajustado_pct|pct }}{% if c.semaforo == 'gris' and c.sobreprecio_ajustado_pct is not none %} <span class="muted small">(diagnóstico bloqueado: no usar)</span>{% endif %}</dd>
         <dt>Exceso estimado</dt><dd>{{ c.exceso_ars|ars }}{% if c.semaforo == 'gris' and c.exceso_ars %} <span class="muted small">(diagnóstico bloqueado: no usar)</span>{% endif %}</dd>
-        <dt>Fecha de comparación</dt><dd>{{ c.fecha_compra or '—' }} <span class="muted small">(apertura de ofertas; si no hay, adjudicación)</span></dd>
+        <dt>Fecha de comparación</dt><dd>{{ c.fecha_compra|fecha if c.fecha_compra else '—' }} <span class="muted small">(apertura de ofertas; si no hay, adjudicación)</span></dd>
         <dt>Antigüedad del precio de mercado</dt><dd>{{ c.gap_dias if c.gap_dias is not none else '—' }} días como máximo respecto de esa fecha</dd>
     </dl>
 </div>
@@ -129,7 +129,7 @@
         <tr{% if loop.index <= 2 and c.ref_corroborada and o.canal != 'oficial' %} style="background:var(--good-bg)"{% endif %}>
             <td>{{ o.fuente }}<div class="muted">{{ o.canal }}</div></td>
             <td class="small">{{ o.region or '' }}{% if o.sucursal %}<div class="muted">{{ o.sucursal }}</div>{% endif %}</td>
-            <td>{{ o.fecha }}{% if o.posterior %}<div class="muted">posterior a la compra</div>{% endif %}</td>
+            <td>{{ o.fecha|fecha }}{% if o.posterior %}<div class="muted">posterior a la compra</div>{% endif %}</td>
             <td>{% if o.url %}<a href="{{ o.url }}" target="_blank" rel="noopener">{{ o.descripcion }}</a>{% else %}{{ o.descripcion }}{% endif %}
                 {% if loop.index <= 2 and c.ref_corroborada and o.canal != 'oficial' %}<div><span class="tag tag-alerta">forma el mínimo confirmado</span></div>{% endif %}</td>
             <td class="num">{{ o.precio_envase|ars(2) if o.precio_envase is not none else '—' }}</td>
@@ -292,7 +292,7 @@
             <td>{{ 'No sé cuál es la variedad (humano miró y no pudo decidir)' if corr.valor == '__no_se__' else corr.valor }}</td>
             <td class="small">{{ corr.nota or '—' }}</td>
             <td class="small">{{ corr.autor or '—' }}</td>
-            <td class="small">{{ corr.created_at[:16] if corr.created_at else '' }}</td>
+            <td class="small">{{ corr.created_at|fecha(con_hora=True) if corr.created_at else '' }}</td>
             <td>
                 <form method="post" action="/revision/{{ c.id }}/deshacer" style="display:inline">
                     <input type="hidden" name="correccion_id" value="{{ corr.id }}">

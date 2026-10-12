@@ -27,9 +27,24 @@ def _m(expr: str, moneda: str) -> str:
     return expr if moneda == "nominal" else f"conv({expr}, {_FECHA})"
 
 
+def _real(expr: str) -> str:
+    """Expresión SIEMPRE en pesos reales (conv_real), sin importar la moneda elegida para
+    MOSTRAR (pedido del owner, 2026-10-12): se usa solo para ordenar rankings/listas, nunca
+    para la columna que se ve en pantalla — esa sigue siendo `_m(expr, moneda)`.
+
+    `COALESCE(..., expr)`: si todavía no hay IPC cargado (`indices.ipc_general` vacío, p. ej.
+    recién instalado) `conv_real` da NULL para todo y el orden se volvería arbitrario; con el
+    fallback al nominal, el orden sigue siendo razonable (como si no se hubiera pedido ajuste)
+    en vez de parecer roto."""
+    return f"COALESCE(conv_real({expr}, {_FECHA}), {expr})"
+
+
 def _preparar(conn: sqlite3.Connection, moneda: str) -> None:
+    # conv_real() se registra SIEMPRE (la necesitan list_procesos/agrupado para ordenar en pesos
+    # constantes aunque la pantalla esté mostrando nominal); conv() solo si se pidió otra moneda.
+    m = moneda_mod.registrar_real(conn)
     if moneda != "nominal":
-        moneda_mod.registrar(conn, moneda)
+        moneda_mod.registrar(conn, moneda, m)
 
 
 def _where(filtros: dict) -> tuple[str, list]:
@@ -85,12 +100,15 @@ def kpis(conn: sqlite3.Connection, filtros: dict, moneda: str = "nominal") -> di
     return dict(row)
 
 
+# "exceso"/"monto" ordenan por PESOS REALES (conv_real, siempre registrada) aunque la columna
+# mostrada respete la moneda elegida (pedido del owner, 2026-10-12): sin esto, un exceso nominal
+# de 2025 siempre le gana a uno de 2019 aunque el de 2019 haya sido proporcionalmente peor.
 ORDENES = {
-    "exceso": "exceso DESC, peor DESC",
+    "exceso": "exceso_real DESC, peor DESC",
     "sobreprecio": "max_sobreprecio DESC",
     "ofertas": "max_brecha_ofertas DESC",
     "fecha": "fecha DESC",
-    "monto": "monto DESC",
+    "monto": "monto_real DESC",
 }
 
 
@@ -103,7 +121,9 @@ def list_procesos(conn: sqlite3.Connection, filtros: dict, orden: str = "exceso"
         f"SELECT p.id, p.numero, p.organismo, p.objeto, p.tipo_procedimiento, p.url, p.estado_revision, "
         f"COALESCE(p.fecha_adjudicacion, p.fecha_publicacion) fecha, "
         f"COUNT(r.id) n_renglones, COALESCE(SUM({_m('r.monto_total', moneda)}), 0) monto, "
+        f"COALESCE(SUM({_real('r.monto_total')}), 0) monto_real, "
         f"COALESCE(SUM(CASE WHEN k.semaforo IN ('rojo','amarillo') THEN {_m('k.exceso_ars', moneda)} END), 0) exceso, "
+        f"COALESCE(SUM(CASE WHEN k.semaforo IN ('rojo','amarillo') THEN {_real('k.exceso_ars')} END), 0) exceso_real, "
         f"MAX({SEMAFORO_RANK}) peor, MAX(k.sobreprecio_ajustado_pct) max_sobreprecio, "
         f"MAX(k.brecha_oferta_min_pct) max_brecha_ofertas, "
         f"GROUP_CONCAT(DISTINCT r.producto_id) productos, GROUP_CONCAT(DISTINCT r.proveedor) proveedores, "
@@ -178,6 +198,44 @@ def resumen_proceso(proc: dict, renglones: list[dict], validaciones: dict) -> di
     }
 
 
+# "Qué se importó y qué prueba" (MEJORAS #49.5, item 1a): nunca decir que el Estado "pagó" algo
+# a partir de un dictamen (recomienda) o de un acto de adjudicación (adjudica, no es el pago).
+_TIPO_DOC_TXT = {
+    "comprar": ("Dictamen de evaluación (COMPR.AR)",
+               "Quién fue RECOMENDADO por la comisión evaluadora para ganar. Todavía no es la "
+               "adjudicación firmada por la autoridad, ni una orden de compra, ni un pago."),
+    "legacy_quijotes": ("Dataset Quijote 2021",
+                        "Un resumen de adjudicaciones ya publicadas, armado por fuera de este sistema: "
+                        "puede faltar un dato que el aviso original sí tenía."),
+}
+
+
+def tipo_importado(proc: dict, renglones: list[dict]) -> dict:
+    """Qué documento se importó y qué prueba (recomendado / adjudicado / contratado, nunca
+    "pagado"): para el banner de arriba de /licitacion/<id>. `renglones` es la lista de
+    `queries.renglones()` de ese proceso (se mira el método de extracción del primero con dato)."""
+    metodo = next((r.get("extraccion_metodo") for r in renglones if r.get("extraccion_metodo")), None)
+    if metodo and metodo.startswith("llm:"):
+        metodo = "llm"
+    if metodo in _TIPO_DOC_TXT:
+        etiqueta, explicacion = _TIPO_DOC_TXT[metodo]
+    elif proc.get("fuente") == "bo_primera":
+        etiqueta = "Acto de adjudicación (Boletín Oficial, 1ª sección)"
+        explicacion = ("La norma publicada en el Boletín Oficial ADJUDICA el renglón: confirma a quién y "
+                       "a qué precio. No prueba que el Estado ya haya pagado, ni que no haya existido "
+                       "después una orden de compra con otro monto.")
+    else:
+        etiqueta = "Documento sin tipo identificado"
+        explicacion = "No se pudo determinar si lo importado es un pliego, un dictamen o un acto de adjudicación."
+    extra = []
+    if proc.get("ordenes"):
+        extra.append(f"Además tiene {len(proc['ordenes'])} orden(es) de compra registrada(s): eso es el "
+                     "contrato con el proveedor, tampoco prueba el pago.")
+    if proc.get("actos"):
+        extra.append(f"Y {len(proc['actos'])} acto(s) administrativo(s) de COMPR.AR (adjudicación, OC...).")
+    return {"etiqueta": etiqueta, "explicacion": explicacion, "extra": extra}
+
+
 def proceso(conn: sqlite3.Connection, proceso_id: int) -> dict | None:
     row = conn.execute(
         "SELECT p.*, d.titulo norma, d.texto texto, d.url doc_url FROM procesos p "
@@ -238,19 +296,33 @@ def agrupado(conn: sqlite3.Connection, filtros: dict, dimension: str, limit: int
     expr = dims[dimension]
     where, params = _where(filtros)
     _preparar(conn, moneda)
-    order = "clave" if dimension == "mes" else "exceso DESC, monto DESC"
+    # Ranking en pesos REALES por defecto (owner, 2026-10-12): "clave" solo para "mes" (orden
+    # cronológico, no por monto). La columna mostrada sigue respetando `moneda`.
+    order = "clave" if dimension == "mes" else "exceso_real DESC, monto_real DESC"
     rows = conn.execute(
         f"SELECT {expr} clave, COUNT(DISTINCT p.id) procesos, COUNT(r.id) renglones, "
         f"COALESCE(SUM({_m('r.monto_total', moneda)}), 0) monto, "
+        f"COALESCE(SUM({_real('r.monto_total')}), 0) monto_real, "
         f"COALESCE(SUM(CASE WHEN k.semaforo IN ('rojo','amarillo') THEN {_m('k.exceso_ars', moneda)} END), 0) exceso, "
+        f"COALESCE(SUM(CASE WHEN k.semaforo IN ('rojo','amarillo') THEN {_real('k.exceso_ars')} END), 0) exceso_real, "
         f"SUM(CASE WHEN k.semaforo='rojo' THEN 1 ELSE 0 END) rojos, "
         f"SUM(CASE WHEN k.semaforo='amarillo' THEN 1 ELSE 0 END) amarillos, "
         f"SUM(CASE WHEN k.semaforo IN ('rojo','amarillo','verde') THEN 1 ELSE 0 END) comparados, "
+        f"SUM(CASE WHEN p.estado_revision='publicable' THEN 1 ELSE 0 END) publicables, "
+        f"SUM(CASE WHEN r.monto_total IS NOT NULL AND {_m('r.monto_total', moneda)} IS NULL THEN 1 ELSE 0 END) sin_convertir, "
         f"ROUND(AVG(CASE WHEN k.semaforo IN ('rojo','amarillo','verde') THEN k.sobreprecio_ajustado_pct END), 1) sp_prom, "
         f"MAX(r.proveedor_cuit) cuit "
         f"{_BASE_FROM} LEFT JOIN productos pr ON pr.id = r.producto_id WHERE {where} "
         f"GROUP BY clave ORDER BY {order} LIMIT ?", params + [limit]).fetchall()
-    return [dict(r) for r in rows]
+    out = []
+    for r in rows:
+        d = dict(r)
+        # "Cobertura" (MEJORAS #49.6): de los renglones de esta fila, cuántos se pudieron comparar
+        # y, de esos, cuántos ya están en un proceso "publicable". Con moneda != nominal, además
+        # cuántos quedaron afuera de la suma de "monto" por no tener fecha/índice para convertir.
+        d["convertidos"] = max(d["renglones"] - (d["sin_convertir"] or 0), 0)
+        out.append(d)
+    return out
 
 
 def peores_renglones(conn: sqlite3.Connection, filtros: dict, limit: int = 15, moneda: str = "nominal") -> list[dict]:
@@ -270,7 +342,8 @@ def serie_producto(conn: sqlite3.Connection, producto_id: str, moneda: str = "no
     """Precio pagado por el Estado (puntos) vs mercado (p25 mayorista mensual y INDEC)."""
     estado = [dict(r) for r in conn.execute(
         "SELECT COALESCE(p.fecha_adjudicacion, p.fecha_publicacion) fecha, r.precio_unidad_base precio, "
-        "r.proveedor, p.id proceso_id, k.semaforo FROM renglones r JOIN procesos p ON p.id = r.proceso_id "
+        "r.proveedor, p.id proceso_id, r.id renglon_id, r.nro_renglon, k.semaforo "
+        "FROM renglones r JOIN procesos p ON p.id = r.proceso_id "
         "LEFT JOIN comparaciones k ON k.renglon_id = r.id "
         "WHERE r.producto_id = ? AND r.precio_unidad_base IS NOT NULL ORDER BY fecha", (producto_id,))]
     mercado_rows = conn.execute(
@@ -423,11 +496,13 @@ def precios_programa_ediciones(conn: sqlite3.Connection) -> list[dict]:
         "LEFT JOIN validaciones_programa vh ON vh.fuente = pm.fuente AND vh.obs_key = pm.obs_key "
         "AND vh.autor = 'humano' "
         "WHERE pm.canal = 'programa' GROUP BY pm.fuente ORDER BY pm.fuente").fetchall()
+    from ..sources import precios_programa as pp
     out = []
     for r in rows:
         partes = r["fuente"].split(":", 2)
         out.append(dict(r, programa=partes[1] if len(partes) > 1 else "",
-                        edicion_id=partes[2] if len(partes) > 2 else r["fuente"]))
+                        edicion_id=partes[2] if len(partes) > 2 else r["fuente"],
+                        etiqueta=pp.etiqueta_edicion(r["fuente"])))
     return out
 
 

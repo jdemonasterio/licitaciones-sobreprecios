@@ -383,6 +383,14 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
     jdemonasterio 2026-10-12 — "perfecto, usá el plazo de pago de la licitación"). Sigue siendo
     el caso raro: en los procesos de COMPR.AR probados en vivo casi nunca aparece (ver
     DESIGN_sobreprecios.md), así que por default esto es None y el comportamiento no cambia.
+
+    NOTA (2026-10-12, decisión del owner): un caso de `investigar.py` puede comparar contra el
+    precio de HOY llevado hacia atrás por IPC (`gap_maximo` ensanchado) y ESO SÍ puede habilitar
+    rojo como cualquier otra referencia, siempre con la advertencia explícita de dónde sale el
+    número (lo rotula `investigar.py` en el resultado: "referencia: precio de hoy llevado a
+    <fecha> con IPC (×factor)"). Este núcleo no distingue ese caso de cualquier otro gap grande:
+    ya lo marca como de baja confianza y "sin rojo" salvo que la brecha corroborada aguante el
+    plazo más largo (ver `sin_rojo` más abajo), que sigue siendo la única puerta a rojo.
     """
     res = Resultado(precio_estado_ub=precio_estado_ub)
     if precio_estado_ub is None or not fecha:

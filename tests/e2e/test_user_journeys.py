@@ -242,6 +242,8 @@ def test_investigar_texto_pegado_offline_extrae_los_5_proveedores(page, seeded_a
 
     primera_fila = page.locator("table tbody tr").first
     primera_fila.locator('a:has-text("Ver resultado")').wait_for(timeout=10000)
+    # Nombre legible del tipo de entrada (MEJORAS #49.7): nunca el id interno "texto" solo.
+    assert "texto pegado" in primera_fila.inner_text().lower()
     # "Ver resultado" es un <a> comun sin target=_blank: navega en la misma pestania
     # (a diferencia de "Ver / imprimir" de Reportes, que si abre una nueva).
     primera_fila.locator('a:has-text("Ver resultado")').click()
@@ -249,6 +251,8 @@ def test_investigar_texto_pegado_offline_extrae_los_5_proveedores(page, seeded_a
     cuerpo = page.locator("body").inner_text()
     for proveedor in PROVEEDORES_MDS:
         assert proveedor in cuerpo, f"falta el proveedor {proveedor!r} en el resultado de investigar"
+    # Qué se importó y qué prueba (MEJORAS #49.5, item 1a): nunca decir "pagó".
+    assert "Qué se importó" in cuerpo and "pagó" not in cuerpo.lower()
 
     conftest.assert_clean(page)
 
@@ -306,6 +310,34 @@ def test_fuentes_recalcular_sobreprecios_offline_corre_en_background(page, seede
         "la pagina de Fuentes recargo completo en vez de refrescar in place")
     # data-soft-keep: el campo "desde" que el usuario toco debe sobrevivir al swap
     assert page.locator('input[name="desde"]').input_value() == "2020-01-01"
+
+    conftest.assert_clean(page)
+
+
+# ── 6b. Impacto de un cambio: foto antes/después de un recálculo ───────────
+
+def test_impacto_lista_la_corrida_de_recalcular_y_abre_su_detalle(page, seeded_app):
+    """MEJORAS #49.8: el botón "Recalcular sobreprecios" de Fuentes dispara un recálculo que
+    queda registrado en /impacto con una foto de antes. El journey: disparar el recálculo,
+    entrar a /impacto, ver la corrida más reciente y abrir su detalle sin que rompa (haya o no
+    cambios: el seed no modifica reglas, así que lo esperable es "sin impacto visible")."""
+    page.goto("/fuentes")
+    page.select_option('select[name="accion"]', "comparar")
+    page.click('button:has-text("Ejecutar")')
+    assert "arranc" in _toast_text(page).lower()
+    _wait_job_done(seeded_app.base_url, "datos")
+
+    page.goto("/impacto")
+    primera_fila = page.locator("table tbody tr").first
+    primera_fila.wait_for(timeout=10000)
+    assert "fuentes:comparar" in primera_fila.inner_text()
+
+    primera_fila.locator('a:has-text("Ver qué cambió")').click()
+    page.wait_for_url("**/impacto/*")
+    cuerpo = page.locator("body").inner_text()
+    assert "Renglones en la foto" in cuerpo
+    # Recalcular sin tocar reglas ni catálogo no debería inventar cambios.
+    assert "Ningún renglón" in cuerpo or "Publicables revocados" in cuerpo
 
     conftest.assert_clean(page)
 

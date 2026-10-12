@@ -27,12 +27,12 @@ proceso de COMPR.AR, texto pegado y PDFs (también escaneados). Tarda entre 30 s
 <div class="table-wrap"><table>
 <thead><tr><th>#</th><th>Pedido</th><th>Tipo</th><th>Estado</th><th>Resultado</th><th>Fecha</th></tr></thead>
 <tbody>{% for i in investigaciones %}
-<tr data-soft-key="inv:{{ i.id }}"><td>{{ i.id }}</td>
+<tr data-soft-key="inv:{{ i.id }}"><td>{{ i.id }}{% if i.n_intentos and i.n_intentos > 1 %}<div class="muted small" title="Se pegó el mismo caso {{ i.n_intentos }} veces (reintentos agrupados)">{{ i.n_intentos }} intentos</div>{% endif %}</td>
 <td class="small" style="max-width:420px;word-break:break-all">{{ (i.entrada or i.archivo or '')[:160] }}{% if i.archivo %} <span class="tag">PDF {{ i.archivo }}</span>{% endif %}</td>
-<td class="small">{{ i.tipo }}</td>
-<td>{% if i.estado == 'ok' %}<span class="sem sem-verde">listo</span>{% elif i.estado == 'error' %}<span class="sem sem-rojo">error</span>{% else %}<span class="sem sem-gris">{{ i.estado }}</span>{% endif %}</td>
+<td class="small">{{ TIPO_INVESTIGACION_TXT.get(i.tipo, i.tipo) }}</td>
+<td>{% if i.estado == 'ok' %}<span class="sem sem-verde">listo</span>{% elif i.estado == 'sin_comparacion' %}<span class="sem sem-gris" title="Se importó y se procesó, pero ningún renglón pudo compararse contra el mercado">procesado; sin comparación</span>{% elif i.estado == 'error' %}<span class="sem sem-rojo">error</span>{% else %}<span class="sem sem-gris">{{ i.estado }}</span>{% endif %}</td>
 <td class="small">{% if i.proceso_id %}<a class="btn btn-sm btn-primary" href="/licitacion/{{ i.proceso_id }}">Ver resultado</a> {% endif %}{{ i.mensaje or '' }}</td>
-<td class="small">{{ (i.created_at or '')[:16]|replace('T', ' ') }}</td></tr>
+<td class="small">{{ i.created_at|fecha(con_hora=True) }}</td></tr>
 {% endfor %}</tbody></table></div>
 {% else %}<p class="muted">Todavía no hay investigaciones.</p>{% endif %}
 {% endblock %}

@@ -105,6 +105,21 @@ def test_importar_mapea_replica_y_es_idempotente(tmp_path, monkeypatch):
         assert filas2["n"] == len(filas)
 
 
+def test_etiqueta_edicion_nombre_legible_programa_mes_anio_region():
+    """MEJORAS #49.7 (item 4): nunca mostrar el id interno como única referencia."""
+    assert pp.etiqueta_edicion("programa:precios_cuidados:precios_cuidados_2021_01") == \
+        "Precios Cuidados — enero 2021 (lista nacional)"
+    assert pp.etiqueta_edicion("programa:precios_justos:precios_justos_2022_11") == \
+        "Precios Justos — noviembre 2022 (AMBA)"
+    # También acepta el edicion_id solo (sin el prefijo "programa:<programa>:").
+    assert pp.etiqueta_edicion("precios_cuidados_2020_01") == "Precios Cuidados — enero 2020 (lista nacional)"
+
+
+def test_etiqueta_edicion_sin_config_no_rompe():
+    out = pp.etiqueta_edicion("programa:precios_cuidados:edicion_inexistente")
+    assert "Precios Cuidados" in out   # usa el programa de la clave aunque no esté en el YAML
+
+
 def test_importar_edicion_desconocida_no_rompe():
     with db.session(":memory:") as conn:
         msg = pp.importar(conn, edicion_id="no_existe_esta_edicion")

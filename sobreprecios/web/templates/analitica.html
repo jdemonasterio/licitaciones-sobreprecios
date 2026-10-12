@@ -3,8 +3,19 @@
 {% block content %}
 <h1>Analítica</h1>
 <p class="muted small">¿Qué organismos, productos, proveedores y tipos de procedimiento muestran más sobreprecio?
-"Exceso" suma solo renglones en rojo o amarillo; "brecha promedio" promedia todos los renglones comparados.</p>
+"Exceso" suma solo renglones en rojo o amarillo; "brecha promedio" es un promedio SIMPLE por renglón (no
+ponderado por monto: una compra chica con 40% de sobreprecio pesa lo mismo que una grande con 5%).</p>
+<p class="help">Estos rankings ordenan por "exceso"/"monto" en <b>pesos constantes</b> (no en lo que se
+muestra en pantalla): así un organismo con compras viejas no queda subestimado frente a uno con compras
+recientes solo por la inflación acumulada. Pasá el mouse sobre un monto para ver su equivalente real.</p>
 <p class="help">{{ LEGENDA_INVESTIGACION }}</p>
+{% if aviso_multi_anio %}
+<p class="help no-print"><span class="sem sem-amarillo">pesos de distintos años</span> Este filtro mezcla
+más de un año en "pesos de cada fecha": con inflación alta, sumar $1.000 de 2021 y $1.000 de 2024 no es sumar
+lo mismo. Para comparar montos de años distintos sin que la inflación tape la diferencia real, probá
+"<a href="{{ href_real }}">pesos reales</a>" en "Montos en" (abajo) — no se cambia el default solo, esto es
+un aviso, no una conversión automática.</p>
+{% endif %}
 
 <form class="filters" method="get" action="/analitica" data-soft="off">
     <div class="field"><label>Producto</label>
@@ -49,15 +60,22 @@ dato para convertir quedan fuera de las sumas.{% endif %}</p>{% endif %}
 {% macro tabla(rows, titulo, dim) %}
 <h2>{{ titulo }}</h2>
 <div class="table-wrap"><table>
-<thead><tr><th>{{ titulo.split(' ')[-1]|capitalize }}</th><th class="num">Procesos</th><th class="num">Renglones</th>
-<th class="num">Comparados</th><th class="num">Rojo / amarillo</th><th class="num">Monto</th><th class="num">Exceso</th><th class="num">Brecha promedio</th></tr></thead>
+<thead><tr><th>{{ titulo.split(' ')[-1]|capitalize }}</th><th class="num">Procesos</th><th class="num" title="Renglones totales de esta fila, incluidos los sin producto o sin mercado en la fecha">Renglones</th>
+<th class="num" title="De esos renglones, cuántos se pudieron comparar contra una referencia de mercado">Comparados</th>
+<th class="num" title="Comparados que además están en un proceso marcado publicable (listo para prensa)">Publicables</th>
+<th class="num">Rojo / amarillo</th><th class="num">Monto</th><th class="num">Exceso</th>
+<th class="num" title="Promedio SIMPLE por renglón, no ponderado por monto">Brecha promedio</th></tr></thead>
 <tbody>{% for r in rows %}
 <tr><td>{% if dim == 'proveedor' and r.cuit %}<a href="/empresa/{{ r.cuit }}">{{ r.clave }}</a>
     {% elif dim == 'organismo' %}<a href="/?organismo={{ r.clave|urlencode }}">{{ r.clave }}</a>
     {% else %}{{ r.clave|replace('_', ' ') }}{% endif %}</td>
-<td class="num">{{ r.procesos }}</td><td class="num">{{ r.renglones }}</td><td class="num">{{ r.comparados }}</td>
+<td class="num">{{ r.procesos }}</td>
+<td class="num">{{ r.renglones }}</td>
+<td class="num">{{ r.comparados }}{% if moneda != 'nominal' and r.sin_convertir %}<div class="muted small">{{ r.convertidos }} convertidos a {{ moneda_txt }}</div>{% endif %}</td>
+<td class="num">{{ r.publicables or 0 }}</td>
 <td class="num"><span class="sem sem-rojo">{{ r.rojos }}</span> <span class="sem sem-amarillo">{{ r.amarillos }}</span></td>
-<td class="num">{{ r.monto|millones(moneda) }}</td><td class="num">{{ r.exceso|millones(moneda) }}</td>
+<td class="num" title="≈ {{ r.monto_real|ars }} en pesos reales (así se ORDENA este ranking)">{{ r.monto|millones(moneda) }}</td>
+<td class="num" title="≈ {{ r.exceso_real|ars }} en pesos reales (así se ORDENA este ranking)">{{ r.exceso|millones(moneda) }}</td>
 <td class="num {% if r.sp_prom and r.sp_prom > 0 %}pos{% else %}neg{% endif %}">{{ r.sp_prom|pct }}</td></tr>
 {% endfor %}</tbody></table></div>
 {% endmacro %}
@@ -73,7 +91,7 @@ dato para convertir quedan fuera de las sumas.{% endif %}</p>{% endif %}
 <div class="table-wrap"><table>
 <thead><tr><th>Semáforo</th><th>Fecha</th><th>Organismo</th><th>Bien</th><th>Proveedor</th><th class="num">Pagó</th><th class="num">Referencia</th><th class="num">Brecha</th><th class="num">Exceso</th></tr></thead>
 <tbody>{% for r in peores %}
-<tr><td><span class="sem sem-{{ r.semaforo }}">{{ SEMAFORO_TXT[r.semaforo] }}</span></td><td>{{ r.fecha }}</td>
+<tr><td><span class="sem sem-{{ r.semaforo }}">{{ SEMAFORO_TXT[r.semaforo] }}</span></td><td>{{ r.fecha|fecha }}</td>
 <td><a href="/licitacion/{{ r.proceso_id }}">{{ r.organismo or '—' }}</a></td><td>{{ r.descripcion }}</td>
 <td class="small">{{ r.proveedor or '—' }}</td>
 <td class="num">{{ r.precio_unidad_base|ars(2, moneda) }}/{{ r.unidad_base }}</td>
@@ -92,6 +110,7 @@ dato para convertir quedan fuera de las sumas.{% endif %}</p>{% endif %}
     const exc = {{ data.organismo[:12]|map(attribute='exceso')|list|tojson }};
     const meses = {{ data.mes|map(attribute='clave')|list|tojson }};
     const sp = {{ data.mes|map(attribute='sp_prom')|list|tojson }};
+    const nmes = {{ data.mes|map(attribute='comparados')|list|tojson }};
     const pref = {{ ('US$ ' if moneda == 'usd' else '$ ')|tojson }};
     const ars = v => pref + Math.round(v).toLocaleString('es-AR');
     const mill = v => pref + (v / 1e6).toLocaleString('es-AR', {maximumFractionDigits: 1}) + ' M';
@@ -115,7 +134,10 @@ dato para convertir quedan fuera de las sumas.{% endif %}</p>{% endif %}
     draw('ch-mes', {type: 'line', data: {labels: meses, datasets: [{data: sp, borderColor: c1, backgroundColor: c1,
         borderWidth: 2, pointRadius: 4, spanGaps: true, tension: 0.2}]},
         options: Object.assign({}, base, {plugins: {legend: {display: false},
-            tooltip: {mode: 'index', intersect: false, callbacks: {label: c => (c.parsed.y > 0 ? '+' : '') + c.parsed.y + '%'}}},
+            // n de renglones comparados de ese mes, a la vista en el tooltip (MEJORAS #49.6):
+            // un promedio de 2 renglones no pesa igual que uno de 80.
+            tooltip: {mode: 'index', intersect: false, callbacks: {label: c => (c.parsed.y > 0 ? '+' : '') + c.parsed.y
+                + '% (' + (nmes[c.dataIndex] || 0) + ' renglón(es) comparado(s))'}}},
             scales: {x: {ticks: {color: ink}, grid: {display: false}}, y: {ticks: {color: ink, callback: v => v + '%'}, grid: {color: grid}}}})});
 })();
 </script>

@@ -26,7 +26,7 @@ porque no existe un archivo público histórico). Una vez por semana "Buscar en 
 <h2>Documentos bajados</h2>
 <div class="table-wrap"><table class="small">
 <thead><tr><th>Fuente</th><th class="num">Avisos</th><th>Desde</th><th>Hasta</th></tr></thead>
-<tbody>{% for d in resumen.documentos %}<tr><td>{{ d.fuente }}</td><td class="num">{{ d.n }}</td><td>{{ d.desde }}</td><td>{{ d.hasta }}</td></tr>{% endfor %}</tbody>
+<tbody>{% for d in resumen.documentos %}<tr><td>{{ d.fuente }}</td><td class="num">{{ d.n }}</td><td>{{ d.desde|fecha if d.desde else '—' }}</td><td>{{ d.hasta|fecha if d.hasta else '—' }}</td></tr>{% endfor %}</tbody>
 </table></div>
 <h2>Uso de IA</h2>
 <p class="small">{{ resumen.llm.llamadas or 0 }} llamadas ({{ resumen.llm.cache or 0 }} desde cache), {{ resumen.llm.errores or 0 }} con error,
@@ -36,7 +36,7 @@ costo acumulado USD {{ resumen.llm.usd or 0 }}.</p>
 <h2>Precios de mercado</h2>
 <div class="table-wrap"><table class="small">
 <thead><tr><th>Fuente</th><th>Canal</th><th class="num">Observaciones</th><th class="num">Con producto</th><th>Desde</th><th>Hasta</th></tr></thead>
-<tbody>{% for d in resumen.precios %}<tr><td>{{ d.fuente }}</td><td>{{ d.canal }}</td><td class="num">{{ d.n|num }}</td><td class="num">{{ d.macheados|num }}</td><td>{{ d.desde }}</td><td>{{ d.hasta }}</td></tr>{% endfor %}</tbody>
+<tbody>{% for d in resumen.precios %}<tr><td>{{ d.fuente }}</td><td>{{ d.canal }}</td><td class="num">{{ d.n|num }}</td><td class="num">{{ d.macheados|num }}</td><td>{{ d.desde|fecha if d.desde else '—' }}</td><td>{{ d.hasta|fecha if d.hasta else '—' }}</td></tr>{% endfor %}</tbody>
 </table></div>
 </div>
 </div>
@@ -62,7 +62,7 @@ costo acumulado USD {{ resumen.llm.usd or 0 }}.</p>
 <h2>Últimas corridas</h2>
 <div class="table-wrap"><table class="small">
 <thead><tr><th>#</th><th>Tipo</th><th>Inicio</th><th>Estado</th><th>Resultado</th></tr></thead>
-<tbody>{% for c in corridas %}<tr><td>{{ c.id }}</td><td>{{ c.tipo }}</td><td>{{ (c.started_at or '')[:16]|replace('T', ' ') }}</td>
+<tbody>{% for c in corridas %}<tr><td>{{ c.id }}</td><td>{{ c.tipo }}</td><td>{{ c.started_at|fecha(con_hora=True) }}</td>
 <td>{% if c.estado == 'ok' %}<span class="sem sem-verde">ok</span>{% elif c.estado == 'error' %}<span class="sem sem-rojo">error</span>{% else %}<span class="sem sem-gris">{{ c.estado }}</span>{% endif %}</td>
 <td>{{ c.mensaje or '' }}</td></tr>{% endfor %}</tbody>
 </table></div>

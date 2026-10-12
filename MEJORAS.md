@@ -305,6 +305,33 @@ distintos); Desarrollo Social → Capital Humano queda PROPUESTO con 1 confirmac
 los títulos casi nunca nombran los dos ministerios y el juez solo ve títulos. Próximo paso: resolver la URL de
 Google News a la nota original y pasarle al juez el primer párrafo. Como verificar: Capital Humano llega a 4.
 
+1. Síntesis arriba del detalle de cada licitación: renglones señalados, monto total vs monto analizado, cobertura,
+   exceso y qué bloquea publicar (hoy la lista dice "monto adjudicado" para el subtotal de renglones).
+2. Comprobante de cálculo por renglón (datos originales, normalización, fechas efectivas, par que confirma el
+   mínimo con sus grupos, IPC, escenarios de plazo) exportable con el caso.
+3. Explicar junto al color por qué un +52 % es amarillo (qué condición impide el rojo).
+4. Compuerta "publicable" visible: qué hacen Guardar / Validé / Publicable y qué falta para publicar.
+5. — **HECHO (2026-10-12, ver DESIGN_sobreprecios.md)**: Investigar dice qué tipo de documento se importó
+   (`queries.tipo_importado()`, banner en `/licitacion/<id>`: dictamen = recomendado, acto del BO = adjudicado,
+   nunca "pagado") y el estado "Procesado; sin comparación" con motivos agrupados y próximos pasos
+   (`investigar._resumen_comparacion()`). Pedido explícito del owner sobre la mitad de este punto (ya
+   implementado, pisa lo que decía antes este ítem): el precio de HOY llevado hacia atrás por IPC para una
+   compra vieja SÍ puede habilitar rojo como cualquier otra referencia (no queda "nunca rojo" como contexto
+   puro) — esta ronda solo rotula esa referencia bien explícito en el resultado (`investigar._nota_extrapolado()`)
+   y la adaptación del núcleo del comparador queda para otro agente.
+6. — **HECHO (2026-10-12)**: cobertura por organismo/producto/proveedor (comparables/total/publicables,
+   `queries.agrupado()`), n por mes en el tooltip del gráfico, aclaración de que "brecha promedio" no está
+   ponderada, y aviso cuando el rango mezcla años en pesos nominales (`aviso_multi_anio`). Sumado por pedido
+   del owner (fuera del alcance original de este ítem): el orden de los rankings y de `/` ahora es SIEMPRE en
+   pesos constantes (`conv_real`), mostrando el nominal igual.
+7. — **HECHO (2026-10-12)**: ediciones de precios de programa legibles (`sources/precios_programa.etiqueta_edicion`),
+   tipos de importación en `/investigar` y método de extracción en castellano, filtro Jinja `fecha` (dd/mm/aaaa)
+   aplicado en toda la UI, `lang="es-AR"`.
+8. — **PARCIAL (2026-10-12)**: vista de impacto antes/después construida (`sobreprecios/impacto.py`, `/impacto`).
+   El paquete para el periodista, el checklist de explicaciones alternativas y el backup/restauración sin
+   consola siguen pendientes (no se tocaron en esta ronda).
+Como verificar: cada punto con su criterio en `_scratch/licitaciones/REVISION_PRIME_JOURNEYS.md` (local).
+
 **#41 — Domicilios: solo se ocultan los de personas humanas.** Los de empresas y organismos se muestran. Verificado 2026-10-12: la página de cada empresa muestra su domicilio legal y ningún filtro oculta domicilios de personas jurídicas; los reportes no exportan datos societarios.
 
 **#42 — Impuestos en los precios.** Registrar si cada fuente informa precio con o sin IVA; las promociones se

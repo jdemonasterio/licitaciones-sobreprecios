@@ -14,7 +14,7 @@ contexto societario (autoridades, socios, domicilios) cargado desde el Boletín 
 <tbody>{% for e in empresas %}
 <tr data-soft-key="emp:{{ e.cuit }}"><td><a href="/empresa/{{ e.cuit }}">{{ e.razon_social or e.cuit }}</a></td><td class="small">{{ e.cuit }}</td>
 <td class="num">{{ e.procesos }}</td><td class="num">{{ e.monto|millones }}</td><td class="num">{{ e.exceso|millones }}</td>
-<td class="small">{{ e.primera_adjudicacion or '—' }} / {{ e.ultima_adjudicacion or '—' }}</td>
+<td class="small">{{ e.primera_adjudicacion|fecha if e.primera_adjudicacion else '—' }} / {{ e.ultima_adjudicacion|fecha if e.ultima_adjudicacion else '—' }}</td>
 <td class="small">{% if e.n_hechos %}{{ e.n_hechos }} datos{% else %}<span class="muted">sin buscar</span>{% endif %}</td></tr>
 {% endfor %}</tbody></table></div>
 {% endblock %}
