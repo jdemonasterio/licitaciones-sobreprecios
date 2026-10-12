@@ -18,16 +18,24 @@ Problemas: [preguntas frecuentes](docs/preguntas_frecuentes.md). Para seguir mej
 
 ## Qué hace
 
-| Solapa | Para qué |
+| Pantalla | Para qué |
 |---|---|
-| **Licitaciones** | Lista de compras analizadas, ordenadas por exceso estimado, con semáforo |
-| **Detalle** | Qué se compró, a quién, a qué precio, contra qué referencia, y la evidencia de mercado |
-| **Analítica** | Peores organismos, productos, proveedores, procedimientos y meses |
+| **Licitaciones** | Todas las compras analizadas, con semáforo, ordenadas por exceso estimado en pesos constantes (para comparar años distintos); filtros por producto, organismo, fechas, revisión y moneda |
+| **Detalle de una licitación** | Síntesis (colores, monto total vs analizado, cobertura, qué falta para publicar), fechas de apertura/adjudicación/publicación, qué documento se importó y qué prueba, actos administrativos, ofertas (con las desestimadas y su causa) y, por renglón, por qué tiene ese color, la evidencia de mercado y la validación rápida ✓/✗/? |
+| **Comprobante de cálculo** | Por renglón, imprimible: datos originales, cuenta del precio por kilo/litro, el par de cadenas que confirma el mínimo, IPC mes a mes, escenarios de plazo de pago, correcciones humanas |
+| **Expediente para periodista** | Un HTML por licitación: resultados arriba; cómo se construyeron abajo (fuentes con URL, normalizaciones, inflación, supuestos, preguntas abiertas) |
+| **Revisión** | Cola de casos a revisar (rojos, grises, equivalencias por verificar, montos que no cierran, errores del juez); en cada caso se corrigen producto, variedad, envase, precio o fecha, se descartan precios de mercado mal leídos y se completa el checklist de explicaciones alternativas; se recalcula en el lugar |
+| **Analítica** | Organismos, productos, proveedores, procedimientos y meses con más brecha, con cobertura; montos en pesos de cada fecha, pesos constantes o dólares (contado con liqui) |
+| **Producto** | Serie de precios: lo adjudicado por el Estado contra el mínimo de mercado de cada mes, en la moneda elegida |
+| **Precios de programa** | Listas históricas de Precios Cuidados/Justos (2020-2023) con su texto original para validar ✓/✗ |
+| **Impacto** | Qué cambió de color (y qué marcas "publicable" se revocaron) después de cada recálculo |
 | **Empresas** | Adjudicatarios y su historia societaria (autoridades, socios, domicilios en el tiempo) |
-| **Reportes** | Informe para periodistas: página imprimible, Excel y CSV, con metodología y limitaciones |
-| **Datos y fuentes** | Actualizar la base (Boletín Oficial, precios de hoy, INDEC) en segundo plano |
+| **Reportes** | Informes con metodología, límites y avisos (HTML, Excel, CSV) y los expedientes generados |
+| **Datos y fuentes** | Actualizar la base (Boletín Oficial, COMPR.AR, precios de hoy, INDEC y dólar) en segundo plano; copia de seguridad y restauración sin consola |
 | **＋ Investigar** | Analizar un caso puntual: link del BO o de COMPR.AR, número de proceso, texto o PDF |
-| **Precios de programa** | Revisar a mano los precios de Precios Cuidados/Justos/Máximos (fallback de mercado) |
+
+Recorrido completo con capturas: ver **[Qué podés hacer, paso a paso](#qué-podés-hacer-paso-a-paso)** más abajo. Para
+publicarla en internet (versión de solo lectura o con contraseña): [docs/despliegue_nube.md](docs/despliegue_nube.md).
 
 ## Cómo se calcula (resumen)
 

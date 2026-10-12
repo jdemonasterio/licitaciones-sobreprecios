@@ -113,6 +113,7 @@
     .hero h2{font-size:1.35rem}
     section.card{padding:18px 14px 20px}
   }
+.shot{margin:18px 0 26px}.shot h5{font-size:1.05rem;margin:0 0 6px}.shot img{display:block;width:100%;height:auto;border:1px solid var(--border, #ddd);border-radius:10px;margin:10px 0;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 </style>
 </head>
 <body>
@@ -121,7 +122,7 @@
   <div class="inner">
     <h1>📋 Guía de inicio — Sobreprecios en compras del Estado</h1>
     <div class="bar-track"><div class="bar-fill" id="bar-fill"></div></div>
-    <div class="bar-label" id="bar-label">0 de 15 etapas completas (0%)</div>
+    <div class="bar-label" id="bar-label">0 de 17 etapas completas (0%)</div>
     <div class="dots" id="dots-row"></div>
   </div>
 </header>
@@ -158,15 +159,16 @@
       días, y un asistente (Claude Code) al que le podés pedir mejoras en español simple.
     </p>
     <div class="callout info">
-      <strong>El recorrido completo son 15 etapas</strong> (0 a 14). Las etapas 1 a 7 instalan
+      <strong>El recorrido completo son 17 etapas</strong> (0 a 16). Las etapas 1 a 7 instalan
       y usan la herramienta en sí — con eso ya podés trabajar. Las etapas 8 a 13 agregan
       Claude Code, para seguir mejorando el sistema sin depender de un programador. La
-      etapa 14 es un glosario de consulta.
+      etapa 14 explica qué IA usa y cuánto cuesta, la 15 cómo publicarla en internet (opcional) y la
+      16 es un glosario de consulta.
     </div>
 
     <div class="valid">
       <div class="vt">✅ Validación de la etapa</div>
-      <p>Entendés qué hace la herramienta y por qué estas 15 etapas existen. Marcá este
+      <p>Entendés qué hace la herramienta y por qué estas 17 etapas existen. Marcá este
       casillero para arrancar a sumar progreso en la barra de arriba.</p>
       <label><input type="checkbox" id="chk-0" data-stage-check="0"> Ya hice esta etapa</label>
     </div>
@@ -476,24 +478,79 @@ y, a la derecha, un ícono para copiar la clave.</div>
 como "Uvicorn running on http://127.0.0.1:8000", y el navegador muestra la
 aplicación con una barra de navegación arriba.</div>
 
-    <h4 class="block-title">Recorrido por las solapas</h4>
-    <table>
-      <tr><th>Solapa</th><th>Para qué</th></tr>
-      <tr><td><strong>Licitaciones</strong></td><td>Lista de compras analizadas, ordenadas por exceso estimado, con semáforo (rojo/amarillo/verde/gris).</td></tr>
-      <tr><td><strong>Detalle</strong> (click en una fila)</td><td>Qué se compró, a quién, a qué precio, contra qué referencia, y la evidencia de mercado.</td></tr>
-      <tr><td><strong>Analítica</strong></td><td>Peores organismos, productos, proveedores, procedimientos y meses.</td></tr>
-      <tr><td><strong>Empresas</strong></td><td>Adjudicatarios y su historia societaria.</td></tr>
-      <tr><td><strong>Reportes</strong></td><td>Informe para periodistas: página imprimible, Excel y CSV.</td></tr>
-      <tr><td><strong>Datos y fuentes</strong></td><td>Actualizar la base en segundo plano.</td></tr>
-      <tr><td><strong>＋ Investigar</strong></td><td>Analizar un caso puntual: link del Boletín Oficial o de COMPR.AR, número de proceso, texto o PDF.</td></tr>
-    </table>
+    <h4 class="block-title">Qué podés hacer, paso a paso</h4>
+    <p>Las capturas son de la herramienta funcionando con datos reales. Los números cambian a medida que se
+    cargan datos nuevos.</p>
+
+    <div class="shot"><h5>1. Ver todas las licitaciones analizadas</h5>
+    <p>La lista arranca ordenada por el exceso estimado en <strong>pesos constantes</strong> (descontada la
+    inflación), así un caso de 2021 se compara bien con uno de 2025. Arriba, los totales; los filtros te dejan
+    elegir producto, organismo, fechas, estado de revisión y la moneda (pesos de cada fecha, pesos constantes
+    o dólares). En las tablas podés ordenar haciendo click en el encabezado y filtrar las columnas de
+    categorías con la casilla de selección.</p>
+    <!--IMG:01_licitaciones|Lista de licitaciones con semáforos, totales y filtros--></div>
+
+    <div class="shot"><h5>2. Abrir una licitación y validarla</h5>
+    <p>Arriba ves la síntesis: cuántos renglones hay de cada color, el monto total del proceso y el de los
+    renglones analizados, la cobertura y <strong>qué falta para publicar</strong>. Cada renglón explica en una
+    línea por qué tiene ese color. Con <strong>✓ / ✗ / ?</strong> validás la extracción, el producto y la
+    comparación sin salir de la página.</p>
+    <!--IMG:02_licitacion|Detalle de una licitación con síntesis y validación por renglón--></div>
+
+    <div class="shot"><h5>3. Ver cómo se calculó un número</h5>
+    <p>El <strong>comprobante de cálculo</strong> de cada renglón muestra el precio original, la cuenta por
+    kilo o litro, la fecha con la que se compara, las dos cadenas que confirman el precio mínimo, el ajuste
+    por inflación mes a mes y los escenarios de plazo de pago. Se puede imprimir.</p>
+    <!--IMG:04_comprobante|Comprobante de cálculo de un renglón--></div>
+
+    <div class="shot"><h5>4. Revisar los casos dudosos y corregir datos</h5>
+    <p>La solapa <strong>Revisión</strong> es tu lista de tareas: rojos, grises (no se pudo comparar),
+    equivalencias por verificar y montos que no cierran. En cada caso podés corregir el producto, la variedad,
+    el envase, el precio o la fecha; marcar un precio de mercado como "no es el mismo producto"; y completar
+    el checklist de explicaciones alternativas (logística, impuestos, especificaciones). Al guardar, el caso se
+    recalcula solo en la misma pantalla.</p>
+    <!--IMG:06_revision_cola|Cola de revisión-->
+    <!--IMG:07_revision_caso|Caso de revisión con corrección manual y validación de precios de mercado--></div>
+
+    <div class="shot"><h5>5. Armar el expediente para un periodista</h5>
+    <p>Desde una licitación, <strong>"Armar expediente para periodista"</strong> genera un solo archivo HTML:
+    arriba los resultados; abajo cómo se construyeron (fuentes con links, cómo se normalizaron productos y
+    precios, la inflación, los supuestos y las preguntas abiertas). Los avisos (casos grises, precios
+    inferidos, falta de revisión) quedan impresos en el documento.</p>
+    <!--IMG:05_expediente|Expediente para periodista--></div>
+
+    <div class="shot"><h5>6. Analizar en pesos constantes o en dólares</h5>
+    <p><strong>Analítica</strong> muestra organismos, productos, proveedores y meses con más brecha, siempre
+    con la cobertura (cuántos renglones se pudieron comparar). Con "Montos en" elegís pesos de cada fecha,
+    pesos constantes o dólares (contado con liqui del día). En la página de cada producto ves la serie de
+    precios del Estado contra el mercado.</p>
+    <!--IMG:08_analitica|Analítica en pesos constantes-->
+    <!--IMG:09_producto|Serie de precios de un producto--></div>
+
+    <div class="shot"><h5>7. Investigar una licitación nueva</h5>
+    <p>Con <strong>＋ Investigar una licitación</strong> pegás un link del Boletín Oficial o de COMPR.AR, un
+    número de proceso, un texto o subís un PDF. La herramienta te dice qué documento importó y qué prueba
+    (recomendación, adjudicación u orden de compra) y, si algo no se pudo comparar, por qué y qué hacer.</p>
+    <!--IMG:11_investigar|Pantalla para investigar una licitación--></div>
+
+    <div class="shot"><h5>8. Validar precios históricos y ver el impacto de los cambios</h5>
+    <p><strong>Precios de programa</strong> tiene las listas de Precios Cuidados/Justos 2020-2023 con su texto
+    original: marcás ✓ si está bien transcripta y ✗ si no (lo descartado deja de usarse). En
+    <strong>Impacto</strong> ves qué casos cambiaron de color después de cada corrección o actualización.</p>
+    <!--IMG:10_precios_programa|Validación de listas de Precios Cuidados-->
+    <!--IMG:12_impacto|Impacto de un recálculo--></div>
+
+    <div class="shot"><h5>9. Actualizar datos y hacer copias de seguridad</h5>
+    <p>En <strong>Datos y fuentes</strong> se actualizan el Boletín Oficial, COMPR.AR, los precios de hoy, el
+    INDEC y el dólar, en segundo plano. Ahí mismo descargás una <strong>copia de seguridad</strong> de toda la
+    base (con tus revisiones) y la restaurás si hace falta, sin usar la consola.</p>
+    <!--IMG:13_fuentes|Datos y fuentes con copia de seguridad--></div>
 
     <div class="callout danger">
-      <strong>La regla de oro de este proyecto:</strong> ningún caso sale a periodistas sin
-      marcar "publicable" a mano, después de revisarlo. Una diferencia de precio no prueba
-      una irregularidad por sí sola — logística, plazos de pago o errores de publicación
-      pueden explicarla. Los reportes que todavía no revisaste salen marcados
-      "BORRADOR INTERNO".
+      <strong>La regla de oro de este proyecto:</strong> un color es una investigación pendiente, no una
+      conclusión. Una diferencia de precio no prueba una irregularidad por sí sola — logística, plazos de pago,
+      especificaciones o errores de publicación pueden explicarla. Revisá cada caso antes de compartirlo; los
+      reportes y expedientes salen con los avisos impresos.
     </div>
 
     <div class="valid">
@@ -897,9 +954,75 @@ final "Todo verde" o la lista de qué falló.</div>
   </section>
 
   <!-- ETAPA 14 -->
+  <!-- ETAPA 14 -->
   <section class="card" id="etapa-14">
     <div class="stage-head">
       <div class="stage-num">14</div>
+      <div><h3>🧠 Qué inteligencia artificial usa y cuánto cuesta</h3><div class="sub">lectura, 3 minutos</div></div>
+    </div>
+    <p>La herramienta usa modelos de IA solo para tareas de lectura: entender el texto de un aviso del Boletín
+    Oficial, clasificar un producto dudoso o leer un PDF. <strong>El cálculo del sobreprecio y el semáforo no
+    los decide una IA</strong>: son reglas fijas y verificables (ver el README del proyecto).</p>
+    <table>
+      <tr><th>Para qué</th><th>Modelo</th><th>Costo</th></tr>
+      <tr><td>Leer avisos y clasificar productos (uso diario)</td><td>Gemini Flash-Lite de Google, plan gratis (la clave de la Etapa 5)</td><td>USD 0 (más lento: espera si se agota la cuota)</td></tr>
+      <tr><td>Leer PDFs de actas o anexos</td><td>Gemini Flash, plan gratis</td><td>USD 0</td></tr>
+      <tr><td>Alternativa paga, más rápida (opcional)</td><td>GPT-6 Luna (OpenAI) o Gemini 3.6 Flash</td><td>~USD 0,001 por aviso: unos USD 0,05 cada 100 avisos; tope automático de USD 2 por corrida</td></tr>
+      <tr><td>Auditoría externa de calidad (opcional)</td><td>GPT-6 Astra, un "juez" más caro que revisa muestras</td><td>~USD 1-2 por auditoría de 50 casos</td></tr>
+      <tr><td>Mejorar el programa pidiéndole cambios a Claude</td><td>Claude (suscripción, Etapa 8)</td><td>USD 20/mes (plan Pro)</td></tr>
+      <tr><td>Publicarlo en internet (opcional, Etapa 15)</td><td>Railway</td><td>~USD 5-7/mes</td></tr>
+    </table>
+    <p>Todos los datos que se procesan son públicos (Boletín Oficial, COMPR.AR, precios de supermercados,
+    INDEC): no hay datos personales sensibles en juego. Las fuentes de precios y de cotizaciones son
+    gratuitas.</p>
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Sabés qué usa IA y qué no, y que el uso diario cuesta USD 0 con el plan gratis.</p>
+      <label><input type="checkbox" id="chk-14" data-stage-check="14"> Ya leí esta etapa</label>
+    </div>
+  </section>
+
+  <!-- ETAPA 15 -->
+  <section class="card" id="etapa-15">
+    <div class="stage-head">
+      <div class="stage-num">15</div>
+      <div><h3>🌐 Publicarlo en internet (opcional, para el futuro)</h3><div class="sub">30-45 minutos la primera vez</div></div>
+    </div>
+    <p><strong>Qué vas a lograr:</strong> una dirección web (por ejemplo
+    <span class="mono">sobreprecios.up.railway.app</span> o un dominio propio) para abrir la herramienta desde
+    cualquier celular o computadora, no solo desde la PC donde está instalada.</p>
+    <p><strong>Por qué Railway:</strong> es la opción más simple y barata que mantiene la base de datos guardada
+    entre reinicios y deja correr las actualizaciones en segundo plano (unos USD 5-7 por mes). Vercel o Netlify
+    no sirven para este tipo de programa: no guardan una base de datos local.</p>
+    <h4 class="block-title">Pasos (resumen)</h4>
+    <ol class="steps">
+      <li>Crear una cuenta en <a href="https://railway.com" target="_blank" rel="noopener">railway.com</a> con la cuenta de GitHub y elegir el plan Hobby (pide una tarjeta).</li>
+      <li>"New Project" → "Deploy from GitHub repo" → elegir <span class="mono">jdemonasterio/licitaciones-sobreprecios</span> (o la copia de ustedes).</li>
+      <li>Agregar un <strong>volumen</strong> (disco) montado en <span class="mono">/data</span>: ahí vive la base.</li>
+      <li>En "Variables", cargar la clave de IA y <strong>sí o sí</strong> una de estas dos protecciones:
+        <span class="mono">LIC_MODO_PUBLICO=1</span> (versión de solo lectura, para mostrar) o
+        <span class="mono">LIC_USUARIO</span> + <span class="mono">LIC_CLAVE</span> (pide usuario y contraseña).
+        Agregar también el dominio en <span class="mono">LIC_HOSTS_PERMITIDOS</span>.</li>
+      <li>"Generate Domain" para tener la dirección, o conectar un dominio propio.</li>
+      <li>Para actualizar: cada cambio que se sube a GitHub se publica solo.</li>
+    </ol>
+    <div class="callout danger"><strong>Nunca</strong> publiques la herramienta sin el modo de solo lectura o
+    sin contraseña: cualquiera podría lanzar actualizaciones o tocar las revisiones. Las claves de IA van
+    solo en las "Variables" de Railway, nunca en el código.</div>
+    <p>La guía completa, con capturas de qué tocar en cada pantalla de Railway, está en el proyecto:
+    <span class="mono">docs/despliegue_nube.md</span>
+    (<a href="https://github.com/jdemonasterio/licitaciones-sobreprecios/blob/main/docs/despliegue_nube.md" target="_blank" rel="noopener">verla en GitHub</a>).</p>
+    <div class="valid">
+      <div class="vt">✅ Validación de la etapa</div>
+      <p>Abrís la dirección de Railway desde el celular y ves la herramienta (con el cartel de solo lectura o
+      pidiendo usuario y contraseña).</p>
+      <label><input type="checkbox" id="chk-15" data-stage-check="15"> Ya hice esta etapa</label>
+    </div>
+  </section>
+
+  <section class="card" id="etapa-16">
+    <div class="stage-head">
+      <div class="stage-num">16</div>
       <div><h3>📖 Glosario mini</h3><div class="sub">de consulta, no hace falta memorizarlo</div></div>
     </div>
     <dl class="glossary">
@@ -941,7 +1064,7 @@ final "Todo verde" o la lista de qué falló.</div>
     <div class="valid">
       <div class="vt">✅ Validación de la etapa</div>
       <p>Leíste el glosario. No hace falta memorizarlo: volvé acá cuando una palabra no te cierre.</p>
-      <label><input type="checkbox" id="chk-14" data-stage-check="14"> Ya hice esta etapa</label>
+      <label><input type="checkbox" id="chk-16" data-stage-check="16"> Ya hice esta etapa</label>
     </div>
   </section>
 
@@ -972,7 +1095,9 @@ final "Todo verde" o la lista de qué falló.</div>
     {n:11, t:'Pedir mejoras'},
     {n:12, t:'Reportar un error'},
     {n:13, t:'Verificar una mejora'},
-    {n:14, t:'Glosario'}
+    {n:14, t:'IA y costos'},
+    {n:15, t:'Publicar en internet'},
+    {n:16, t:'Glosario'}
   ];
   var TOTAL = STAGES.length;
 
