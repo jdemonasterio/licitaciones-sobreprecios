@@ -218,7 +218,7 @@ Mandarle 3-4 recorridos paso a paso (capturas + texto) de usuarios investigando 
 ve bien, qué falta y qué agregaría; hasta 4 llamadas, presupuesto aparte de USD 10.
 Como verificar: decisiones del prime registradas y su backlog derivado.
 
-**#41 — Domicilios: solo se ocultan los de personas humanas.** Los de empresas y organismos se muestran.
+**#41 — Domicilios: solo se ocultan los de personas humanas.** Los de empresas y organismos se muestran. Verificado 2026-10-12: la página de cada empresa muestra su domicilio legal y ningún filtro oculta domicilios de personas jurídicas; los reportes no exportan datos societarios.
 
 **#42 — Impuestos en los precios.** Registrar si cada fuente informa precio con o sin IVA; las promociones se
 toman como el precio vigente; stock y compra mínima no se consideran.
