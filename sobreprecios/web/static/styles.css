@@ -219,3 +219,12 @@ pre.texto { white-space: pre-wrap; font-size: var(--fs-xs); background: var(--su
     .navbar, .filters, .no-print, form { display: none !important; }
     body { background: #fff; }
 }
+
+/* Celular (simulador 390px, 2026-10-12): la grilla etiqueta/valor usa max-content para la etiqueta; una
+   etiqueta larga empujaba los valores fuera de la pantalla (753px de ancho en /licitacion/<id>). En pantallas
+   angostas, etiqueta arriba y valor abajo; y ninguna palabra larga puede ensanchar la grilla. */
+.meta-grid dt, .meta-grid dd { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 640px) {
+  .meta-grid { grid-template-columns: 1fr; }
+  .meta-grid dt { margin-top: var(--space-2, 8px); }
+}
