@@ -62,6 +62,15 @@ def incluye_iva(canal: str) -> bool | None:
     return ((settings().get("impuestos") or {}).get("incluye_iva") or {}).get(canal)
 
 
+def agrupar_subunidades_organismo() -> bool:
+    """MEJORAS #53 (config/settings.yml -> organismos.agrupar_subunidades, default True): si una
+    subunidad ("... Secretaría de ...", "... Dirección ...") se agrupa en su jurisdicción madre
+    (el ministerio/organismo padre) para Analítica, filtros y rankings de `organismo_canonico`.
+    Decisión del owner, no del código — con False cada subunidad queda en su propio balde (sigue
+    normalizada: mismo SAF/mayúsculas/acentos/espacios no la duplica, pero no sube al padre)."""
+    return bool((settings().get("organismos") or {}).get("agrupar_subunidades", True))
+
+
 def scratch_path(project: str, filename: str) -> Path:
     """Ruta en _scratch/<project>/ para goldens y análisis (nunca commiteados).
 

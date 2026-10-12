@@ -170,6 +170,40 @@ def entidades(conn: sqlite3.Connection) -> Path:
     return _write("validation_entidades", header, out)
 
 
+def organismos(conn: sqlite3.Connection) -> Path:
+    """Universo de `procesos.organismo` crudo -> `organismo_canonico` (MEJORAS #53): una fila por
+    texto crudo distinto, con su código SAF, cuántos procesos tiene, el canónico que calculó
+    `normalize.aplicar.run()` y, aparte, la jurisdicción madre (ministerio/organismo padre) a la
+    que pertenecería aunque `config/settings.yml -> organismos.agrupar_subunidades` esté en false
+    (para que el owner vea el roll-up posible aunque hoy no se esté aplicando). Ordenado por
+    cuántas variantes crudas comparten el mismo canónico: lo que más junta es lo más dudoso de
+    revisar primero (si juntó de más, el error pesa más variantes a la vez)."""
+    from .normalize.aplicar import titulo
+    from .normalize.entidades import normalizar_organismo
+    rows = conn.execute(
+        "SELECT organismo, saf, organismo_canonico, COUNT(*) n FROM procesos WHERE organismo IS NOT NULL "
+        "AND organismo <> '' GROUP BY organismo ORDER BY organismo").fetchall()
+    n_variantes: dict[str, int] = {}
+    for r in rows:
+        clave = r["organismo_canonico"] or ""
+        n_variantes[clave] = n_variantes.get(clave, 0) + 1
+    out = []
+    for r in rows:
+        o = normalizar_organismo(r["organismo"])
+        jurisdiccion_madre = titulo(o["jurisdiccion"]) if o["jurisdiccion"] else (r["organismo_canonico"] or "")
+        if r["saf"]:
+            motivo = f"código SAF {r['saf']} + mismo nombre normalizado (mayúsculas/acentos/espacios)"
+        elif o["unidad"]:
+            motivo = f"subunidad: se agrupa en la jurisdicción madre '{jurisdiccion_madre}'"
+        else:
+            motivo = "mismo nombre normalizado (sin mayúsculas/acentos/espacios)"
+        out.append([r["organismo"], r["saf"] or "", r["n"], r["organismo_canonico"] or "", jurisdiccion_madre,
+                    motivo])
+    out.sort(key=lambda row: (-n_variantes.get(row[3], 1), row[3], row[0]))
+    header = ["organismo_crudo", "codigo_saf", "n_procesos", "canonico", "jurisdiccion_agrupada", "motivo"]
+    return _write("validation_organismos", header, out)
+
+
 def moneda(conn: sqlite3.Connection, desde: str = "2019-01") -> Path:
     """IPC y dólar mes a mes: para chequear contra valores conocidos las conversiones a pesos reales y dólares."""
     from .normalize import moneda as moneda_mod
@@ -231,5 +265,5 @@ def precios_programa(conn: sqlite3.Connection) -> Path:
 
 def run(conn: sqlite3.Connection) -> list[Path]:
     return [extraccion_vs_quijote(conn), comparaciones(conn), precios_hoy(conn), comprar(conn), entidades(conn),
-            precios_programa(conn),
+            organismos(conn), precios_programa(conn),
             moneda(conn)]

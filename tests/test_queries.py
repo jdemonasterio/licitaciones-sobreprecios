@@ -13,9 +13,9 @@ def _ipc(conn, fecha, valor):
     conn.commit()
 
 
-def _proceso(conn, external_id, fecha, exceso_nominal, monto_nominal, semaforo="rojo"):
+def _proceso(conn, external_id, fecha, exceso_nominal, monto_nominal, semaforo="rojo", organismo=None):
     db.upsert(conn, "procesos", {
-        "fuente": "bo_primera", "external_id": external_id, "organismo": f"ORGANISMO {external_id}",
+        "fuente": "bo_primera", "external_id": external_id, "organismo": organismo or f"ORGANISMO {external_id}",
         "fecha_adjudicacion": fecha, "fecha_publicacion": fecha, "monto_total": monto_nominal,
         "created_at": db.now_iso(), "updated_at": db.now_iso(),
     }, ("fuente", "external_id"))
@@ -71,6 +71,36 @@ def test_agrupado_trae_cobertura_publicables_y_convertidos(tmp_path):
         conn.commit()
         filas = queries.agrupado(conn, {}, "organismo")
     assert filas[0]["renglones"] == 1 and filas[0]["comparados"] == 1 and filas[0]["publicables"] == 1
+
+
+# ── organismo_canonico expuesto a las tablas interactivas (MEJORAS #53) ─────
+
+def test_list_procesos_expone_organismo_canonico_para_el_filtro_de_columna(tmp_path):
+    """La columna "Organismo" de la tabla de licitaciones filtra con `tablas.js` por el atributo
+    `data-valor` de la celda; si esa columna no trae `organismo_canonico`, el filtro agrupa por el
+    texto CRUDO y "Ministerio de Desarrollo Social" queda partido en variantes (con código SAF,
+    sin código, con una subunidad después). `list_procesos()` tiene que traer las dos: la cruda
+    (se MUESTRA, con el detalle de la subunidad) y la canónica (para agrupar)."""
+    from sobreprecios.normalize import aplicar
+    with db.session(tmp_path / "t.db") as conn:
+        pid_saf = _proceso(conn, "a", "2025-01-15", 100.0, 1000.0, organismo="311 - Ministerio de Desarrollo Social")
+        pid_sub = _proceso(conn, "b", "2025-01-16", 100.0, 1000.0,
+                           organismo="MINISTERIO DE DESARROLLO SOCIAL SECRETARÍA DE GESTIÓN ADMINISTRATIVA")
+        aplicar.run(conn)
+        filas = {p["id"]: p for p in queries.list_procesos(conn, {})}
+    assert filas[pid_saf]["organismo"] == "311 - Ministerio de Desarrollo Social"   # detalle crudo intacto
+    assert filas[pid_sub]["organismo"].endswith("GESTIÓN ADMINISTRATIVA")           # idem
+    assert filas[pid_saf]["organismo_canonico"] == filas[pid_sub]["organismo_canonico"] == "Ministerio de Desarrollo Social"
+
+
+def test_peores_renglones_expone_organismo_canonico(tmp_path):
+    from sobreprecios.normalize import aplicar
+    with db.session(tmp_path / "t.db") as conn:
+        pid = _proceso(conn, "a", "2025-01-15", 100.0, 1000.0, organismo="MINISTERIO DE DESARROLLO SOCIAL SECRETARÍA DE GESTIÓN ADMINISTRATIVA")
+        aplicar.run(conn)
+        filas = queries.peores_renglones(conn, {})
+    assert filas and filas[0]["organismo_canonico"] == "Ministerio de Desarrollo Social"
+    assert filas[0]["organismo"].endswith("GESTIÓN ADMINISTRATIVA")
 
 
 # ── tipo_importado (MEJORAS #49.5, item 1a) ─────────────────────────────────

@@ -397,6 +397,34 @@ decisiones en `DESIGN_sobreprecios.md` (sección 2).
 Cómo verificar: en "Licitaciones" hacé click en "Peor brecha" (ordena, flecha cambia) y abrí el embudo de
 "Semáforo" (destildar un valor oculta esas filas y actualiza "Mostrando X de Y filas").
 
+**#53 — Nombre canónico de organismo: tildes correctas, roll-up configurable y el filtro de columna de #52
+arreglado. HECHO (2026-10-12).**
+El mismo organismo aparecía con nombres distintos según la fuente (código SAF de COMPR.AR adelante, el título
+completo del Boletín Oficial, con una subunidad tipo "... Secretaría de Gestión Administrativa" después) y eso
+partía las cifras en Analítica, el select de filtro y, sobre todo, el filtro de COLUMNA de las tablas
+interactivas que agregó #52: la columna "Organismo" de `licitaciones.html`, el ranking "Renglones con mayor
+brecha" de `analitica.html` y "adjudicaciones" de `empresa.html` no traían `data-valor`, así que el menú de
+checkboxes agrupaba por el texto CRUDO (3 valores con conteos 4/45/19 en vez de uno con 68). Fix completo:
+`web/queries.list_procesos/peores_renglones/empresa` ahora traen `organismo_canonico` y esas 3 celdas filtran
+por ahí (siguen mostrando el texto crudo, con el detalle de la subunidad). Además, `normalize/entidades.
+normalizar_organismo()` perdía las tildes del canónico ("Ministerio de Economia" en vez de "Ministerio de
+Economía") porque recortaba sobre una copia ya sin acentos; ahora recorta del texto original (misma posición:
+`strip_accents()` no cambia la cantidad de caracteres) y agrega `jurisdiccion_clave` (sin acentos/mayúsculas,
+solo para AGRUPAR, nunca para mostrar). `normalize/aplicar.run()` pasa a dos pasadas: junta candidatos por
+clave y elige UN solo texto por clave (`_mejor_variante`: gana el que tiene más tildes/ñ, determinístico) para
+que dos variantes que agrupan igual siempre muestren el mismo nombre. Roll-up configurable por el owner:
+`config/settings.yml -> organismos.agrupar_subunidades` (default `true`, sube la subunidad a su jurisdicción
+madre; `false` la deja en su propio balde, igual deduplicada). Independiente de la sucesión histórica
+(`organismos_sucesion`, #39/#51): nunca agrupa organismos renombrados entre sí — verificado con "Ministerio de
+Seguridad" vs "Ministerio de Seguridad Nacional" (SAF 343), que siguen separados a propósito. Detalle completo,
+motivos y números reales de la corrida en DESIGN_sobreprecios.md (sección 2).
+Como verificar: `python -m sobreprecios.cli normalizar` y después `python -m sobreprecios.cli goldens` generan
+`_scratch/licitaciones/validation_organismos_*.tsv` (crudo -> SAF -> canónico -> jurisdicción agrupada ->
+motivo, ordenado por grupos más grandes primero); en la webui, "Licitaciones" con el embudo de "Organismo"
+tiene que mostrar un solo valor "Ministerio de Desarrollo Social" con TODOS sus procesos, no 3 valores
+separados. Tests: `tests/test_normalize.py`, `tests/test_normalize_aplicar.py`, `tests/test_config.py`,
+`tests/test_queries.py`, `tests/test_goldens.py`.
+
 **#14 — Tabla de correspondencias de organismos renombrados.**
 Ya esta implementado que el sistema NO une renombres automaticamente (ej.
 Desarrollo Social → Capital Humano), pero falta la vista de agrupacion
