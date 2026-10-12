@@ -1,0 +1,32 @@
+# Config de respaldo para Render (alternativa a Railway, ver docs/despliegue_nube.md).
+# Render NO permite un disco persistente en el plan free: esto arranca en "starter"
+# (~USD 7/mes) + el disco (~USD 0,25/GB/mes). Se sube con "New > Blueprint" apuntando
+# a este repo; las claves (GEMINI_API_KEY, etc.) y LIC_USUARIO/LIC_CLAVE se completan
+# a mano en el dashboard (sync: false), nunca quedan en este archivo.
+services:
+  - type: web
+    name: sobreprecios
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    disk:
+      name: sobreprecios-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: LIC_DB_PATH
+        value: /data/sobreprecios.db
+      - key: LIC_CACHE_DIR
+        value: /data/cache
+      - key: LIC_MODO_PUBLICO
+        value: "1"
+      - key: LIC_HOSTS_PERMITIDOS
+        value: ""
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: LIC_USUARIO
+        sync: false
+      - key: LIC_CLAVE
+        sync: false

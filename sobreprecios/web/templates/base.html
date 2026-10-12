@@ -24,9 +24,17 @@
             <a href="/precios-programa" class="{% if path.startswith('/precios-programa') %}active{% endif %}">Precios de programa</a>
             <a href="/fuentes" class="{% if path.startswith('/fuentes') %}active{% endif %}">Datos y fuentes</a>
         </div>
+        {% if not modo_publico %}
         <a href="/investigar" class="btn btn-primary nav-cta">＋ Investigar una licitación</a>
+        {% endif %}
     </nav>
     <main class="container" id="soft-root" data-soft-root>
+        {% if modo_publico %}
+        <div class="banner no-print" style="margin-bottom:12px">
+            Versión pública de solo lectura: se puede navegar y mirar todo, pero no se pueden
+            guardar cambios, correr nuevas búsquedas ni investigar un caso puntual acá.
+        </div>
+        {% endif %}
         {% block content %}{% endblock %}
         {# Banner de jobs en background: la página consulta /jobs/<nombre> y se refresca sola al terminar. #}
         <div id="job-watch" data-jobs="{% block jobs %}datos,investigar,reporte{% endblock %}" hidden></div>

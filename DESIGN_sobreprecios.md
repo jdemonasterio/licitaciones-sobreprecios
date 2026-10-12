@@ -32,7 +32,8 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | PDFs | `sobreprecios/pdf_text.py` | pdfplumber por columnas → OCR → LLM (benchmark 2026-10-11) |
 | Juez externo | `auditoria/juez.py` | Auditoría LLM fuera del programa, solo lectura, TSV + reglas sugeridas |
 | Simulador | `tests/e2e/`, `scripts/simular.py`, `simular.bat` | Recorridos de usuario reales en el navegador: compuerta antes de entregar |
-| Webui | `sobreprecios/web/` | FastAPI + Jinja; `soft-nav.js` (refresco en el lugar) y `_background.py` (jobs) |
+| Webui | `sobreprecios/web/` | FastAPI + Jinja; `soft-nav.js` (refresco en el lugar), `_background.py` (jobs) y `seguridad_publica` (auth básica + modo solo lectura para un despliegue público) |
+| Despliegue | `Dockerfile`, `docker-entrypoint.sh`, `railway.json`, `render.yaml` | Imagen para correr en la nube (Railway recomendado); primer boot corre `setup` si la base no existe en el volumen |
 | Revisión humana | `sobreprecios/revision_humana.py` | Cola de casos grises/rojos/equivalencias/juez, correcciones manuales por campo, validación de referencias de mercado y validación rápida por renglón; proxy de documentos (`/doc`) |
 
 ## 2. Decisiones
@@ -273,6 +274,32 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   el primero que aparece llevado hacia atrás con el IPC del mes exacto, rotulado "PRECIO INFERIDO" en el motivo,
   confianza baja, nunca rojo. Si existe un dato anterior (aunque viejo) no se infiere: rige `gap_maximo_dias`.
 
+- **2026-10-12 · Despliegue en la nube (plataforma: Railway)**: para una URL pública (fuera de
+  127.0.0.1) se eligió Railway Hobby (~USD 5-7/mes con disco incluido) sobre Render (disco solo
+  en plan pago desde USD 7/mes + disco), Fly.io (requiere su propia CLI, menos apto para un
+  usuario no técnico) y Vercel/Netlify (serverless: no sirven, no hay disco persistente para
+  SQLite ni jobs de fondo). `Dockerfile` (`python:3.12-slim`, `docker-entrypoint.sh`) corre
+  `setup --sin-demo` solo en el primer boot (si `LIC_DB_PATH` no existe en el volumen montado en
+  `/data`; si falla a mitad de camino no tumba el contenedor, el webui igual levanta) y después
+  `servir --host 0.0.0.0`. `railway.json` (builder Dockerfile, healthcheck `/healthz`) y
+  `render.yaml` (alternativa, sin credenciales en el archivo: `sync: false`) ya están en el repo.
+  Seguridad para hacerla pública: middleware `seguridad_publica` en `sobreprecios/web/app.py` —
+  `LIC_USUARIO`+`LIC_CLAVE` (HTTP Basic con `secrets.compare_digest`, nunca logueada) para TODA la
+  app, y/o `LIC_MODO_PUBLICO=1` (solo lectura: 403 a cualquier método que no sea GET/HEAD/OPTIONS,
+  `/doc` e `/investigar` deshabilitados con redirect a `/`, variable de template `modo_publico` que
+  oculta el CTA "＋ Investigar" y muestra el cartel). `/healthz` queda siempre sin auth (lo pega el
+  healthcheck de la plataforma). Sin esas variables de entorno, el comportamiento local no cambia
+  (`tests/test_seguridad_publica.py`, 7 casos). `TrustedHostMiddleware` (ya existía) necesita el
+  dominio de la plataforma en `LIC_HOSTS_PERMITIDOS` — documentado en `docs/despliegue_nube.md`.
+  **Límite conocido / pendiente:** el modo público oculta el CTA de navegación y el aviso de la
+  página de licitaciones vacía, pero NO oculta los botones de escritura dentro de las subpáginas
+  (`/fuentes`, `/revision/<id>`, `/empresa/<cuit>`, `/reportes`, `/precios-programa`,
+  `/revision/juez`): esos siguen visibles y, si se tocan, el middleware igual los bloquea con 403
+  (soft-nav.js lo muestra como un toast de error) — la seguridad real no depende de ocultarlos,
+  pero falta ese pulido de UI (se deja fuera a propósito para no pisar al agente que trabaja en
+  paralelo sobre esas plantillas; la variable de template `modo_publico` ya está disponible en
+  todas para quien lo haga).
+
 ## 3. Cómo operar
 
 | Tarea | Comando / lugar |
@@ -297,6 +324,7 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Mirar un documento (BO/COMPR.AR) sin salir | botón "Ver documento" en `/revision/<renglon_id>` (proxy `/doc`, solo esos hosts) |
 | Bajar / validar precios de programa (Precios Cuidados/Justos) | `python -m sobreprecios.cli precios-programa [--edicion ID] [--juez TSV]` · solapa `/precios-programa` |
 | Antes de entregar | `simular.bat` / `python scripts/simular.py`: 20 recorridos de usuario tienen que dar OK |
+| Desplegar en la nube (URL pública) | `docker build . && docker run ...` local para probar · `docs/despliegue_nube.md` (Railway paso a paso) |
 
 ## 4. Tests
 
@@ -311,6 +339,11 @@ redirect a host no permitido). El simulador (`tests/e2e/`) cubre los journeys de
 in-line en `/licitacion/<id>` con un navegador real, precios de programa (los tres formatos con fixtures, macheo, réplica por
 vigencia, idempotencia, fallback y familia en el comparador) y validaciones de programa (guardar/leer, import de TSV
 del juez); el simulador también cubre marcar una fila de "programa" ✗ y verla excluida del comparador.
+Seguridad del despliegue público (`tests/test_seguridad_publica.py`, 7 casos): sin variables el
+comportamiento local no cambia, modo público bloquea toda escritura (403) y deshabilita `/doc` e
+`/investigar`, cartel y CTA se ocultan en el template, auth básica exige usuario+clave correctos
+(401 sin ellas o con credenciales malas, 200 con las correctas), `/healthz` nunca pide credenciales,
+y la clave jamás aparece en los logs (`caplog`).
 
 ## 5. Límites conocidos
 
