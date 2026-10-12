@@ -81,7 +81,7 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   - Referencia principal = **mínimo de mercado de ambos canales** (`min_mercado`): el pool mayorista es delgado y 1-2
     observaciones raras escondían sobreprecio. Dos brechas siempre visibles: vs mínimo observado (decide
     amarillo/verde) y vs **mínimo corroborado** (`ref_corroborada`: el menor máximo de un par de observaciones de
-    grupos comerciales distintos a ±2 %; un scraper y el SEPA de la misma cadena son el mismo grupo). Solo la
+    grupos comerciales distintos a ±5 % (`corroboracion_tolerancia`, P1); un scraper y el SEPA de la misma cadena son el mismo grupo). Solo la
     corroborada da rojo, y tiene que superar +20 % con 2 meses de plazo (`plazo_escenarios_rojo_meses`, factor
     compuesto).
   - **Fecha as-of**: por serie (fuente + descripción) la última observación ≤ fecha en ±15 días; una posterior solo si

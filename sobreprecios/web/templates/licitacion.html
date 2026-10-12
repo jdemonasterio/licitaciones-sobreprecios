@@ -11,7 +11,7 @@
     <dl class="meta-grid">
         <dt>Procedimiento</dt><dd>{{ (p.tipo_procedimiento or 'sin dato')|replace('_', ' ') }}</dd>
         <dt>Número</dt><dd>{{ p.numero or 'sin dato' }}</dd>
-        <dt>Fecha</dt><dd>{{ p.fecha_adjudicacion or p.fecha_publicacion or 'sin dato' }}</dd>
+        <dt>Fechas</dt><dd>{% if p.fecha_apertura %}apertura de ofertas {{ p.fecha_apertura }} (con esta se compara) · {% endif %}{% if p.fecha_adjudicacion %}adjudicación {{ p.fecha_adjudicacion }}{% else %}publicación {{ p.fecha_publicacion or 'sin dato' }}{% endif %}</dd>
         <dt>Objeto</dt><dd>{{ p.objeto or '—' }}</dd>
         <dt>Categoría</dt><dd>{{ (p.categoria or '—')|replace('_', ' ') }}</dd>
         <dt>Plazo de pago (pliego)</dt><dd>{% if p.plazo_pago_dias is not none %}{{ p.plazo_pago_dias }} días corridos<div class="muted small">{{ p.plazo_pago_texto }}</div>{% else %}sin dato <span class="muted small">(no se encontró como texto en COMPR.AR; se usa el supuesto general de {{ cfg.plazo_pago_meses|num(0) }} mes/es)</span>{% endif %}</dd>
@@ -75,7 +75,7 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
 <table>
 <thead><tr>
     <th>Semáforo</th><th>Bien</th><th>Proveedor</th><th class="num">Cantidad</th><th class="num">Precio unitario</th>
-    <th class="num">Pagó por u. base</th><th class="num">Referencia</th><th class="num">Brecha ajustada</th><th class="num">Exceso</th><th class="num" title="Menor oferta presentada en el mismo renglón; su admisibilidad no está verificada">vs menor oferta presentada</th>
+    <th class="num">Adjudicado por u. base</th><th class="num">Referencia</th><th class="num">Brecha ajustada</th><th class="num">Exceso</th><th class="num" title="Menor oferta presentada en el mismo renglón; su admisibilidad no está verificada">vs menor oferta presentada</th>
 </tr></thead>
 <tbody>
 {% for r in renglones %}
@@ -133,7 +133,8 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
                 <dt>Misma marca</dt><dd>{{ r.ref_misma_marca|ars(2) }} ({{ r.ref_n_misma_marca or 0 }} obs.)</dd>
                 <dt>INDEC (promedio minorista)</dt><dd>{{ r.ref_indec|ars(2) }}</dd>
                 <dt>Sin ajustar / ajuste financiero</dt><dd>{{ r.sobreprecio_pct|pct }} / {{ r.ajuste_financiero_pct|num(1) }}%</dd>
-                <dt>Días entre compra y precio</dt><dd>{{ r.gap_dias if r.gap_dias is not none else '—' }}</dd>
+                <dt>Fecha de comparación</dt><dd>{{ r.fecha_compra or '—' }} <span class="muted">(apertura de ofertas; si no hay, adjudicación)</span></dd>
+                <dt>Antigüedad del precio de mercado</dt><dd>{{ r.gap_dias if r.gap_dias is not none else '—' }} días como máximo respecto de esa fecha</dd>
                 <dt>Extracción</dt><dd>{{ r.extraccion_metodo or '—' }} · macheo: {{ r.match_metodo or '—' }} ({{ r.match_razon or '' }})</dd>
             </dl>
             <div>

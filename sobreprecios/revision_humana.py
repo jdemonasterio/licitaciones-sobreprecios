@@ -306,12 +306,13 @@ def _detectar(conn: sqlite3.Connection) -> list[dict]:
         GRIS_MOTIVOS_REVISAR).fetchall()
     out = []
     for r in rows:
-        if r["juez_veredicto"] in ("error", "dudoso"):
-            origen = "juez"
-        elif r["semaforo"] == "rojo":
+        # El color manda (un rojo con veredicto del juez sigue contando como rojo; revisión del prime #48).
+        if r["semaforo"] == "rojo":
             origen = "rojo"
         elif r["motivo_codigo"] == "equivalencia_por_verificar":
             origen = "equivalencia"
+        elif r["juez_veredicto"] in ("error", "dudoso"):
+            origen = "juez"
         else:
             origen = "gris"
         out.append({"renglon_id": r["renglon_id"], "origen": origen})
@@ -329,7 +330,8 @@ def cola(conn: sqlite3.Connection, filtros: dict | None = None) -> dict:
     for caso in _detectar(conn):
         conn.execute(
             "INSERT INTO revisiones_caso (renglon_id, origen, estado, created_at, updated_at) "
-            "VALUES (?, ?, 'pendiente', ?, ?) ON CONFLICT(renglon_id) DO NOTHING",
+            "VALUES (?, ?, 'pendiente', ?, ?) ON CONFLICT(renglon_id) DO UPDATE SET origen=excluded.origen, "
+            "updated_at=excluded.updated_at WHERE revisiones_caso.estado = 'pendiente' AND revisiones_caso.origen <> excluded.origen",
             (caso["renglon_id"], caso["origen"], ahora, ahora))
     conn.commit()
 

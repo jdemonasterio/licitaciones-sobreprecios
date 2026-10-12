@@ -218,6 +218,28 @@ Mandarle 3-4 recorridos paso a paso (capturas + texto) de usuarios investigando 
 ve bien, qué falta y qué agregaría; hasta 4 llamadas, presupuesto aparte de USD 10.
 Como verificar: decisiones del prime registradas y su backlog derivado.
 
+**#49 — Revisión de user journeys por el LLM prime: lo hecho y lo pendiente (2026-10-12).**
+Hecho: fechas visibles (apertura = fecha de comparación vs adjudicación), cuenta del precio normalizado en el caso,
+evidencia a todo el ancho, números de casos grises rotulados "diagnóstico bloqueado", "adjudicado" en vez de
+"pagado", texto de Precios Cuidados sin afirmar que son un piso, cola de revisión que respeta el color (9 rojos),
+DESIGN con la tolerancia real (±5 %). Pendiente, en orden:
+1. Síntesis arriba del detalle de cada licitación: renglones señalados, monto total vs monto analizado, cobertura,
+   exceso y qué bloquea publicar (hoy la lista dice "monto adjudicado" para el subtotal de renglones).
+2. Comprobante de cálculo por renglón (datos originales, normalización, fechas efectivas, par que confirma el
+   mínimo con sus grupos, IPC, escenarios de plazo) exportable con el caso.
+3. Explicar junto al color por qué un +52 % es amarillo (qué condición impide el rojo).
+4. Compuerta "publicable" visible: qué hacen Guardar / Validé / Publicable y qué falta para publicar.
+5. Investigar: separar comparación histórica de la extrapolación con precios de hoy (contexto, nunca rojo) y
+   decir qué tipo de documento se importó (pliego, dictamen, adjudicación, OC); estado "procesado, sin
+   comparación" con motivos y próximos pasos.
+6. Analítica auditable: cobertura por organismo (comparables / total / publicables), n por mes, ponderación; aviso
+   cuando un ranking mezcla años en pesos de cada fecha.
+7. Nombres legibles (ediciones de programa, tipos de importación), fechas dd/mm/aaaa y controles en español.
+8. Lo que agregaría: vista de impacto antes/después de un cambio de reglas o catálogo; paquete para el periodista
+   (expediente congelado con fuentes); checklist de explicaciones alternativas por caso; backup/restauración de la
+   base sin consola.
+Como verificar: cada punto con su criterio en `_scratch/licitaciones/REVISION_PRIME_JOURNEYS.md` (local).
+
 **#41 — Domicilios: solo se ocultan los de personas humanas.** Los de empresas y organismos se muestran. Verificado 2026-10-12: la página de cada empresa muestra su domicilio legal y ningún filtro oculta domicilios de personas jurídicas; los reportes no exportan datos societarios.
 
 **#42 — Impuestos en los precios.** Registrar si cada fuente informa precio con o sin IVA; las promociones se

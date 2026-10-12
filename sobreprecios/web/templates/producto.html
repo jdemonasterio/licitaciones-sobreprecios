@@ -3,7 +3,7 @@
 {% block content %}
 <p class="small"><a href="/analitica">← Analítica</a></p>
 <h1>{{ prod.nombre }}</h1>
-<p class="muted small">Precio por {{ prod.unidad_base }} pagado por el Estado en cada adjudicación (puntos) contra el mercado:
+<p class="muted small">Precio por {{ prod.unidad_base }} adjudicado por el Estado en cada compra (puntos) contra el mercado:
 precio mayorista MÍNIMO de cada mes (sin precios absurdos: se descartan los menores a 0,4 veces la mediana) y precio
 promedio minorista de INDEC. El gráfico muestra el período de las compras ±6 meses; un mes sin
 relevamiento queda como hueco (no se inventa la línea).</p>
@@ -15,7 +15,7 @@ se puede ver si el producto se encareció de verdad o solo acompañó la inflaci
 
 <div class="card">
     <div class="chart-legend">
-        <span style="--c: var(--series-1)">Pagado por el Estado</span>
+        <span style="--c: var(--series-1)">Adjudicado por el Estado</span>
         <span style="--c: var(--series-2)">Mayorista (mínimo mensual)</span>
         <span style="--c: var(--neutral)">INDEC promedio</span>
     </div>
@@ -56,7 +56,7 @@ se puede ver si el producto se encareció de verdad o solo acompañó la inflaci
     const ars = v => {{ ('US$ ' if moneda == 'usd' else '$ ')|tojson }} + Number(v).toLocaleString('es-AR', {maximumFractionDigits: 2});
     new Chart(el, {
         data: {labels: meses, datasets: [
-            {type: 'scatter', label: 'Pagado por el Estado', data: estado.map(e => ({x: e[0], y: e[1]})),
+            {type: 'scatter', label: 'Adjudicado por el Estado', data: estado.map(e => ({x: e[0], y: e[1]})),
              backgroundColor: c1, borderColor: surface, borderWidth: 2, pointRadius: 5, pointHoverRadius: 7, order: 0},
             {type: 'line', label: 'Mayorista (mínimo mensual)', data: may, borderColor: c2, backgroundColor: c2,
              borderWidth: 2, pointRadius: 2, pointHitRadius: 8, spanGaps: false, order: 1},

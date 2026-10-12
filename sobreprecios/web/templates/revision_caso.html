@@ -20,7 +20,7 @@
         <dt>Precio unitario</dt><dd>{{ c.precio_unitario|ars(2) }}</dd>
         <dt>Proveedor</dt><dd>{% if c.proveedor_cuit %}<a href="/empresa/{{ c.proveedor_cuit }}">{{ c.proveedor or c.proveedor_cuit }}</a> ({{ c.proveedor_cuit }}){% else %}{{ c.proveedor or '—' }}{% endif %}</dd>
         <dt>Marca</dt><dd>{{ c.marca or '—' }}</dd>
-        <dt>Fecha del proceso</dt><dd>{{ c.fecha_proceso or '—' }}</dd>
+        <dt>Fecha del proceso</dt><dd>{{ c.fecha_proceso or '—' }} <span class="muted small">(adjudicación o publicación)</span></dd>
         <dt>Producto asignado</dt><dd>{{ c.producto_nombre or 'sin producto comparable' }}{% if c.match_razon %}<div class="muted">{{ c.match_razon }}</div>{% endif %}</dd>
     </dl>
     {% if c.alertas_list %}{% for a in c.alertas_list %}<div><span class="tag tag-alerta">{{ a }}</span></div>{% endfor %}{% endif %}
@@ -72,13 +72,19 @@
         {% if c.estado_atributo %}<dt>Variedad</dt><dd>{{ ATRIBUTO_TXT.get(c.estado_atributo, c.estado_atributo) }}</dd>{% endif %}
         <dt>Referencia</dt><dd>{{ c.ref_principal_valor|ars(2) }} <span class="muted small">{{ REF_TXT.get(c.ref_principal, c.ref_principal or '—') }}</span></dd>
         <dt>Mínimo confirmado (2 fuentes)</dt><dd>{{ c.ref_corroborada|ars(2) }}{% if c.sobreprecio_corroborado_pct is not none %} · {{ c.sobreprecio_corroborado_pct|pct }}{% endif %}</dd>
-        <dt>Brecha ajustada</dt><dd class="{% if c.sobreprecio_ajustado_pct and c.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}">{{ c.sobreprecio_ajustado_pct|pct }}</dd>
-        <dt>Exceso estimado</dt><dd>{{ c.exceso_ars|ars }}</dd>
-        <dt>Días entre compra y precio</dt><dd>{{ c.gap_dias if c.gap_dias is not none else '—' }}</dd>
+        <dt>Cuenta</dt><dd>{{ c.precio_unitario|ars(2) }} por {{ c.unidad_compra or 'unidad' }}{% if c.contenido_base %} ÷ {{ c.contenido_base|num(3) }} {{ c.unidad_base }} = {{ c.precio_unidad_base|ars(2) }} por {{ c.unidad_base }}{% endif %} → contra {{ c.ref_principal_valor|ars(2) }} por {{ c.unidad_base or 'u.' }}</dd>
+        <dt>Brecha ajustada</dt><dd class="{% if c.sobreprecio_ajustado_pct and c.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}">{{ c.sobreprecio_ajustado_pct|pct }}{% if c.semaforo == 'gris' and c.sobreprecio_ajustado_pct is not none %} <span class="muted small">(diagnóstico bloqueado: no usar)</span>{% endif %}</dd>
+        <dt>Exceso estimado</dt><dd>{{ c.exceso_ars|ars }}{% if c.semaforo == 'gris' and c.exceso_ars %} <span class="muted small">(diagnóstico bloqueado: no usar)</span>{% endif %}</dd>
+        <dt>Fecha de comparación</dt><dd>{{ c.fecha_compra or '—' }} <span class="muted small">(apertura de ofertas; si no hay, adjudicación)</span></dd>
+        <dt>Antigüedad del precio de mercado</dt><dd>{{ c.gap_dias if c.gap_dias is not none else '—' }} días como máximo respecto de esa fecha</dd>
     </dl>
+</div>
+</div>
+
+<div class="card">
 
     {% if c.evidencia %}
-    <h4 style="margin-top:12px">Evidencia de mercado</h4>
+    <h3>Evidencia de mercado</h3>
     <p class="muted small">Marcá cada observación: ✓ confirma que compara peras con peras, o decí por qué no. Las
     marcadas "no es el mismo producto" o "precio/tamaño mal leído" se sacan del cálculo de ESTE renglón al
     recalcular (otros renglones del mismo producto no se tocan).</p>
@@ -140,7 +146,6 @@
     </table></div>
     <p class="muted small">El juez puede equivocarse: es una segunda opinión LLM, no un veredicto. Confirmalo o descartalo abajo.</p>
     {% endif %}
-</div>
 </div>
 
 <div class="card">
