@@ -34,3 +34,6 @@ credentials*.json
 *.key
 id_rsa*
 id_ed25519*
+
+# Copias aisladas de trabajo de los subagentes de Claude Code
+.claude/worktrees/
