@@ -23,7 +23,17 @@
         <dt>Fecha del proceso</dt><dd>{{ c.fecha_proceso or '—' }} <span class="muted small">(adjudicación o publicación)</span></dd>
         <dt>Producto asignado</dt><dd>{{ c.producto_nombre or 'sin producto comparable' }}{% if c.match_razon %}<div class="muted">{{ c.match_razon }}</div>{% endif %}</dd>
     </dl>
-    {% if c.alertas_list %}{% for a in c.alertas_list %}<div><span class="tag tag-alerta">{{ a }}</span></div>{% endfor %}{% endif %}
+    {% if c.alertas_list %}{% for a in c.alertas_list %}<div><span class="tag tag-alerta">{{ a }}</span></div>{% endfor %}
+    {% set _alertas_txt = c.alertas_list|join(' ') %}
+    {% if 'monto_inconsistente' in _alertas_txt %}
+    <div class="banner" style="margin-top:6px">
+        <span class="sem sem-amarillo">Monto inconsistente</span>
+        cantidad × precio unitario no da el monto del aviso. Revisá y completá <b>cantidad</b> y/o
+        <b>precio unitario</b> en "c. Qué entendiste vos" (abajo): mientras esto no se corrija, el rojo
+        queda bloqueado para este renglón.
+    </div>
+    {% endif %}
+    {% endif %}
 
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
         {% if c.proceso_url %}

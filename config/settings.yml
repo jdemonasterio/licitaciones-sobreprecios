@@ -93,6 +93,33 @@ comparacion:
   equivalencia_no_verificada: amarillo_si_rojo   # amarillo_si_rojo | gris
   # El promedio INDEC como única referencia nunca da rojo (máximo amarillo).
   indec_solo_habilita_rojo: false
+  # Hasta cuántos días de antigüedad un precio de mercado trasladado por IPC puede habilitar ROJO
+  # (jdemonasterio 2026-10-12, pisa la cautela original "fuera de la ventana, nunca rojo"): default
+  # 120 (= gap_maximo_dias, todo lo que ya se usa como referencia puede dar rojo si corrobora con 2
+  # fuentes y aguanta el plazo de pago). Poné 15 (= ventana_directa_dias) para volver a la regla
+  # estricta: más allá de la ventana directa, nunca rojo, solo contexto. Más allá de este tope sigue
+  # siendo "contexto, nunca rojo" en el motivo. No aplica al precio INFERIDO (nunca rojo, sin excepción).
+  rojo_con_ajuste_ipc_hasta_dias: 120
+  # IPC con fecha de publicación y versión (MEJORAS #30/#45, jdemonasterio 2026-10-12):
+  #   retrospectivo (default): usa el IPC definitivo de cada mes, aunque se haya publicado DESPUÉS
+  #     de la fecha de la compra (es el valor que tenemos hoy, el más preciso con el diario de hoy).
+  #   disponible_a_fecha: el comparador solo usa meses de IPC cuya fecha_publicacion <= la fecha de
+  #     la compra ("lo que se sabía a la fecha") — tanto para el ajuste financiero (inflación del
+  #     plazo de pago) como para el ajuste temporal de precios de mercado de otro mes.
+  ipc_modo: retrospectivo
+
+# Impuestos en los precios (MEJORAS #42, jdemonasterio 2026-10-12): si cada canal/fuente informa el
+# precio CON o SIN IVA. Solo documental — NO cambia ningún cálculo: el IVA es el mismo para todos los
+# productos y proveedores de este catálogo, así que no hace falta ajustar nada, alcanza con saberlo
+# (ver DESIGN_sobreprecios.md). Promociones: se toman como el precio vigente tal cual viene de la
+# fuente. Stock y compra mínima: no se consideran (decisión explícita, no es un pendiente).
+impuestos:
+  incluye_iva:
+    mayorista: true    # SEPA / Precios Claros / scrapers: precio de góndola al público, con IVA
+    minorista: true    # idem
+    programa: true      # Precios Cuidados/Justos/Máximos: precio techo al público, con IVA
+    oficial: true        # INDEC (precio promedio al consumidor): con IVA
+    estado: true          # lo que paga el Estado (dictamen/adjudicación/OC): consumidor final, con IVA
 
 # Montos comparables entre años (normalize/moneda.py): pesos reales y dólares. Solo cambia cómo se MUESTRAN
 # y suman montos de fechas distintas en el webui; el semáforo no cambia.

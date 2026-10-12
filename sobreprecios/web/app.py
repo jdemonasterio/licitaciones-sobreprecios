@@ -36,6 +36,7 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .. import config, db, reports, revision_humana
+from ..pipeline.comprar_import import ESTADO_DOCUMENTAL_TXT
 from . import _background, queries
 
 WEB_DIR = Path(__file__).resolve().parent
@@ -121,7 +122,8 @@ LEGENDA_INVESTIGACION = ("Un color (sobre todo rojo) es una investigación pendi
 templates.env.filters.update(ars=_ars, num=_num, pct=_pct, millones=_millones)
 templates.env.globals.update(SEMAFORO_TXT=SEMAFORO_TXT, REF_TXT=REF_TXT, ATRIBUTO_TXT=ATRIBUTO_TXT,
                              MOTIVO_CODIGO_TXT=MOTIVO_CODIGO_TXT, LEGENDA_INVESTIGACION=LEGENDA_INVESTIGACION,
-                             PARTE_TXT=revision_humana.PARTE_TXT, PARTES_RENGLON=revision_humana.PARTES_RENGLON)
+                             PARTE_TXT=revision_humana.PARTE_TXT, PARTES_RENGLON=revision_humana.PARTES_RENGLON,
+                             ESTADO_DOCUMENTAL_TXT=ESTADO_DOCUMENTAL_TXT)
 
 
 # ── Seguridad mínima ───────────────────────────────────────────────────────

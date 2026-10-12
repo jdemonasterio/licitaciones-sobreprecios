@@ -273,6 +273,135 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   el primero que aparece llevado hacia atrás con el IPC del mes exacto, rotulado "PRECIO INFERIDO" en el motivo,
   confianza baja, nunca rojo. Si existe un dato anterior (aunque viejo) no se infiere: rige `gap_maximo_dias`.
 
+- **2026-10-12 · Decisiones del owner sobre el catálogo que PISAN al LLM prime** (jdemonasterio, revierte
+  donde difiere lo que el prime había propuesto el 2026-10-11; detalle y motivo por producto en
+  `config/productos_ajustes.yml`, campo `decision_jdemonasterio`):
+  - **leche_polvo_entera**: default "comun" restituido ("es leche en polvo entera y punto"; el prime lo había
+    dejado en `null`). La leche FORTIFICADA (Ley 25.459: hierro, zinc y vitamina C/ácido ascórbico) no se vende
+    al público: se compara contra la leche en polvo COMÚN de góndola con una advertencia visible en el motivo.
+    Mecanismo **genérico**, no hardcodeado a leche: `Producto.compatibles` (`catalog.py`) ya permitía mapear
+    una variante de la compra a otra(s) variante(s) del mercado (lo usaba `fideos_secos` para "guisero acepta
+    cualquier forma corta"); ahora también mapea `fortificada_* -> [comun]`. Se agregó `Producto.
+    nota_equivalencia` (variante -> texto) que `pipeline.compare.compare()` suma al motivo cuando esa variante
+    se usó (parámetro nuevo `nota_equivalencia`). El semáforo no se relaja ni se endurece: reglas normales.
+  - **arroz_blanco** y **harina_maiz**: se BORRAN las variantes por tipo de grano / cocción que proponía el
+    prime (`variantes: {}` en el ajuste). Antes `load_catalog()` solo pisaba las variantes del catálogo base si
+    el ajuste tenía una lista NO vacía (`if aj.get("variantes")`); un diccionario vacío se ignoraba y dejaba las
+    del base puestas — no había forma de "sacar" una variante sin reemplazarla por otra. Se cambió a
+    `if "variantes" in aj` (la clave presente, aunque vacía, pisa). Las exclusiones de producto no-arroz/no-polenta
+    (parboil, integral, preparados, snacks, saborizada) se mantienen.
+  - **harina_trigo_000**: variantes "organica" y "enriquecida"; default "comun" si no dice ninguna.
+  - **pure_tomate**: confirmado que salsa y concentrado ya estaban excluidos en `config/productos.yml` (base,
+    no en el ajuste) y que eso es seguro para la marca "Salsati": el matcher machea por PALABRA completa
+    (`catalog._contains`), nunca por substring, así que el token "salsati" nunca activa la exclusión de la
+    palabra "salsa". Default "comun" para el puré sin passata ni tomate amarillo.
+  - **lentejas / arvejas_secas / porotos**: lo común es la legumbre seca en bolsa tal como viene — se refuerzan
+    las exclusiones de pastas/preparaciones (medallones y hamburguesas ya estaban en las exclusiones globales
+    del catálogo).
+  - **atun_conserva / caballa_conserva**: solo DOS variantes (al_aceite / al_agua), bajando de 4 (atún:
+    corte x líquido) y 4 (caballa: al_natural/aceite_y_agua/en_aceite/salsa_tomate). El corte y la sal no
+    definen una variante de precio. Una descripción que menciona los dos líquidos a la vez ("en aceite y
+    agua") sigue quedando ambigua de forma NATURAL (la frase "aceite" matchea al_aceite y la palabra "agua"
+    matchea al_agua, sin necesitar una tercera variante "mixta" dedicada) — nunca se asume aceite solo.
+  - **dulce_leche**: default "pote" (antes `null`); "bolsa" nunca es la presentación licitada (exclusión
+    nueva); se agregan las variantes "balde" y "frasco" (antes solo existía "monodosis").
+  - **cacao_polvo**: default "azucarado" (antes `null`). **pan_dulce**: default "frutado" (antes `null`).
+  - **sal_fina**: default "comun" (básica, antes `null`); se agrega la variante "yodada" junto a "marina".
+  - **agua_bidon**: default "no_retornable" (bidón/botellón/botella que se vende y no vuelve).
+  - **detergente**: sin cambios — se mantiene `atributo_obligatorio` (valida concentración/dosis).
+  - **jabon_tocador**: default "estandar" (antes `null`); confirmado que barra/caja/multipack son
+    PRESENTACIÓN (envase), no variante — sin cambio de código, ya se normalizaban por tamaño de envase.
+  - **Regla de presentación** (sin cambios, se reconfirma): entre presentaciones comparables se toma el
+    MÍNIMO, salvo que la licitación especifique la presentación exacta (entonces se compara solo contra esa,
+    ±`tolerancia_presentacion`).
+  - `yerba_mate` y `fideos_secos` quedan tal cual (sin default, parseo por campo PALO / formas exactas).
+
+- **2026-10-12 · Comparador v3 — datos de la referencia, impuestos, marca exigida, estado documental, IPC**
+  (jdemonasterio, pedido explícito tras la ronda del prime; todo revertible):
+  - **IDs de la evidencia** (MEJORAS #27 parcial): `Obs` ganó un campo `id` (precios_mercado.id,
+    `pipeline.compare.load_observations` ahora selecciona `id`); `Resultado.obs_ids` guarda
+    `{"minimo": [...], "par_corroborado": [...]}` — los ids de `precios_mercado` que FIJAN el valor de
+    `ref_principal_valor` (coincide el precio exacto) y los 2 que confirman `ref_corroborada`. Persiste en
+    `comparaciones.obs_ids_json` (migración). Listas vacías cuando no hay referencia (gris) o cuando la
+    referencia es una mediana que no coincide con ningún id puntual (misma_marca/mediana_*).
+  - **Impuestos** (MEJORAS #42): `config/settings.yml -> impuestos.incluye_iva` mapea canal/fuente ->
+    si ese precio INCLUYE IVA (mayorista/minorista/programa/oficial/estado: todos `true`, es consumidor
+    final en los 5 — SEPA/Precios Claros, Precios Cuidados/Justos/Máximos, INDEC y lo que paga el Estado).
+    Puramente documental, `config.incluye_iva(canal)`: el owner decidió que el IVA es el mismo para todos los
+    productos/proveedores de este catálogo, así que NO cambia ningún cálculo. Promociones: precio vigente tal
+    cual viene de la fuente. Stock y compra mínima: no se consideran (decisión explícita, no un pendiente).
+  - **Monto inconsistente en la cola de revisión**: `revision_humana._detectar()` ahora también junta
+    renglones con la alerta `monto_inconsistente` (cantidad x precio no cierra con el aviso) con origen
+    `"monto"` — ANTES solo entraban si además el semáforo quedaba gris/rojo; como `compare.run()` ya bloquea
+    el rojo para estos (`bloquear_rojo`), nadie se enteraba de que falta completar el dato si el semáforo caía
+    en amarillo/verde. El color sigue mandando (un rojo con esta alerta, rarísimo, sigue siendo "rojo" en la
+    cola). `/revision/<renglon_id>` muestra un cartel sugiriendo completar cantidad/precio unitario en
+    "c. Qué entendiste vos"; `/revision` tiene el filtro y el contador nuevos.
+  - **Empate de ofertas = se elige una** (`pipeline.comprar_import.ofertas_ganadoras_y_pendientes`): el prime
+    había dejado ambas en `pendientes` (ganadora NULL) cuando dos alternativas del MISMO proveedor empataban
+    en el precio del dictamen. El owner lo revierte: "si hay empate, elegís una; si está adjudicado, está
+    adjudicado" — se marca ganadora la de menor índice (la primera alternativa del cuadro comparativo para
+    ese proveedor/renglón), nunca se deja pendiente. `pendientes` queda siempre vacío (se conserva en la firma
+    de la función por compatibilidad).
+  - **Marca exigida vs. ofrecida vs. "o equivalente"** (`pipeline.extract.parse_marca_exigida`): nueva
+    distinción entre `renglones.marca` (la OFRECIDA por el ganador, ya existía) y `renglones.marca_exigida` /
+    `marca_equivalente_ok` (lo que el PLIEGO/descripción exige, migración nueva). Se parsea con dos patrones
+    conservadores ("un resultado falso es peor que ninguno"): "marca X" (con o sin "o equivalente/similar"
+    después) y "tipo X o equivalente/similar" — "tipo" SOLO cuenta como marca cuando viene con "o
+    equivalente/similar" en la misma frase; sin eso, "tipo" casi siempre describe otro atributo (ficha SIByS
+    "TIPO: GRANO LARGO-FINO", "TIPO: CON PALO") y NO se asume marca (bug real encontrado armando los tests:
+    la primera versión leía "tipo" solo y convertía cualquier ficha de medicamentos "TIPO: MONODROGA" en una
+    marca exigida falsa). `pipeline.compare.compare()` solo usa `misma_marca` como referencia PRINCIPAL
+    cuando `marca_exigida` está seteada y `marca_equivalente_ok` es `False` (sin "o equivalente"); si el
+    pliego aceptó un equivalente, o no se encontró ninguna exigencia, se usa el mínimo de mercado de siempre y
+    la marca ofrecida queda solo de contexto (`ref_misma_marca`/`ref_n_misma_marca` siguen mostrándose).
+    Explicado en el motivo. Se parsea en los dos orígenes de renglones (`pipeline.extract.py`, texto del BO;
+    `pipeline.comprar_import.store_detalle`, texto del PLIEGO de COMPR.AR) — el dataset legacy 2021 y los
+    renglones ya importados ANTES de este cambio quedan con `marca_exigida` NULL hasta que se vuelvan a
+    importar/extraer (recalcular sobreprecios no re-extrae texto, solo recalcula con lo que ya está en la
+    base): mientras tanto `misma_marca` simplemente no se usa como principal para esos renglones viejos, que
+    es el lado seguro (cae al mínimo de mercado, nunca una referencia inventada).
+  - **Estado documental** (MEJORAS #29, `pipeline.comprar_import.actualizar_estado_documental`, se llama al
+    final de `compare.run()`): `renglones.estado_documental` y el agregado `procesos.estado_documental`
+    (migración nueva) en `dictamen` (COMPR.AR, `extraccion_metodo='comprar'` — es una RECOMENDACIÓN, no una
+    decisión) | `adjudicado` (resolución del Boletín Oficial que adjudica, `procesos.fuente='bo_primera'` con
+    extracción regex/LLM, no el dataset legacy — es un ACTO ya decidido) | `contratado` (existe una orden de
+    compra para ese proveedor en ese proceso, manda sobre dictamen/adjudicado) | `desconocido` (dataset legacy
+    sin metadata de origen). Nunca se escribe "pagado": no hay fuente de pagos reales. Visible en
+    `/licitacion/<id>` (encabezado "Renglones recomendados en el dictamen / contratados / adjudicados" +
+    leyenda) y en los reportes (`reports.py`: columna "Estado documental", y la columna que antes decía
+    "Pagó $/u. base" ahora dice "Precio $/u. base"; el prompt que alimenta el resumen LLM también dice
+    "cotizó (recomendado/adjudicado/contratado)" en vez de "pagó").
+  - **IPC con fecha de publicación y versión, modo "disponible a la fecha"** (MEJORAS #30/#45, P20): tabla
+    `indices` gana `fecha_publicacion` y `version` (migración). `sources/indec.py` no tiene una fuente de la
+    fecha REAL de publicación de apis.datos.gob.ar/series (la API no trae esa metadata): se ESTIMA como el 15
+    del mes siguiente (`fecha_publicacion_estimada`, INDEC publica con ~2 semanas de atraso), y `version` es
+    el timestamp de la bajada (se actualiza en cada corrida). `config/settings.yml -> comparacion.ipc_modo`:
+    `retrospectivo` (default, comportamiento idéntico al de siempre: usa el IPC definitivo de HOY, aunque se
+    haya publicado después de la compra) | `disponible_a_fecha` (el ajuste financiero —inflación del plazo de
+    pago— y el ajuste temporal —llevar un precio de mercado de otro mes al mes de la compra— solo usan meses
+    de IPC cuya `fecha_publicacion` sea <= la fecha de la compra; probado: una compra del 20 de julio NO usa
+    julio, porque julio recién se publica el 15 de agosto). `pipeline.compare.run()` solo carga las fechas de
+    publicación (`load_index_publicaciones`) cuando el modo las necesita, así el modo default no paga ningún
+    costo ni cambia nada.
+  - **IPC trasladado puede dar rojo, con advertencia explícita** (pedido del coordinador, revierte la cautela
+    original "fuera de la ventana directa, nunca rojo"): `comparacion.rojo_con_ajuste_ipc_hasta_dias` (default
+    120 = `gap_maximo_dias`; poner 15 = `ventana_directa_dias` para la regla estricta de antes) — un precio de
+    mercado a más de `ventana_directa_dias` pero dentro de este tope SÍ puede dar rojo si corrobora con 2
+    familias y aguanta el plazo de pago, con el motivo diciendo explícitamente "precio de mercado trasladado
+    por IPC desde N días (método: I(mes compra)/I(mes observación))" — nunca silencioso. Una observación
+    **posterior** a la compra dentro de `ventana_directa_dias` (15 días) ahora SÍ corrobora (antes cualquier
+    posterior quedaba excluida sin importar la distancia); más allá de la ventana la cautela se mantiene (no
+    corrobora). **Precio de HOY** (flujo Investigar, `investigar.py`, otro agente): el comparador lo reconoce
+    automáticamente por la FECHA REAL de la observación (no por un canal/fuente especial —
+    `sources/precios_hoy.py` guarda con el mismo canal mayorista/minorista de siempre), lo etiqueta distinto
+    en el motivo ("precio de HOY trasladado por IPC a la fecha de la compra") y lo deja corroborar con otra
+    observación de HOY aunque la compra sea vieja (no hay riesgo de "promo que todavía no existía": es,
+    literalmente, la góndola de hoy) — pero habilitar ROJO a esa distancia sigue exigiendo el override
+    explícito `rojo_con_ajuste_ipc_hasta_dias` (vía `comparacion` o el parámetro nuevo `pipeline.compare.
+    run(..., rojo_con_ajuste_ipc_hasta_dias=...)`, mismo patrón que `gap_maximo`), nunca automático por
+    default. El precio INFERIDO (MEJORAS #46, hueco ene-jul 2024) sigue sin excepción: nunca rojo.
+
 ## 3. Cómo operar
 
 | Tarea | Comando / lugar |
@@ -312,6 +441,21 @@ in-line en `/licitacion/<id>` con un navegador real, precios de programa (los tr
 vigencia, idempotencia, fallback y familia en el comparador) y validaciones de programa (guardar/leer, import de TSV
 del juez); el simulador también cubre marcar una fila de "programa" ✗ y verla excluida del comparador.
 
+Comparador v3 (2026-10-12): ids que forman la referencia (`obs_ids`), `nota_equivalencia` para variantes
+mapeadas por `compatibles` (leche fortificada -> común), misma_marca como principal SOLO con exigencia estricta
+(`tests/test_extract.py::test_parse_marca_exigida_*`, incluido el falso positivo real de "tipo" sin
+"equivalente" en una ficha de medicamentos), empate de ofertas resuelto a una ganadora
+(`test_alternativas_empatadas_elige_una_ganadora`), estado documental derivado (dictamen/adjudicado/contratado/
+desconocido, `tests/test_comprar_import.py::test_actualizar_estado_documental_*`) y nunca "pagado" en reportes
+(`tests/test_reports.py`), IPC con fecha de publicación estimada y modo "disponible a la fecha"
+(`tests/test_indec.py`, `tests/test_compare.py::test_monthly_inflation_disponible_a_fecha_*` y
+`test_a_la_fecha_disponible_a_fecha_*`), rojo con precio trasladado por IPC hasta `rojo_con_ajuste_ipc_hasta_dias`
+y etiqueta "precio de HOY" para el flujo Investigar (`test_gap_hasta_120_dias_puede_dar_rojo_con_ajuste_por_ipc`,
+`test_precio_de_hoy_se_etiqueta_distinto_y_solo_habilita_rojo_con_override`), posterior dentro de la ventana
+corrobora (`test_precio_posterior_dentro_de_la_ventana_corrobora_y_puede_dar_rojo`) y más allá de la ventana
+sigue sin corroborar (`test_precio_posterior_mas_alla_de_la_ventana_no_corrobora`), y los 17 casos de catálogo
+nuevos en `tests/test_catalog.py` (uno por decisión del owner sobre productos).
+
 ## 5. Límites conocidos
 
 - COMPR.AR: el filtro de fechas de la búsqueda se aplica del lado nuestro (el del sitio no está reverseado);
@@ -336,3 +480,17 @@ del juez); el simulador también cubre marcar una fila de "programa" ✗ y verla
 - Precios de programa: abr-dic 2023 sin edición encontrada (ver decisión 2026-10-12); PDF de 2022-01 pierde ~3 %
   de filas de aceite por una omisión de palabra en la fuente misma (ver esa decisión); el PDF nacional de
   2022-01 con ~30.000 precios (12,6 MB) no se incorporó, solo el de CABA.
+- `comparaciones.obs_ids_json` ("minimo") resuelve MEJORAS #27 solo para referencias por MÍNIMO: cuando
+  `ref_principal` es `misma_marca` o una `mediana_*`, el valor no tiene por qué coincidir con el precio
+  EXACTO de ninguna observación puntual y "minimo" queda vacío. La clave de serie sigue siendo
+  (fuente, descripción normalizada), no un EAN — la mejora #27 completa (clave con EAN) sigue sin implementar.
+- `marca_exigida`/`marca_equivalente_ok` (parseado del texto del renglón/pliego) solo se calcula al EXTRAER o
+  IMPORTAR un renglón (`pipeline/extract.py`, `pipeline/comprar_import.py`). Los renglones ya cargados ANTES
+  de este cambio quedan con `marca_exigida` NULL hasta que se vuelvan a extraer/importar — "Recalcular
+  sobreprecios" (`compare.run()`) NO re-extrae texto, solo recalcula con lo que ya está en la base. Mientras
+  tanto, para esos renglones viejos `misma_marca` simplemente no se usa como principal (cae al mínimo de
+  mercado): es el lado seguro, nunca una referencia inventada, pero sí un cambio de comportamiento silencioso
+  para datos históricos hasta que se vuelvan a importar.
+- `indices.fecha_publicacion` es SIEMPRE una ESTIMA (15 del mes siguiente): apis.datos.gob.ar/series no trae
+  la fecha real de publicación de cada punto. Si aparece una fuente con la fecha real, debería reemplazar
+  `sources/indec.fecha_publicacion_estimada`; hoy el modo `disponible_a_fecha` es tan preciso como esa estima.

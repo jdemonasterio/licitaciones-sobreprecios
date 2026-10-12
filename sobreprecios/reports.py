@@ -20,6 +20,10 @@ from pathlib import Path
 from . import config, db, llm
 from .web import queries
 
+# Corto para columnas de reportes (CSV/XLSX/HTML) — MEJORAS #29: nunca "pagado", no hay fuente de pagos.
+_ESTADO_DOCUMENTAL_CORTO = {"dictamen": "recomendado", "adjudicado": "adjudicado", "contratado": "contratado",
+                           "desconocido": "desconocido"}
+
 COLUMNAS = [
     ("fecha", "Fecha"), ("organismo", "Organismo"), ("numero", "Proceso"), ("norma", "Norma"),
     ("proveedor", "Proveedor"), ("proveedor_cuit", "CUIT"), ("descripcion", "Descripción"),
@@ -32,7 +36,7 @@ COLUMNAS = [
     ("ref_indec", "INDEC $"), ("ajuste_financiero_pct", "Ajuste financiero %"),
     ("sobreprecio_ajustado_pct", "Sobreprecio ajustado %"), ("exceso_ars", "Exceso estimado $"),
     ("semaforo", "Semáforo"), ("confianza", "Confianza"), ("motivo", "Motivo"), ("alertas", "Alertas"),
-    ("url", "Fuente"), ("estado_revision", "Revisión"),
+    ("estado_documental", "Estado documental"), ("url", "Fuente"), ("estado_revision", "Revisión"),
 ]
 
 
@@ -55,6 +59,7 @@ def filas(conn: sqlite3.Connection, filtros: dict) -> list[dict]:
         "p.numero, p.url, p.estado_revision, "
         "d.titulo norma, r.proveedor, r.proveedor_cuit, r.descripcion, r.marca, r.cantidad, r.unidad_compra, "
         "r.precio_unitario, r.precio_unidad_base, r.unidad_base, pr.nombre producto, r.alertas, "
+        "r.estado_documental, "
         "k.ref_principal, k.ref_principal_valor, k.ref_min_mayorista, k.ref_p25_mayorista, "
         "k.ref_mediana_mayorista, k.ref_mediana_minorista, k.ref_indec, k.ajuste_financiero_pct, "
         "k.sobreprecio_ajustado_pct, k.exceso_ars, k.semaforo, k.confianza, k.motivo "
@@ -73,7 +78,9 @@ def filas(conn: sqlite3.Connection, filtros: dict) -> list[dict]:
 
 def _fmt(value, col: str) -> str:
     if value is None or value == "":
-        return "—"
+        return "—" if col != "estado_documental" else "desconocido"
+    if col == "estado_documental":
+        return _ESTADO_DOCUMENTAL_CORTO.get(value, str(value))
     if col.endswith("_pct"):
         return f"{float(value):+.1f}%".replace(".", ",")
     if isinstance(value, float):
@@ -85,9 +92,14 @@ def _fmt(value, col: str) -> str:
 def _resumen_llm(titulo: str, filtros: dict, kpis: dict, rows: list[dict]) -> str | None:
     template = (config.PROMPTS_DIR / "resumen_reporte.md").read_text(encoding="utf-8")
     casos = [r for r in rows if r.get("semaforo") in {"rojo", "amarillo"}][:10]
+    # Estado documental (MEJORAS #29, jdemonasterio 2026-10-12): nunca "pagó" en el prompt que
+    # alimenta al resumen — no tenemos pagos, solo dictamen/adjudicación/orden de compra.
+    _VERBO_ESTADO = {"dictamen": "cotizó (recomendado en el dictamen)", "adjudicado": "cotizó (adjudicado)",
+                     "contratado": "cotizó (contratado)", "desconocido": "cotizó"}
     casos_txt = "\n".join(
         f"- {r['fecha']} {r['organismo']} · {r['descripcion']} · proveedor {r['proveedor']} · "
-        f"pagó {r['precio_unidad_base']:.2f}/{r['unidad_base']} vs {r['ref_principal']} {r['ref_principal_valor']:.2f} "
+        f"{_VERBO_ESTADO.get(r.get('estado_documental'), 'cotizó')} "
+        f"{r['precio_unidad_base']:.2f}/{r['unidad_base']} vs {r['ref_principal']} {r['ref_principal_valor']:.2f} "
         f"({r['sobreprecio_ajustado_pct']:+.1f}% ajustado) · exceso ${r['exceso_ars']:,.0f}"
         for r in casos if r.get("precio_unidad_base") and r.get("ref_principal_valor")) or "(ninguno)"
     prompt = (template.replace("<<TITULO>>", titulo)
@@ -106,8 +118,12 @@ def _html(titulo: str, filtros: dict, kpis: dict, rows: list[dict], resumen: str
     esc = html.escape
     filtros_txt = ", ".join(f"{k}: {v}" for k, v in filtros.items() if v) or "sin filtros"
     principales = [r for r in rows if r.get("semaforo") in {"rojo", "amarillo"}]
+    # "Precio $/u. base" (nunca "Pagó", MEJORAS #29): el dictamen recomienda, la autoridad adjudica
+    # y la OC contrata — la columna "Estado documental" dice cuál de las tres es, nunca "pagado"
+    # (no hay fuente de pagos reales).
     cols = [("fecha", "Fecha"), ("organismo", "Organismo"), ("proveedor", "Proveedor"),
-            ("descripcion", "Bien"), ("precio_unidad_base", "Pagó $/u. base"), ("ref_principal_valor", "Referencia $"),
+            ("descripcion", "Bien"), ("precio_unidad_base", "Precio $/u. base"), ("estado_documental", "Estado documental"),
+            ("ref_principal_valor", "Referencia $"),
             ("ref_principal", "Tipo de referencia"), ("sobreprecio_ajustado_pct", "Brecha ajustada"),
             ("exceso_ars", "Exceso estimado $"), ("confianza", "Confianza")]
     def table(items):

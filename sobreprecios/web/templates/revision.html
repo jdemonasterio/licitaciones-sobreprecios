@@ -3,13 +3,15 @@
 {% block content %}
 <h1>Revisión humana</h1>
 <p class="muted small">Cola de casos que necesitan un ojo humano: grises que el sistema no pudo comparar solo,
-rojos (la brecha más fuerte), equivalencias que el catálogo aceptó sin confirmar y lo que marcó el juez LLM
+rojos (la brecha más fuerte), equivalencias que el catálogo aceptó sin confirmar, montos inconsistentes
+(cantidad x precio no cierra con el aviso) y lo que marcó el juez LLM
 externo (importado en <a href="/revision/juez">Corridas del juez</a>). {{ LEGENDA_INVESTIGACION }}</p>
 
 <div class="kpis">
     <div class="kpi"><div class="label">Gris</div><div class="value"><span class="sem sem-gris">{{ counts.gris }}</span></div></div>
     <div class="kpi"><div class="label">Rojo</div><div class="value"><span class="sem sem-rojo">{{ counts.rojo }}</span></div></div>
     <div class="kpi"><div class="label">Equivalencia por verificar</div><div class="value">{{ counts.equivalencia }}</div></div>
+    <div class="kpi"><div class="label">Monto inconsistente</div><div class="value">{{ counts.monto }}</div></div>
     <div class="kpi"><div class="label">Juez externo</div><div class="value">{{ counts.juez }}</div></div>
     <div class="kpi"><div class="label">Agregados a mano</div><div class="value">{{ counts.manual }}</div></div>
 </div>
@@ -17,7 +19,7 @@ externo (importado en <a href="/revision/juez">Corridas del juez</a>). {{ LEGEND
 <form class="filters" method="get" action="/revision" data-soft="off">
     <div class="field"><label>Origen</label>
         <select name="origen"><option value="">Todos</option>
-        {% for o, t in [('gris','Gris'),('equivalencia','Equivalencia'),('rojo','Rojo'),('juez','Juez externo'),('manual','Agregado a mano')] %}
+        {% for o, t in [('gris','Gris'),('equivalencia','Equivalencia'),('rojo','Rojo'),('monto','Monto inconsistente'),('juez','Juez externo'),('manual','Agregado a mano')] %}
         <option value="{{ o }}" {% if filtros.origen == o %}selected{% endif %}>{{ t }}</option>{% endfor %}
         </select></div>
     <div class="field"><label>Estado</label>
@@ -42,7 +44,7 @@ revisados (probá limpiar el filtro de estado).</div>
 <thead><tr><th>Origen</th><th>Semáforo</th><th>Fecha</th><th>Organismo</th><th>Bien</th><th class="num">Brecha</th>
 <th>Estado</th><th>Veredicto</th></tr></thead>
 <tbody>
-{% set ORIGEN_TXT = {'gris':'Gris','equivalencia':'Equivalencia','rojo':'Rojo','juez':'Juez externo','manual':'Agregado a mano'} %}
+{% set ORIGEN_TXT = {'gris':'Gris','equivalencia':'Equivalencia','rojo':'Rojo','monto':'Monto inconsistente','juez':'Juez externo','manual':'Agregado a mano'} %}
 {% for it in items %}
 <tr data-soft-key="rev:{{ it.renglon_id }}" class="row-link" onclick="location.href='/revision/{{ it.renglon_id }}'">
     <td><span class="tag">{{ ORIGEN_TXT.get(it.origen, it.origen) }}</span></td>

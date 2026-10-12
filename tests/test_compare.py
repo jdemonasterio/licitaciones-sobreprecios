@@ -33,6 +33,45 @@ def test_index_ratio_and_monthly_inflation():
     assert monthly_inflation(IPC, "2021-06-10") == pytest.approx(0.03)
 
 
+# ── IPC "disponible a la fecha" (P20/#45, jdemonasterio 2026-10-12) ─────────────────────────────
+# INDEC publica el IPC de un mes ~15 del mes siguiente (ver sources/indec.fecha_publicacion_estimada).
+IPC_EXT = dict(IPC, **{"2021-07-01": 110.0})
+PUB = {"2021-04-01": "2021-05-15", "2021-05-01": "2021-06-15", "2021-06-01": "2021-07-15",
+      "2021-07-01": "2021-08-15"}
+
+
+def test_monthly_inflation_disponible_a_fecha_no_usa_el_mes_que_todavia_no_se_publico():
+    """Una compra del 20 de julio: en modo retrospectivo usa julio (ya tenemos el dato HOY); en
+    "disponible a la fecha" julio todavía no se había publicado el 20/7 (sale el 15/8) — ni
+    siquiera junio (sale el 15/7, un día antes, SÍ está) cambia la cuenta: se usa mayo/junio."""
+    retrospectivo = monthly_inflation(IPC_EXT, "2021-07-20")
+    assert retrospectivo == pytest.approx(110.0 / 106.09 - 1)   # julio vs junio
+    disponible_a_fecha = monthly_inflation(IPC_EXT, "2021-07-20", publicaciones=PUB)
+    assert disponible_a_fecha == pytest.approx(0.03)   # junio vs mayo (103 -> 106.09), julio excluido
+    assert disponible_a_fecha != retrospectivo
+
+
+def test_a_la_fecha_disponible_a_fecha_no_usa_el_mes_de_la_compra_si_no_se_publico_todavia():
+    from sobreprecios.pipeline.compare import _a_la_fecha
+    obs = Obs("maxiconsumo", "mayorista", "2021-05-20", 100.0, 1.0, "Arroz 1 kg")
+    # Compra el 5/7: julio (mes de la compra) todavía no tiene IPC (sale el 15/8) -> sin ajuste.
+    sin_ajuste = _a_la_fecha(obs, "2021-07-05", IPC_EXT, publicaciones=PUB)
+    assert sin_ajuste.precio_ub == 100.0 and "índice no disponible" in sin_ajuste.descripcion
+    # Retrospectivo: julio YA está en el índice (lo tenemos hoy) -> sí ajusta.
+    con_ajuste = _a_la_fecha(obs, "2021-07-05", IPC_EXT)
+    assert con_ajuste.precio_ub == pytest.approx(100.0 * 110.0 / 103.0)
+
+
+def test_compare_ipc_modo_disponible_a_fecha_cambia_el_ajuste_financiero():
+    """Integración: `compare(publicaciones=...)` (lo que `run()` pasa cuando `comparacion.ipc_modo`
+    es "disponible_a_fecha") da un ajuste financiero distinto del modo retrospectivo default."""
+    obs = [may(240, fuente="a", fecha="2021-07-15"), may(242, fuente="b", fecha="2021-07-15")]
+    retrospectivo = compare(300.0, 10.0, "2021-07-20", 1.0, obs, IPC_EXT, CFG_MIN)
+    disponible_a_fecha = compare(300.0, 10.0, "2021-07-20", 1.0, obs, IPC_EXT, CFG_MIN, publicaciones=PUB)
+    assert retrospectivo.ajuste_financiero_pct != disponible_a_fecha.ajuste_financiero_pct
+    assert disponible_a_fecha.ajuste_financiero_pct == pytest.approx(3.0)   # mayo->junio, no junio->julio
+
+
 def test_select_observations_prefers_same_window_then_adjusts_by_cpi():
     obs = [may(100, "2021-04-10")]
     selected, gap = select_observations(obs, "2021-06-08", 1.0, IPC, CFG)
@@ -89,12 +128,35 @@ def test_compare_plazo_de_pago_del_pliego_nunca_acorta_el_escenario_rojo():
     assert con_plazo_corto.ajuste_financiero_pct == pytest.approx((1.03 ** 0.5 - 1) * 100, abs=0.01)
 
 
-def test_compare_same_brand_beats_statistical_reference():
+def test_compare_same_brand_es_solo_contexto_sin_exigencia_de_marca():
+    """jdemonasterio 2026-10-12: misma_marca ya no es automática por tener `marca` (la OFRECIDA) —
+    solo manda como referencia PRINCIPAL cuando el pliego EXIGIÓ esa marca sin "o equivalente"."""
     obs = [may(240, desc="Yerba Playadito 1 kg"), may(250), may(400, desc="Yerba Playadito 1 kg", fuente="b"),
            may(260), may(270, fuente="b")]
-    res = compare(330.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG, marca="PLAYADITO")
-    assert res.ref_principal == "misma_marca"
-    assert res.ref_misma_marca == 320 and res.ref_n_misma_marca == 2
+    sin_exigencia = compare(330.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG, marca="PLAYADITO")
+    assert sin_exigencia.ref_principal != "misma_marca"
+    # Pero sigue mostrándose como contexto (no se pierde el dato).
+    assert sin_exigencia.ref_misma_marca == 320 and sin_exigencia.ref_n_misma_marca == 2
+
+
+def test_compare_same_brand_manda_solo_si_el_pliego_la_exigio_sin_equivalente():
+    obs = [may(240, desc="Yerba Playadito 1 kg"), may(250), may(400, desc="Yerba Playadito 1 kg", fuente="b"),
+           may(260), may(270, fuente="b")]
+    exigida = compare(330.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG, marca="PLAYADITO",
+                      marca_exigida="PLAYADITO", marca_equivalente_ok=False)
+    assert exigida.ref_principal == "misma_marca"
+    assert exigida.ref_misma_marca == 320 and exigida.ref_n_misma_marca == 2
+    assert "el pliego exige la marca PLAYADITO" in exigida.motivo
+    # "o equivalente": no se exige esa marca, vuelve al mínimo de mercado (contexto, no principal).
+    con_equivalente = compare(330.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG, marca="PLAYADITO",
+                              marca_exigida="PLAYADITO", marca_equivalente_ok=True)
+    assert con_equivalente.ref_principal != "misma_marca"
+    assert "o equivalente" in con_equivalente.motivo
+    # marca_equivalente_ok llega como 0/1 (INTEGER) desde SQLite, no un bool de Python: tiene que
+    # funcionar igual que con `False` real.
+    desde_sqlite = compare(330.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG, marca="PLAYADITO",
+                           marca_exigida="PLAYADITO", marca_equivalente_ok=0)
+    assert desde_sqlite.ref_principal == "misma_marca"
 
 
 def test_compare_implausible_ratio_is_grey_not_red():
@@ -190,14 +252,77 @@ def test_una_observacion_por_serie_la_mas_cercana():
     assert res.ref_min_mayorista == 990 and res.ref_n_mayorista == 2
 
 
-def test_precio_posterior_se_lleva_a_la_fecha_por_ipc_y_no_da_rojo():
-    # Compra 2021-05-20, góndola del 2021-06-01: se deflacta por el IPC de mayo/junio (3%).
+def test_precio_posterior_dentro_de_la_ventana_corrobora_y_puede_dar_rojo():
+    """jdemonasterio 2026-10-12: una observación posterior a <= 15 días (ventana_directa_dias) es,
+    a todo efecto, una observación directa más — ya no se excluye de la corroboración (antes
+    CUALQUIER posterior quedaba afuera, P21 original)."""
+    # Compra 2021-05-20, góndola del 2021-06-01 (12 días después): se deflacta por el IPC (3%).
     obs = [may(103.0, fecha="2021-06-01", fuente="a"), may(103.0, fecha="2021-06-01", fuente="b", desc="Otra 1 kg")]
     res = compare(140.0, 10.0, "2021-05-20", 1.0, obs, IPC, CFG_MIN)
     assert res.ref_min_mayorista == pytest.approx(100.0)
-    assert "por IPC" in res.evidencia[0]["descripcion"] and res.evidencia[0]["posterior"]
-    # Observaciones posteriores no corroboran (P21): sin rojo aunque la brecha sea +36%.
-    assert res.ref_corroborada is None and res.semaforo == "amarillo"
+    assert "por IPC" in res.evidencia[0]["descripcion"] and not res.evidencia[0]["posterior"]
+    # Dos familias distintas al mismo precio, a 12 días (dentro de la ventana): SÍ corrobora y, con
+    # la brecha del caso, da rojo.
+    assert res.ref_corroborada == pytest.approx(100.0) and res.semaforo == "rojo"
+
+
+def test_precio_posterior_mas_alla_de_la_ventana_no_corrobora():
+    """Más allá de los 15 días la cautela original se mantiene: una posterior no corrobora."""
+    # Compra 2021-04-01, góndola del 2021-05-11 (40 días después, dentro de gap_maximo_dias=120).
+    obs = [may(103.0, fecha="2021-05-11", fuente="a"), may(103.0, fecha="2021-05-11", fuente="b", desc="Otra 1 kg")]
+    res = compare(140.0, 10.0, "2021-04-01", 1.0, obs, IPC, CFG_MIN)
+    assert res.evidencia[0]["posterior"]
+    assert res.ref_corroborada is None and res.semaforo == "amarillo" and res.confianza == "baja"
+    assert "el mínimo solo se confirma con precios posteriores a la compra" in res.motivo
+
+
+def test_gap_hasta_120_dias_puede_dar_rojo_con_ajuste_por_ipc():
+    """jdemonasterio 2026-10-12: un precio de mercado VIEJO (no posterior) a más de 15 días pero
+    dentro de gap_maximo_dias ya no es "solo contexto": si corrobora y aguanta el plazo de pago,
+    puede dar rojo — con una advertencia explícita y siempre visible en el motivo."""
+    # Compra 2021-05-31; mercado del 2021-04-01 (60 días antes, fuera de la ventana directa de 15).
+    obs = [may(100.0, fecha="2021-04-01", fuente="a", desc="Arroz 1 kg"),
+           may(100.0, fecha="2021-04-01", fuente="b", desc="Otra 1 kg")]
+    res = compare(200.0, 10.0, "2021-05-31", 1.0, obs, IPC, CFG_MIN)
+    assert res.semaforo == "rojo"
+    assert "precio de mercado trasladado por IPC desde 60 días" in res.motivo
+    assert "método: I(mes compra)/I(mes observación)" in res.motivo
+    # rojo_con_ajuste_ipc_hasta_dias=15 restaura la regla estricta (más allá de la ventana, nunca rojo).
+    estricto = compare(200.0, 10.0, "2021-05-31", 1.0, obs, IPC,
+                       dict(CFG_MIN, rojo_con_ajuste_ipc_hasta_dias=15))
+    assert estricto.semaforo == "amarillo"
+    assert "más allá de los 15 días permitidos" in estricto.motivo
+
+
+def test_precio_de_hoy_se_etiqueta_distinto_y_solo_habilita_rojo_con_override():
+    """Flujo Investigar (otro agente, jdemonasterio 2026-10-12): una compra vieja a veces solo tiene
+    como referencia el precio de HOY (precios_hoy.py) trasladado por IPC. El comparador lo
+    reconoce por la fecha real (no por un canal especial: precios_hoy.py guarda con el mismo canal
+    mayorista/minorista de siempre) y lo etiqueta distinto en el motivo; habilitar rojo a esa
+    distancia sigue siendo un override EXPLÍCITO (`rojo_con_ajuste_ipc_hasta_dias` vía cfg o
+    `pipeline.compare.run(..., rojo_con_ajuste_ipc_hasta_dias=...)`), nunca automático por default."""
+    import datetime as _dt
+    hoy = _dt.date.today().isoformat()
+    obs = [may(100.0, fecha=hoy, fuente="a", desc="Arroz HOY 1 kg"),
+           may(101.0, fecha=hoy, fuente="b", desc="Arroz HOY 1 kg")]
+    con_override = compare(140.0, 10.0, "2021-06-08", 1.0, obs, IPC,
+                           dict(CFG_MIN, rojo_con_ajuste_ipc_hasta_dias=5000), gap_maximo=5000)
+    assert con_override.semaforo == "rojo"
+    assert "precio de HOY trasladado por IPC a la fecha de la compra" in con_override.motivo
+    sin_override = compare(140.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, gap_maximo=5000)
+    assert sin_override.semaforo != "rojo"
+    assert "precio de HOY a" in sin_override.motivo and "más allá de los 120 días permitidos" in sin_override.motivo
+
+
+def test_run_acepta_override_de_rojo_con_ajuste_ipc_hasta_dias(tmp_path):
+    """`pipeline.compare.run()` expone el mismo override que `gap_maximo` para que Investigar (otro
+    agente) pueda habilitar rojo contra el precio de HOY en compras viejas, sin tocar la config
+    global."""
+    import inspect
+    from sobreprecios.pipeline import compare as compare_mod
+    params = inspect.signature(compare_mod.run).parameters
+    assert "rojo_con_ajuste_ipc_hasta_dias" in params
+    assert params["rojo_con_ajuste_ipc_hasta_dias"].default is None
 
 
 def test_as_of_prefiere_la_anterior_a_la_posterior():
@@ -262,6 +387,39 @@ def test_compra_generica_acepta_variantes_compatibles():
     # Una compra de tirabuzón no se confirma con mostachol.
     solo = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, variante="tirabuzon", variante_obs=vfn)
     assert solo.ref_corroborada is None and solo.semaforo == "amarillo"
+
+
+def test_nota_equivalencia_se_suma_al_motivo_cuando_se_usa_la_variante_compatible():
+    """jdemonasterio 2026-10-12: leche fortificada (Ley 25.459) no se vende al público, se compara contra
+    la leche en polvo COMUN del mercado vía `compatibles` (catalog.py); `nota_equivalencia` (texto del
+    catálogo) queda visible en el motivo. Semáforo normal, no se relaja ni se bloquea."""
+    vfn = lambda d: "comun" if "comun" in d.lower() else None
+    obs = [may(240, fuente="a", desc="Leche polvo comun"), may(242, fuente="b", desc="Leche polvo comun")]
+    aviso = ("leche fortificada (Ley 25.459) comparada con leche en polvo comun: no se vende al publico; "
+             "se infiere un precio muy similar")
+    res = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, variante="fortificada_hierro_zinc_c",
+                  variante_obs=vfn, estado_atributo="verificado",
+                  variantes_ok={"fortificada_hierro_zinc_c", "comun"}, nota_equivalencia=aviso)
+    assert res.motivo_codigo not in {"atributo_desconocido", "sin_referencia_variante"}
+    assert aviso in res.motivo
+    # Sin nota_equivalencia (la compra es la propia "comun", no una variante mapeada) no se agrega nada.
+    sin_nota = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, variante="comun", variante_obs=vfn,
+                       estado_atributo="por_defecto", variantes_ok={"comun"})
+    assert aviso not in sin_nota.motivo
+
+
+def test_obs_ids_guarda_las_observaciones_que_forman_cada_referencia():
+    """jdemonasterio 2026-10-12: cada comparación guarda los ids de precios_mercado del mínimo usado y
+    del par que confirma el mínimo corroborado (MEJORAS #27 parcial)."""
+    obs = [may(240, fuente="a", desc="Arroz 1 kg"), may(242, fuente="b", desc="Arroz 1 kg")]
+    for i, o in enumerate(obs, start=101):
+        o.id = i
+    res = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN)
+    assert res.obs_ids["minimo"] == [101]          # min_mayorista = 240 (id 101)
+    assert res.obs_ids["par_corroborado"] == [101, 102]   # 240 y 242 (a, b) a <= 2%
+    # Sin observaciones comparables: listas vacías, no arrastra ids de una referencia que no se usó.
+    vacio = compare(400.0, 10.0, "2021-06-08", 1.0, [], IPC, CFG_MIN)
+    assert vacio.obs_ids == {"minimo": [], "par_corroborado": []}
 
 
 # ── canal "programa" (Precios Cuidados/Justos/Máximos): fallback solo sin mercado real ──────

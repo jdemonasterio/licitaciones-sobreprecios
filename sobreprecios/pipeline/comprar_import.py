@@ -25,6 +25,7 @@ import re
 import sqlite3
 
 from .. import db
+from .extract import parse_marca_exigida
 
 logger = logging.getLogger(__name__)
 
@@ -204,6 +205,11 @@ def store_detalle(conn: sqlite3.Connection, detalle: dict, proceso_id: int | Non
         cuit = a.get("cuit") or next((o.get("cuit") for o in ofertas
                                       if _norm_prov(o.get("proveedor")) == _norm_prov(a.get("proveedor"))), None)
         desc = reng.get("descripcion") or f"renglón {a.get('renglon')}"
+        # Marca EXIGIDA por el PLIEGO (jdemonasterio 2026-10-12): se busca en el texto del pliego
+        # (reng, lo que escribió el organismo), nunca en `desc` si ese cayó al placeholder genérico
+        # "renglón N" (ahí no hay nada que parsear). Distinta de `marca` (la OFRECIDA por el ganador,
+        # ya extraída arriba de las ofertas/cuadro comparativo).
+        marca_exigida, marca_equivalente_ok = parse_marca_exigida(reng.get("descripcion"))
         ext_key = f"comprar:{a.get('renglon')}:{_norm_prov(a.get('proveedor'))}"
         vistos.add(ext_key)
         extra = {}
@@ -222,6 +228,8 @@ def store_detalle(conn: sqlite3.Connection, detalle: dict, proceso_id: int | Non
             "proveedor": a.get("proveedor"),
             "proveedor_cuit": _cuit_fmt(cuit),
             "marca": marca,
+            "marca_exigida": marca_exigida,
+            "marca_equivalente_ok": marca_equivalente_ok,
             "extraccion_metodo": "comprar",
             "alertas": None,
             "external_key": ext_key,
@@ -241,14 +249,22 @@ def ofertas_ganadoras(adjudicaciones: list[dict], ofertas: list[dict]) -> set[in
 
     Un proveedor puede presentar varias alternativas en el mismo renglón: gana la que tiene
     el precio del dictamen (±0,5 %), no todas las del proveedor (juez externo 2026-10-11). Si
-    ninguna coincide en precio, se marcan todas las del proveedor en ese renglón. Si DOS alternativas
-    coinciden en precio no se elige ninguna: quedan en `pendientes` (riesgo señalado por el prime).
+    ninguna coincide en precio, se marcan todas las del proveedor en ese renglón. Si DOS o más
+    alternativas coinciden en precio, se elige UNA (jdemonasterio 2026-10-12, ver
+    `ofertas_ganadoras_y_pendientes`).
     """
     out, _ = ofertas_ganadoras_y_pendientes(adjudicaciones, ofertas)
     return out
 
 
 def ofertas_ganadoras_y_pendientes(adjudicaciones: list[dict], ofertas: list[dict]) -> tuple[set[int], set[int]]:
+    """`pendientes` queda siempre vacío (se conserva en la firma por compatibilidad: algún llamador
+    todavía puede desarmar la tupla). Decisión de jdemonasterio 2026-10-12, que revierte la cautela
+    original del LLM prime: "si hay empate, elegís una; si está adjudicado, está adjudicado" — nunca
+    se deja la ganadora en NULL/pendiente por un empate de precio entre alternativas del MISMO
+    proveedor. Se elige la de menor índice (la primera alternativa del cuadro comparativo de
+    COMPR.AR para ese proveedor y renglón): es arbitrario pero determinístico, y el renglón ya tiene
+    su `fuente_fragmento` con el dictamen completo para que un humano vea las alternativas."""
     ganadoras: set[int] = set()
     pendientes: set[int] = set()
     for a in adjudicaciones:
@@ -258,7 +274,7 @@ def ofertas_ganadoras_y_pendientes(adjudicaciones: list[dict], ofertas: list[dic
         mismas = [i for i in del_prov if pu and ofertas[i].get("precio_unitario")
                   and abs(ofertas[i]["precio_unitario"] - pu) <= 0.005 * pu]
         if len(mismas) > 1:
-            pendientes.update(mismas)
+            ganadoras.add(min(mismas))
         else:
             ganadoras.update(mismas or del_prov)
     return ganadoras, pendientes
@@ -413,6 +429,62 @@ def brecha_ofertas(conn: sqlite3.Connection, proceso_id: int, nro_renglon: int |
                oferta_min_desestimada=bool(low["estado"] == "desestimada"),
                oferta_min_causa=low["causa_desestimacion"])
     return out
+
+
+# Estado documental de la fuente del precio pagado (MEJORAS #29, jdemonasterio 2026-10-12): nunca
+# decimos "pagó" (no tenemos pagos, solo recomendaciones/actos/contratos).
+ESTADOS_DOCUMENTALES = ("contratado", "adjudicado", "dictamen", "desconocido")
+ESTADO_DOCUMENTAL_TXT = {"dictamen": "recomendado (dictamen de COMPR.AR, no decidido todavía)",
+                         "adjudicado": "adjudicado (acto/resolución)", "contratado": "contratado (hay orden de compra)",
+                         "desconocido": "estado documental desconocido"}
+
+
+def actualizar_estado_documental(conn: sqlite3.Connection, proceso_ids: list[int] | None = None) -> None:
+    """Deriva `renglones.estado_documental` y el agregado `procesos.estado_documental` a partir de
+    datos que YA tenemos (sin bajar nada nuevo):
+
+      - **contratado**: existe una orden de compra (`ordenes_compra`) para ese proveedor en ese
+        proceso — el contrato está en marcha, más allá de lo recomendado/adjudicado.
+      - **dictamen**: el renglón vino de COMPR.AR (`extraccion_metodo='comprar'`) — es una
+        RECOMENDACIÓN del dictamen, todavía no una decisión de la autoridad.
+      - **adjudicado**: el renglón vino de una resolución del Boletín Oficial que adjudica
+        (`procesos.fuente='bo_primera'`, extraído por regex o LLM, no del dataset legacy) — eso SÍ
+        es un acto administrativo ya decidido.
+      - **desconocido**: ninguno de los anteriores (ej. dataset legacy 2021 sin metadata de origen).
+
+    Se llama al final de `pipeline.compare.run()` (se recalcula cada vez que se recalculan
+    sobreprecios, sin un comando aparte). Nunca escribe "pagado": no hay fuente de pagos reales.
+    """
+    ensure_schema(conn)
+    row_where, proc_where, params = "1=1", "1=1", []
+    if proceso_ids:
+        placeholders = ",".join("?" for _ in proceso_ids)
+        row_where, proc_where = f"proceso_id IN ({placeholders})", f"id IN ({placeholders})"
+        params = list(proceso_ids)
+    conn.execute(
+        "UPDATE renglones SET estado_documental = ("
+        "  SELECT CASE "
+        "    WHEN EXISTS (SELECT 1 FROM ordenes_compra oc WHERE oc.proceso_id = renglones.proceso_id "
+        "                 AND ((oc.cuit IS NOT NULL AND oc.cuit = renglones.proveedor_cuit) "
+        "                      OR (oc.proveedor IS NOT NULL AND oc.proveedor = renglones.proveedor))) "
+        "      THEN 'contratado' "
+        "    WHEN renglones.extraccion_metodo = 'comprar' THEN 'dictamen' "
+        "    WHEN p.fuente = 'bo_primera' AND renglones.extraccion_metodo IS NOT NULL "
+        "         AND renglones.extraccion_metodo <> 'legacy_quijotes' "
+        "         AND renglones.extraccion_metodo NOT LIKE 'sin_extraccion%' THEN 'adjudicado' "
+        "    ELSE 'desconocido' END "
+        "  FROM procesos p WHERE p.id = renglones.proceso_id"
+        f") WHERE {row_where}", params)
+    conn.execute(
+        "UPDATE procesos SET estado_documental = ("
+        "  SELECT CASE "
+        "    WHEN SUM(CASE WHEN r.estado_documental='contratado' THEN 1 ELSE 0 END) > 0 THEN 'contratado' "
+        "    WHEN SUM(CASE WHEN r.estado_documental='adjudicado' THEN 1 ELSE 0 END) > 0 THEN 'adjudicado' "
+        "    WHEN SUM(CASE WHEN r.estado_documental='dictamen' THEN 1 ELSE 0 END) > 0 THEN 'dictamen' "
+        "    ELSE 'desconocido' END "
+        "  FROM renglones r WHERE r.proceso_id = procesos.id"
+        f") WHERE {proc_where}", params)
+    conn.commit()
 
 
 def descubrir(conn: sqlite3.Connection, desde: dt.date | None = None, hasta: dt.date | None = None,

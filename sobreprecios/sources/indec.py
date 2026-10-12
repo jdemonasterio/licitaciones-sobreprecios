@@ -20,12 +20,26 @@ import sqlite3
 
 import httpx
 
-from .. import config
+from .. import config, db
 from ..catalog import load_catalog
 
 logger = logging.getLogger(__name__)
 
 API = "https://apis.datos.gob.ar/series/api/series/"
+
+
+def fecha_publicacion_estimada(mes: str) -> str:
+    """Fecha de publicación de un mes de IPC (P20/#45, MEJORAS #30, jdemonasterio 2026-10-12).
+
+    apis.datos.gob.ar/series no trae metadata de CUÁNDO se publicó cada punto (solo el valor por
+    mes): no hay una fuente de la fecha REAL de publicación para esta serie, así que se ESTIMA
+    como el 15 del mes siguiente (INDEC publica el IPC con ~2 semanas de atraso respecto del mes
+    que mide; ver nota en pipeline/compare.py). Es una estimación, no la fecha oficial — si en el
+    futuro aparece una fuente con la fecha real, debería reemplazar esto.
+    """
+    anio, mes_n = int(mes[:4]), int(mes[5:7])
+    anio, mes_n = (anio + 1, 1) if mes_n == 12 else (anio, mes_n + 1)
+    return f"{anio:04d}-{mes_n:02d}-15"
 
 
 def fetch_series(ids: list[str], start: str = "2016-01-01") -> dict[str, dict[str, float]]:
@@ -56,16 +70,21 @@ def run(conn: sqlite3.Connection) -> str:
     data = fetch_series(ids)
 
     n_idx = 0
+    version = db.now_iso()   # "cuándo lo bajamos nosotros" (P20/#45): se actualiza en cada corrida.
     for sid in index_ids:
         for fecha, valor in data.get(sid, {}).items():
-            conn.execute("INSERT INTO indices (serie, fecha, valor) VALUES (?, ?, ?) "
-                         "ON CONFLICT(serie, fecha) DO UPDATE SET valor=excluded.valor", (sid, fecha, valor))
+            conn.execute(
+                "INSERT INTO indices (serie, fecha, valor, fecha_publicacion, version) VALUES (?, ?, ?, ?, ?) "
+                "ON CONFLICT(serie, fecha) DO UPDATE SET valor=excluded.valor, "
+                "fecha_publicacion=excluded.fecha_publicacion, version=excluded.version",
+                (sid, fecha, valor, fecha_publicacion_estimada(fecha), version))
             n_idx += 1
     # Los índices se guardan también con su alias (ipc_alimentos / ipc_general) para el comparador.
     for alias, sid in (settings.get("indices") or {}).items():
         conn.execute("DELETE FROM indices WHERE serie=?", (alias,))
-        conn.execute("INSERT INTO indices (serie, fecha, valor) SELECT ?, fecha, valor FROM indices WHERE serie=?",
-                     (alias, sid))
+        conn.execute(
+            "INSERT INTO indices (serie, fecha, valor, fecha_publicacion, version) "
+            "SELECT ?, fecha, valor, fecha_publicacion, version FROM indices WHERE serie=?", (alias, sid))
 
     n_px = 0
     for prod in price_specs.values():

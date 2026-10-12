@@ -1,8 +1,12 @@
 _nota: 'Ajustes propuestos por el LLM prime (gpt-6-astra) el 2026-10-11 tras revisar ejemplos reales de macheo,
-  curados por Claude (campo curado_por_claude). PENDIENTE DE CHECK DE MATEO. Se suman a config/productos.yml (excluye/incluye)
-  y sus variantes reemplazan a las del catálogo. Borrar una entrada la desactiva. Ojo: las frases se buscan como
-  bolsa de palabras, no como texto seguido. Sin defaults de variante: decisión del LLM prime P17 (atributo desconocido
-  = gris).'
+  curados por Claude (campo curado_por_claude). Se suman a config/productos.yml (excluye/incluye)
+  y sus variantes reemplazan a las del catálogo (`variantes: {}` explícito las BORRA, no las deja igual al base).
+  Borrar una entrada la desactiva. Ojo: las frases se buscan como bolsa de palabras, no como texto seguido.
+  2026-10-12 (jdemonasterio): decisiones del owner que PISAN las del LLM prime donde difieren — quedan documentadas
+  por producto en el campo `decision_jdemonasterio`. Agrega `nota_equivalencia` (variante -> texto que compare.run()
+  suma al motivo cuando esa variante se usó) y reafirma que `compatibles` puede mapear una variante de la compra a la
+  variante "comun"/default del mercado para productos que no exigen variante no vendida al público (leche fortificada
+  Ley 25.459 vs leche común).'
 productos:
   leche_polvo_entera:
     excluye_extra:
@@ -30,10 +34,30 @@ productos:
     motivo: 'Las abreviaturas dejan pasar leche descremada o deslactosada. Además, no alcanza con que dos leches
       sean ''fortificadas'': Cal-Nut o vitaminas A y D no acreditan la composición exigida de hierro, zinc y vitamina
       C. Dar prioridad a la composición específica y no comparar fortificación sin detalle contra la exigida por
-      ley. No asignar ''comun'' automáticamente a descripciones incompletas.'
-    variante_default: null
+      ley.'
+    variante_default: comun
+    compatibles:
+      fortificada_hierro_zinc_c: [comun]
+      fortificada_cal_nut: [comun]
+      fortificada_a_d: [comun]
+      fortificada_sin_detalle: [comun]
+    nota_equivalencia:
+      fortificada_hierro_zinc_c: 'leche fortificada (Ley 25.459) comparada con leche en polvo comun: no se vende
+        al publico; se infiere un precio muy similar'
+      fortificada_cal_nut: 'leche fortificada (Ley 25.459) comparada con leche en polvo comun: no se vende al
+        publico; se infiere un precio muy similar'
+      fortificada_a_d: 'leche fortificada (Ley 25.459) comparada con leche en polvo comun: no se vende al publico;
+        se infiere un precio muy similar'
+      fortificada_sin_detalle: 'leche fortificada (Ley 25.459) comparada con leche en polvo comun: no se vende al
+        publico; se infiere un precio muy similar'
     curado_por_claude: 'lo especial y más caro no fija el mínimo; sin_detalle también con hierro/zinc/vitamina/calcio
       sueltos: una mención parcial no cae en ''comun''; + ''lactosa'' (juez muestra final: leche 0% lactosa)'
+    decision_jdemonasterio: '2026-10-12: default "comun" restituido (el LLM prime lo había puesto en null). "Es
+      leche en polvo entera y punto": sin mención de fortificación, se asume la común. Las compras de leche
+      FORTIFICADA (Ley 25.459: hierro, zinc y vitamina C/acido ascorbico) no se venden al publico, así que se
+      comparan contra la leche en polvo COMUN de góndola via `compatibles` (mecanismo genérico, no hardcodeado
+      a este producto) con una advertencia visible en el motivo via `nota_equivalencia`. Semáforo normal (no se
+      relaja ni se endurece).'
   leche_entera_fluida:
     excluye_extra:
     - formula lactea
@@ -194,52 +218,44 @@ productos:
     - parboilizado
     - parboil
     - alf
-    variantes:
-      largo_fino:
-      - largo fino
-      - largofino
-      - l fino
-      - l fin
-      doble_carolina:
-      - doble carolina
-      carolina_sin_detalle:
-      - carolina
-      carnaroli:
-      - carnaroli
-      grano_largo_sin_detalle:
-      - grano largo
-    motivo: 'Hay arroz parbolizado, platos preparados, golosinas y pastas dentro del arroz blanco. Separar Carnaroli
-      de largo fino y doble Carolina. Priorizar las frases específicas sobre ''carolina'' y ''grano largo''. Quitar
-      los ceros como identificador suficiente del tipo de grano: la calidad 0000/00000 debe validarse por separado.'
+    variantes: {}
+    motivo: 'Hay arroz parbolizado, platos preparados, golosinas y pastas dentro del arroz blanco: esas exclusiones
+      se mantienen. El LLM prime había propuesto separar por tipo de grano (largo fino / doble carolina / carnaroli);
+      jdemonasterio lo revirtió: "el clásico es arroz blanco largo fino común", no se separa por grano.'
     curado_por_claude: '+ ''listo'' (juez: ARROZ LISTO KNORR DE LA HUERTA); + ''parboilizado'' (P22: variante ortográfica);
       + ''alf'' (alfajor ''ALF SER DE ARROZ'' entraba como arroz)'
+    decision_jdemonasterio: '2026-10-12: se borran las variantes por tipo de grano que proponía el LLM prime
+      (largo_fino/doble_carolina/carolina_sin_detalle/carnaroli/grano_largo_sin_detalle). `variantes: {}` pisa
+      explícitamente las del catálogo base (config/productos.yml también tenía largo_fino/doble_carolina/grano_largo):
+      todo arroz blanco (menos parboil/integral/preparados/snacks, ya excluidos) se compara como un solo pool, sin
+      separar por grano. Las exclusiones de producto no-arroz quedan igual.'
   harina_trigo_000:
     variantes:
       organica:
       - organica
-    motivo: 'Separar harina orgánica de la convencional. No excluir por fortificación: las licitaciones exigen enriquecimiento.
-      La presentación de 25 kg también debe separarse de 1 kg mediante el tamaño de envase, no mediante exclusiones
-      del producto.'
-    variante_default: null
+      enriquecida:
+      - enriquecida
+      - enriquecido
+      - fortificada
+      - fortificado
+    motivo: 'Separar harina orgánica y enriquecida de la convencional. La presentación de 25 kg también debe
+      separarse de 1 kg mediante el tamaño de envase, no mediante exclusiones del producto.'
+    variante_default: comun
     curado_por_claude: lo especial y más caro no fija el mínimo
+    decision_jdemonasterio: '2026-10-12: variantes "organica" y "enriquecida"; si la descripción no dice ninguna
+      de las dos, es la común (variante_default: comun, antes null).'
   harina_maiz:
     excluye_extra:
     - sab vegetales
     - espinaca crema
-    variantes:
-      coccion_rapida:
-      - precocida
-      - rapida
-      - instantanea
-      - 1 minuto
-      tradicional:
-      - harina de maiz comun
-      - harina de maiz p pcio com
-    motivo: Las polentas saborizadas no son polenta simple. Separar cocción rápida/precocida de tradicional; las
-      licitaciones alimentarias detalladas piden rápida. 'Polenta' o 'harina de maiz' sin proceso no acreditan esa
-      variante.
+    variantes: {}
+    motivo: 'Las polentas saborizadas no son polenta simple (exclusión, se mantiene). El LLM prime había separado
+      cocción rápida/precocida de tradicional; jdemonasterio lo revirtió: se agrupa todo como harina de maíz,
+      sin separar por variante.'
     curado_por_claude: '+ ''pronta'', ''1 minuto'' en cocción rápida (Presto Pronta); quitados ''pronta'' e ''inst''
       (P22: abreviatura/marca no acredita precocción)'
+    decision_jdemonasterio: '2026-10-12: se borran las variantes coccion_rapida/tradicional que proponía el LLM
+      prime (`variantes: {}`). Toda harina de maíz/polenta simple es un solo pool.'
   azucar:
     excluye_extra:
     - galletitas
@@ -263,11 +279,16 @@ productos:
       - passata
       tomate_amarillo:
       - tomate amarillo
-    motivo: Separar estas presentaciones del puré común licitado y verificar composición/concentración antes de
-      establecer equivalencia. No quitar 'salsa' globalmente ni hacerla coincidir dentro de la marca Salsati. No
-      agregar 'pure pure cica' sin confirmar que el SKU sea puré de tomate.
-    variante_default: null
+    motivo: 'Separar estas presentaciones del puré común licitado. "Salsa" y "concentrado" ya están excluidos en
+      config/productos.yml (salsa != puré != concentrado): el matcher es por palabra exacta, así que esa exclusión
+      no choca con la marca "Salsati" (el token "salsati" no es el token "salsa"). No agregar ''pure pure cica''
+      sin confirmar que el SKU sea puré de tomate.'
+    variante_default: comun
     curado_por_claude: lo especial y más caro no fija el mínimo
+    decision_jdemonasterio: '2026-10-12: confirmado que salsa/concentrado quedan afuera de pure_tomate (ya lo
+      estaban en el catálogo base, excluye: [... salsa, concentrado, ...]) y que eso es seguro para la marca
+      Salsati (match por palabra completa, no substring). Variante por defecto "comun" para el puré sin passata
+      ni tomate amarillo (antes null).'
   arvejas_secas:
     excluye_extra:
     - remoja
@@ -275,8 +296,16 @@ productos:
     - rem
     - lat
     - ttb
+    - pasta
+    - pastas
+    - preparado
+    - preparados
+    - preparacion
     motivo: 'Cubrir abreviaturas de remojadas y envases de conserva. ''Secas'' también aparece en la denominación
       de conservas hechas con arvejas secas: no acredita producto seco. Las abreviaturas deben ser tokens completos.'
+    decision_jdemonasterio: '2026-10-12: lo común es la legumbre seca en bolsa tal como viene, nada preparado:
+      se suman exclusiones de pastas/preparaciones (medallones y hamburguesas ya estaban en las exclusiones
+      globales del catálogo).'
   arvejas_conserva:
     incluye_extra:
     - arvejas secas remoja
@@ -291,13 +320,29 @@ productos:
     - tetra
     - lat
     - remoj
+    - pasta
+    - pastas
+    - preparado
+    - preparados
+    - preparacion
     motivo: 'Excluir golosinas y conservas. Los títulos que solo indican marca y 300/340/350 g no permiten decidir
       estado seco o cocido: revisar el SKU, sin excluir por gramaje solamente.'
+    decision_jdemonasterio: '2026-10-12: lo común es la legumbre seca en bolsa tal como viene, nada preparado:
+      se suman exclusiones de pastas/preparaciones (medallones y hamburguesas ya estaban en las exclusiones
+      globales del catálogo y en el excluye base de este producto).'
   porotos:
     excluye_extra:
     - hummus
     - pasta poroto
     - rem
+    - pasta
+    - pastas
+    - preparado
+    - preparados
+    - preparacion
+    decision_jdemonasterio: '2026-10-12: lo común es la legumbre seca en bolsa tal como viene, nada preparado:
+      se generaliza ''pasta poroto'' a cualquier ''pasta'' (medallones y hamburguesas ya estaban en las
+      exclusiones globales del catálogo).'
     variantes:
       alubia:
       - alubia
@@ -370,41 +415,48 @@ productos:
     excluye_extra:
     - felix
     variantes:
-      desmenuzado_natural:
-      - desmenuzado al natural
-      desmenuzado_aceite:
+      al_aceite:
+      - en aceite
+      - aceite
+      - ac
       - desmenuzado en aceite
       - desm aceite
-      lomito_aceite:
       - lomo atun en acei
       - lom ace
       - lomito aceit
-      lomito_natural:
+      al_agua:
+      - al natural
+      - natural
+      - natur
+      - nat
+      - desmenuzado al natural
       - lomito natur
-    motivo: 'Excluir el alimento para mascotas abreviado. Separar conjuntamente corte y líquido de cobertura; las
-      frases propuestas cubren combinaciones explícitas de la muestra. Para los demás títulos, completar ambos atributos
-      con la ficha antes de comparar. También separar aceite/agua, sin sal y sabor limón; no inferir corte a partir
-      de marca. Las licitaciones dadas no especifican corte: no tomar automática'
+      - al agua
+      - agua
+    motivo: 'Excluir el alimento para mascotas abreviado. Solo importa el líquido de cobertura (aceite vs agua/natural);
+      el corte (lomito/desmenuzado) y la sal no definen una variante de precio.'
+    decision_jdemonasterio: '2026-10-12: solo dos variantes (al aceite / al agua-natural), bajando de cuatro
+      (corte x líquido). El corte y la sal no importan. Las frases de corte quedan DENTRO de cada variante de
+      líquido (ej. "desmenuzado en aceite" sigue siendo al_aceite), nunca forman su propia variante.'
   caballa_conserva:
     variantes:
-      al_natural:
+      al_aceite:
+      - en aceite
+      - aceite
+      - aceit
+      al_agua:
       - al natural
       - natural
       - natura
       - natur
-      aceite_y_agua:
-      - aceite y agua
-      - agua y aceite
-      - aceite agua
-      en_aceite:
-      - en aceite
-      - aceite
-      - aceit
-      salsa_tomate:
-      - tomate
-    motivo: Separar líquido de cobertura y salsa. Priorizar aceite/agua frente a aceite. El mínimo de caballa en
-      tomate o natural no sirve para la licitación en aceite. Verificar además las abreviaturas de condiciones especiales,
-      como S/S, antes de equipararlas al producto estándar.
+      - agua
+    motivo: 'Solo importa el líquido de cobertura (aceite vs agua/natural); el corte y la sal no definen una
+      variante de precio. Una descripción que menciona los dos líquidos a la vez ("en aceite y agua") sigue
+      ambigua: la frase "aceite" y la palabra "agua" matchean las dos variantes, no se asume aceite solo.'
+    decision_jdemonasterio: '2026-10-12: solo dos variantes (al aceite / al agua-natural), bajando de cuatro
+      (al_natural/aceite_y_agua/en_aceite/salsa_tomate). El corte y la sal no importan (ya no hay variante para
+      eso). "salsa_tomate" se borra como variante propia: una caballa en salsa de tomate ya no matchea ninguna
+      de las dos variantes (queda "desconocido"/ambigua, no se compara automáticamente contra aceite o agua).'
   dulce_leche:
     excluye_extra:
     - chocolate
@@ -415,14 +467,22 @@ productos:
     - galletita
     - yofrey
     - postre
+    - bolsa
     variantes:
       monodosis:
       - blister
+      balde:
+      - balde
+      frasco:
+      - frasco
     motivo: 'Excluir otros alimentos y formulaciones que no son dulce de leche estándar para untar. ''Repostero''
-      cubre el título abreviado que no alcanza la exclusión actual. Separar monodosis del pote y no calcular kg
-      de la caja hasta conocer gramos por unidad. No excluir la marca Milkaut: hay ejemplos correctos.'
-    variante_default: null
+      cubre el título abreviado que no alcanza la exclusión actual. No excluir la marca Milkaut: hay ejemplos
+      correctos.'
+    variante_default: pote
     curado_por_claude: lo especial y más caro no fija el mínimo
+    decision_jdemonasterio: '2026-10-12: default "pote" cuando no se dice nada (antes null); "bolsa" nunca es
+      la presentación licitada (exclusión nueva); "balde" y "frasco" son variantes (antes solo existía
+      "monodosis").'
   cacao_polvo:
     excluye_extra:
     - batata
@@ -444,10 +504,11 @@ productos:
       - menos azucar
     motivo: 'El mínimo está contaminado por dulce de batata, además de chocolates, cereales y cremas. Evitar excluir
       ''dulce'' o ''chocolate'' solos: serían demasiado amplios para preparados en polvo. Separar reducido en azúcar
-      del alimento a base de azúcar y cacao licitado. ''Cacao'' sin composición no acredita la variante azucarada
-      ni cacao puro.'
-    variante_default: null
+      del alimento a base de azúcar y cacao licitado.'
+    variante_default: azucarado
     curado_por_claude: 'lo especial y más caro no fija el mínimo; + galletitas (juez muestra final: Smookies Kids)'
+    decision_jdemonasterio: '2026-10-12: default "azucarado" (antes null): el cacao en polvo estándar que se
+      licita es el azucarado; "reducido_azucar" sigue necesitando frase explícita.'
   galletitas_agua:
     excluye_extra:
     - miel
@@ -482,11 +543,12 @@ productos:
       con_cobertura:
       - fondant
       - topp
-    motivo: 'La compra pide frutado. No compararlo con chips, sin frutas, pandoro u otras formulaciones. Priorizar
-      chips con dulce de leche y coberturas sobre categorías simples. ''Artesanal'' o ''tradicional'' no demuestran
-      que tenga frutas: no asignarles frutado por defecto.'
-    variante_default: null
+    motivo: 'No compararlo con chips, sin frutas, pandoro u otras formulaciones. Priorizar chips con dulce de leche
+      y coberturas sobre categorías simples.'
+    variante_default: frutado
     curado_por_claude: lo especial y más caro no fija el mínimo
+    decision_jdemonasterio: '2026-10-12: default "frutado" (antes null): el pan dulce estándar que se licita
+      lleva frutas; "sin_frutas" y el resto siguen necesitando frase explícita.'
   sal_fina:
     excluye_extra:
     - hierb
@@ -494,11 +556,17 @@ productos:
     variantes:
       marina:
       - marina
-    motivo: Excluir sales con hierbas y un alimento ajeno. Separar sal marina de común. Salero, paquete, bolsa de
-      25 kg y monodosis requieren además segmentación por presentación; no son intercambiables solo por convertir
-      a kg.
-    variante_default: null
+      yodada:
+      - yodada
+      - yodatada
+      - con yodo
+    motivo: Excluir sales con hierbas y un alimento ajeno. Separar sal marina y yodada de la común. Salero, paquete,
+      bolsa de 25 kg y monodosis requieren además segmentación por presentación; no son intercambiables solo por
+      convertir a kg.
+    variante_default: comun
     curado_por_claude: lo especial y más caro no fija el mínimo
+    decision_jdemonasterio: '2026-10-12: default "comun" (basica, antes null); se agrega la variante "yodada"
+      junto a "marina".'
   agua_mineral:
     excluye_extra:
     - aquarius
@@ -523,9 +591,12 @@ productos:
       no_retornable:
       - no retornable
       - descartable
+    variante_default: no_retornable
     motivo: Separar retornabilidad, dando prioridad a 'no retornable', y exigir coincidencia adicional de capacidad
       normalizada. El bidón retornable de 20 l licitado no es comparable con descartables de 6–8 l ni con 12 l.
       No inferir retornabilidad solo por capacidad. Confirmar también que se venda agua y no un envase vacío.
+    decision_jdemonasterio: '2026-10-12: default "no_retornable" (bidón/botellón/botella que se vende y no
+      vuelve): si la descripción no dice retornable, se asume no retornable.'
   lavandina:
     excluye_extra:
     - granulada
@@ -591,8 +662,10 @@ productos:
       glicerina:
       - glicerina
       - glicerinado
-    motivo: Separar formulaciones infantiles, antibacteriales y de glicerina del jabón estándar. Dar prioridad a
-      infantil cuando también diga glicerinado. No asumir que un multipack o caja equivale a una sola barra al normalizar
-      kg.
-    variante_default: null
+    motivo: 'Separar formulaciones infantiles, antibacteriales y de glicerina del jabón estándar. Dar prioridad a
+      infantil cuando también diga glicerinado. Barra, caja y multipack son presentación (envase), no variante;
+      no se segmentan acá, se normalizan por contenido como cualquier otro envase.'
+    variante_default: estandar
     curado_por_claude: lo especial y más caro no fija el mínimo
+    decision_jdemonasterio: '2026-10-12: default "estandar" (antes null); confirmado que barra/caja/multipack son
+      presentación, no variante (sin cambio de código: ya se manejaban por tamaño de envase).'

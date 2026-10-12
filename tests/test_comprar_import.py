@@ -45,6 +45,21 @@ def test_store_detalle_creates_renglones_and_offers(tmp_path, detalle):
         # poder decir por qué (no "sobreprecio 267%" a secas).
         assert info["oferta_min_desestimada"] is True
         assert "requisitos técnicos" in info["oferta_min_causa"].lower()
+        # Marca exigida (jdemonasterio 2026-10-12): el pliego de este renglón dice "TIPO: MONODROGA"
+        # (ficha SIByS de medicamentos) — eso NO es una marca exigida, es el falso positivo real que
+        # motivó no tratar "tipo X" como marca salvo que diga "o equivalente/similar".
+        assert r1["marca_exigida"] is None and r1["marca_equivalente_ok"] is None
+
+
+def test_store_detalle_guarda_marca_exigida_del_pliego(tmp_path, detalle):
+    """`marca_exigida`/`marca_equivalente_ok` salen del texto del PLIEGO (reng), no de la marca
+    OFRECIDA por el ganador (que ya se guarda aparte en `marca`)."""
+    detalle["renglones"][0]["descripcion"] = "ARROZ BLANCO; MARCA: GALLO O EQUIVALENTE, PRESENTACION: 1 KG"
+    with db.session(tmp_path / "t.db") as conn:
+        pid = store_detalle(conn, detalle)
+        r1 = conn.execute("SELECT * FROM renglones WHERE proceso_id=? AND nro_renglon=1", (pid,)).fetchone()
+        assert r1["marca_exigida"] == "GALLO"
+        assert bool(r1["marca_equivalente_ok"]) is True
 
 
 def test_store_detalle_is_idempotent(tmp_path, detalle):
@@ -187,9 +202,67 @@ def test_ganadora_es_la_alternativa_con_el_precio_del_dictamen():
     assert ofertas_ganadoras([dict(adj[0], precio_unitario=105.0)], ofs) == {0, 1}
 
 
-def test_alternativas_empatadas_quedan_pendientes():
+def test_alternativas_empatadas_elige_una_ganadora():
+    """jdemonasterio 2026-10-12: "si hay empate, elegís una; si está adjudicado, está adjudicado" —
+    revierte la cautela del LLM prime de dejar ambas en `pendientes` (NULL)."""
     from sobreprecios.pipeline.comprar_import import ofertas_ganadoras_y_pendientes
     adj = [{"renglon": 1, "proveedor": "ACME SA", "precio_unitario": 100.0}]
     ofs = [{"renglon": 1, "proveedor": "ACME SA", "precio_unitario": 100.0},
            {"renglon": 1, "proveedor": "ACME SA", "precio_unitario": 100.2}]
-    assert ofertas_ganadoras_y_pendientes(adj, ofs) == (set(), {0, 1})
+    assert ofertas_ganadoras_y_pendientes(adj, ofs) == ({0}, set())
+
+
+# ── Estado documental (MEJORAS #29, jdemonasterio 2026-10-12) ──────────────────────────────────
+
+def _proceso(conn, pid, fuente, **extra):
+    db.upsert(conn, "procesos", {"fuente": fuente, "external_id": f"p{pid}",
+                                 "created_at": db.now_iso(), "updated_at": db.now_iso(), **extra},
+             ("fuente", "external_id"))
+    return conn.execute("SELECT id FROM procesos WHERE fuente=? AND external_id=?",
+                        (fuente, f"p{pid}")).fetchone()[0]
+
+
+def test_actualizar_estado_documental_dictamen_adjudicado_contratado_desconocido(tmp_path):
+    from sobreprecios.pipeline.comprar_import import actualizar_estado_documental
+    with db.session(tmp_path / "t.db") as conn:
+        p_comprar = _proceso(conn, 1, "comprar")
+        conn.execute("INSERT INTO renglones (proceso_id, descripcion, external_key, extraccion_metodo) "
+                    "VALUES (?, 'x', 'k1', 'comprar')", (p_comprar,))
+        p_bo = _proceso(conn, 2, "bo_primera")
+        conn.execute("INSERT INTO renglones (proceso_id, descripcion, external_key, extraccion_metodo) "
+                    "VALUES (?, 'x', 'k2', 'regex')", (p_bo,))
+        p_legacy = _proceso(conn, 3, "bo_primera")
+        conn.execute("INSERT INTO renglones (proceso_id, descripcion, external_key, extraccion_metodo) "
+                    "VALUES (?, 'x', 'k3', 'legacy_quijotes')", (p_legacy,))
+        p_oc = _proceso(conn, 4, "comprar")
+        conn.execute("INSERT INTO renglones (proceso_id, descripcion, external_key, extraccion_metodo, "
+                    "proveedor, proveedor_cuit) VALUES (?, 'x', 'k4', 'comprar', 'ACME SA', '30-1-1')", (p_oc,))
+        conn.execute("INSERT INTO ordenes_compra (proceso_id, numero_oc, proveedor, cuit) "
+                    "VALUES (?, 'OC1', 'ACME SA', '30-1-1')", (p_oc,))
+        conn.commit()
+        actualizar_estado_documental(conn)
+        rows = {r["proceso_id"]: r["estado_documental"] for r in
+               conn.execute("SELECT proceso_id, estado_documental FROM renglones")}
+        procesos = {r["id"]: r["estado_documental"] for r in conn.execute("SELECT id, estado_documental FROM procesos")}
+    assert rows[p_comprar] == "dictamen"
+    assert rows[p_bo] == "adjudicado"
+    assert rows[p_legacy] == "desconocido"   # dataset legacy sin metadata de origen
+    assert rows[p_oc] == "contratado"        # hay OC: manda sobre "dictamen"
+    assert procesos[p_comprar] == "dictamen" and procesos[p_bo] == "adjudicado"
+    assert procesos[p_legacy] == "desconocido" and procesos[p_oc] == "contratado"
+
+
+def test_actualizar_estado_documental_respeta_el_filtro_de_proceso_ids(tmp_path):
+    from sobreprecios.pipeline.comprar_import import actualizar_estado_documental
+    with db.session(tmp_path / "t.db") as conn:
+        p1 = _proceso(conn, 1, "comprar")
+        conn.execute("INSERT INTO renglones (proceso_id, descripcion, external_key, extraccion_metodo) "
+                    "VALUES (?, 'x', 'k1', 'comprar')", (p1,))
+        p2 = _proceso(conn, 2, "comprar")
+        conn.execute("INSERT INTO renglones (proceso_id, descripcion, external_key, extraccion_metodo) "
+                    "VALUES (?, 'x', 'k2', 'comprar')", (p2,))
+        conn.commit()
+        actualizar_estado_documental(conn, [p1])
+        r1 = conn.execute("SELECT estado_documental FROM renglones WHERE proceso_id=?", (p1,)).fetchone()[0]
+        r2 = conn.execute("SELECT estado_documental FROM renglones WHERE proceso_id=?", (p2,)).fetchone()[0]
+    assert r1 == "dictamen" and r2 is None   # p2 no estaba en el alcance: no se tocó
