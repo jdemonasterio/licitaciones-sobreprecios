@@ -48,6 +48,12 @@ constantes, con filtros por producto, organismo, fechas y estado de revisión.
 
 ![Lista de licitaciones analizadas](docs/img/01_licitaciones.jpg)
 
+En las tablas principales, un click en el encabezado ordena la columna (números, fechas o texto; los vacíos
+siempre al final) y las columnas de categorías (semáforo, organismo, proveedor, producto) tienen un filtro de
+casillas con buscador. El filtro se mantiene al navegar sin recargar.
+
+![Filtro de columna abierto](docs/img/03_tabla_filtros.jpg)
+
 **2. Abrir una licitación.** Arriba la síntesis (colores, montos, cobertura y qué falta para publicar); abajo qué
 documento se importó, las ofertas y, renglón por renglón, por qué tiene ese color.
 
