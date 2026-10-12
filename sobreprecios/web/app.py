@@ -23,14 +23,16 @@ página maliciosa abierta en otra pestaña no puede disparar acciones).
 """
 from __future__ import annotations
 
+import base64
 import datetime as dt
 import logging
 import os
+import secrets
 import urllib.parse
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, PlainTextResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -142,6 +144,74 @@ def _redirect(path: str, message: str | None = None) -> RedirectResponse:
     return RedirectResponse(path, status_code=303)
 
 
+# ── Despliegue público (Railway/Render/etc.) ────────────────────────────────
+# Dos controles independientes por variable de entorno, pensados para cuando esto deja de
+# ser "mi compu en 127.0.0.1" y pasa a tener una URL pública (docs/despliegue_nube.md). Sin
+# estas variables, el comportamiento local no cambia en nada.
+#
+#   LIC_USUARIO + LIC_CLAVE  -> HTTP Basic para TODA la app (recomendado si va a estar
+#                               expuesta antes de decidir si además es de solo lectura).
+#   LIC_MODO_PUBLICO=1       -> de solo lectura: cualquier escritura (POST/PUT/PATCH/DELETE)
+#                               da 403, y /doc + /investigar (bajan documentos y llaman al
+#                               LLM: no son "solo mirar") quedan deshabilitados. El template
+#                               global `modo_publico` (ver `_render`) deja mostrar un cartel
+#                               y ocultar accesos a lo deshabilitado.
+#
+# Se pueden combinar. /healthz queda siempre afuera (sin credenciales, sin datos): por si
+# alguna vez se conecta como healthcheck HTTP de la plataforma — hoy railway.json/render.yaml
+# usan el chequeo de puerto default de cada plataforma, para no depender de que su probe de
+# salud mande un Host header que pase el TrustedHostMiddleware antes de configurar el dominio.
+_RUTAS_SIN_AUTH = {"/healthz"}
+
+
+def _modo_publico() -> bool:
+    return os.getenv("LIC_MODO_PUBLICO", "").strip().lower() in {"1", "true", "si", "sí"}
+
+
+def _credenciales_configuradas() -> tuple[str, str] | None:
+    usuario, clave = os.getenv("LIC_USUARIO", ""), os.getenv("LIC_CLAVE", "")
+    return (usuario, clave) if usuario and clave else None
+
+
+def _basic_auth_ok(request: Request, credenciales: tuple[str, str]) -> bool:
+    header = request.headers.get("authorization", "")
+    if not header.startswith("Basic "):
+        return False
+    try:
+        decoded = base64.b64decode(header[6:]).decode("utf-8")
+    except Exception:   # noqa: BLE001 — header con basura: tratarlo como credencial invalida, nunca loguearlo
+        return False
+    usuario_recibido, _, clave_recibida = decoded.partition(":")
+    usuario_ok = secrets.compare_digest(usuario_recibido, credenciales[0])
+    clave_ok = secrets.compare_digest(clave_recibida, credenciales[1])
+    return usuario_ok and clave_ok
+
+
+@app.middleware("http")
+async def seguridad_publica(request: Request, call_next):
+    if request.url.path not in _RUTAS_SIN_AUTH:
+        credenciales = _credenciales_configuradas()
+        if credenciales is not None and not _basic_auth_ok(request, credenciales):
+            # Nunca se loguea el header ni la clave recibida (regla de seguridad del repo).
+            return Response(status_code=401, headers={"WWW-Authenticate": 'Basic realm="sobreprecios"'})
+
+    if _modo_publico():
+        if request.method not in {"GET", "HEAD", "OPTIONS"}:
+            return JSONResponse({"error": "versión pública de solo lectura: esta acción está deshabilitada"},
+                                status_code=403)
+        path = request.url.path
+        if path == "/doc" or path.startswith("/investigar"):
+            return _redirect("/", "Versión pública de solo lectura: esta sección está deshabilitada")
+
+    return await call_next(request)
+
+
+@app.get("/healthz", response_class=PlainTextResponse, include_in_schema=False)
+def healthz():
+    """Chequeo de salud para la plataforma (Railway/Render): sin auth, sin datos, solo 'ok'."""
+    return "ok"
+
+
 def _filtros(request: Request) -> dict:
     keys = ["q", "producto", "organismo", "semaforo", "desde", "hasta", "revision", "proveedor"]
     return {k: request.query_params.get(k, "").strip() for k in keys}
@@ -166,6 +236,9 @@ def _render(request: Request, name: str, **ctx) -> HTMLResponse:
     ctx.setdefault("moneda", "nominal")
     ctx["request"] = request
     ctx["jobs"] = _background.all_status()
+    # Se recalcula por request (no es un global de Jinja fijo al importar) para que un test
+    # pueda prender/apagar LIC_MODO_PUBLICO con monkeypatch sin reiniciar el proceso.
+    ctx["modo_publico"] = _modo_publico()
     return templates.TemplateResponse(request, name, ctx)
 
 

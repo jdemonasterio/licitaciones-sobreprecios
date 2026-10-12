@@ -53,8 +53,9 @@ Ordenadas por el exceso estimado (lo adjudicado por encima de la referencia, ya 
 </form>
 
 {% if not procesos %}
-<div class="help">Todavía no hay licitaciones con estos filtros. Andá a <a href="/fuentes">Datos y fuentes</a> para buscar
-adjudicaciones en el Boletín Oficial, o usá <a href="/investigar">＋ Investigar una licitación</a> para analizar un caso puntual.</div>
+<div class="help">Todavía no hay licitaciones con estos filtros.
+{% if not modo_publico %}Andá a <a href="/fuentes">Datos y fuentes</a> para buscar
+adjudicaciones en el Boletín Oficial, o usá <a href="/investigar">＋ Investigar una licitación</a> para analizar un caso puntual.{% endif %}</div>
 {% else %}
 <div class="table-wrap">
 <table>

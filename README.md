@@ -50,6 +50,9 @@ pueden explicarla. Cada caso se revisa a mano antes de compartirlo (estado "publ
 
 Detalle técnico y decisiones: [DESIGN_sobreprecios.md](DESIGN_sobreprecios.md).
 
+Para una página pública con dominio propio, accesible desde cualquier celular (no solo
+tu compu): guía paso a paso en [docs/despliegue_nube.md](docs/despliegue_nube.md).
+
 ## Línea de comandos
 
 ```bash

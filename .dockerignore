@@ -1,0 +1,33 @@
+# Nunca entra a la imagen: datos locales, secretos, entorno de desarrollo.
+data/
+_scratch/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+.claude/
+.git/
+.gitignore
+
+# Credenciales (regla de seguridad del repo: nunca se commitean ni se empaquetan)
+token*.json
+credentials*.json
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+
+# Basura de Python / tests locales
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Artefactos de editor/OS
+.DS_Store
