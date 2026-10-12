@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+  <title>Resultados de prueba</title>
+  <item>
+    <title>El Ministerio de Desarrollo Social pasa a llamarse Capital Humano - Medio Ficticio</title>
+    <link>https://news.google.com/rss/articles/FAKE_ARTICLE_ID_1?oc=5</link>
+    <pubDate>Sun, 10 Dec 2023 12:00:00 GMT</pubDate>
+    <source url="https://www.medioficticiouno.ar">Medio Ficticio Uno</source>
+  </item>
+  <item>
+    <title>Capital Humano anuncia nuevas medidas - Otro Medio Ficticio</title>
+    <link>https://news.google.com/rss/articles/FAKE_ARTICLE_ID_2?oc=5</link>
+    <pubDate>Mon, 11 Dec 2023 09:30:00 GMT</pubDate>
+    <source url="https://www.otromediofiticio.ar">Otro Medio Ficticio</source>
+  </item>
+</channel>
+</rss>
