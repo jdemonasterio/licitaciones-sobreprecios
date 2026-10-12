@@ -59,24 +59,24 @@ dato para convertir quedan fuera de las sumas.{% endif %}</p>{% endif %}
 
 {% macro tabla(rows, titulo, dim) %}
 <h2>{{ titulo }}</h2>
-<div class="table-wrap"><table>
-<thead><tr><th>{{ titulo.split(' ')[-1]|capitalize }}</th><th class="num">Procesos</th><th class="num" title="Renglones totales de esta fila, incluidos los sin producto o sin mercado en la fecha">Renglones</th>
-<th class="num" title="De esos renglones, cuántos se pudieron comparar contra una referencia de mercado">Comparados</th>
-<th class="num" title="Comparados que además están en un proceso marcado publicable (listo para prensa)">Publicables</th>
-<th class="num">Rojo / amarillo</th><th class="num">Monto</th><th class="num">Exceso</th>
-<th class="num" title="Promedio SIMPLE por renglón, no ponderado por monto">Brecha promedio</th></tr></thead>
+<div class="table-wrap"><table class="tabla-interactiva" data-tabla-id="analitica-{{ dim }}" data-limite="25">
+<thead><tr><th data-tipo="cat">{{ titulo.split(' ')[-1]|capitalize }}</th><th class="num" data-tipo="num">Procesos</th><th class="num" data-tipo="num" title="Renglones totales de esta fila, incluidos los sin producto o sin mercado en la fecha">Renglones</th>
+<th class="num" data-tipo="num" title="De esos renglones, cuántos se pudieron comparar contra una referencia de mercado">Comparados</th>
+<th class="num" data-tipo="num" title="Comparados que además están en un proceso marcado publicable (listo para prensa)">Publicables</th>
+<th class="num">Rojo / amarillo</th><th class="num" data-tipo="num">Monto</th><th class="num" data-tipo="num">Exceso</th>
+<th class="num" data-tipo="num" title="Promedio SIMPLE por renglón, no ponderado por monto">Brecha promedio</th></tr></thead>
 <tbody>{% for r in rows %}
 <tr><td>{% if dim == 'proveedor' and r.cuit %}<a href="/empresa/{{ r.cuit }}">{{ r.clave }}</a>
     {% elif dim == 'organismo' %}<a href="/?organismo={{ r.clave|urlencode }}">{{ r.clave }}</a>
     {% else %}{{ r.clave|replace('_', ' ') }}{% endif %}</td>
 <td class="num">{{ r.procesos }}</td>
 <td class="num">{{ r.renglones }}</td>
-<td class="num">{{ r.comparados }}{% if moneda != 'nominal' and r.sin_convertir %}<div class="muted small">{{ r.convertidos }} convertidos a {{ moneda_txt }}</div>{% endif %}</td>
+<td class="num" data-valor="{{ r.comparados if r.comparados is not none else '' }}">{{ r.comparados }}{% if moneda != 'nominal' and r.sin_convertir %}<div class="muted small">{{ r.convertidos }} convertidos a {{ moneda_txt }}</div>{% endif %}</td>
 <td class="num">{{ r.publicables or 0 }}</td>
 <td class="num"><span class="sem sem-rojo">{{ r.rojos }}</span> <span class="sem sem-amarillo">{{ r.amarillos }}</span></td>
-<td class="num" title="≈ {{ r.monto_real|ars }} en pesos reales (así se ORDENA este ranking)">{{ r.monto|millones(moneda) }}</td>
-<td class="num" title="≈ {{ r.exceso_real|ars }} en pesos reales (así se ORDENA este ranking)">{{ r.exceso|millones(moneda) }}</td>
-<td class="num {% if r.sp_prom and r.sp_prom > 0 %}pos{% else %}neg{% endif %}">{{ r.sp_prom|pct }}</td></tr>
+<td class="num" data-valor="{{ r.monto }}" title="≈ {{ r.monto_real|ars }} en pesos reales (así se ORDENA este ranking al cargar; el click en el encabezado ordena por lo que se ve en pantalla)">{{ r.monto|millones(moneda) }}</td>
+<td class="num" data-valor="{{ r.exceso }}" title="≈ {{ r.exceso_real|ars }} en pesos reales (así se ORDENA este ranking al cargar; el click en el encabezado ordena por lo que se ve en pantalla)">{{ r.exceso|millones(moneda) }}</td>
+<td class="num {% if r.sp_prom and r.sp_prom > 0 %}pos{% else %}neg{% endif %}" data-valor="{{ r.sp_prom if r.sp_prom is not none else '' }}">{{ r.sp_prom|pct }}</td></tr>
 {% endfor %}</tbody></table></div>
 {% endmacro %}
 
@@ -88,16 +88,16 @@ dato para convertir quedan fuera de las sumas.{% endif %}</p>{% endif %}
 {{ tabla(data.procedimiento, 'Por procedimiento', 'procedimiento') }}
 
 <h2>Renglones con mayor brecha</h2>
-<div class="table-wrap"><table>
-<thead><tr><th>Semáforo</th><th>Fecha</th><th>Organismo</th><th>Bien</th><th>Proveedor</th><th class="num">Pagó</th><th class="num">Referencia</th><th class="num">Brecha</th><th class="num">Exceso</th></tr></thead>
+<div class="table-wrap"><table class="tabla-interactiva" data-tabla-id="analitica-peores" data-limite="15">
+<thead><tr><th data-tipo="cat">Semáforo</th><th data-tipo="fecha">Fecha</th><th data-tipo="cat">Organismo</th><th data-tipo="texto">Bien</th><th data-tipo="cat">Proveedor</th><th class="num" data-tipo="num">Pagó</th><th class="num" data-tipo="num">Referencia</th><th class="num" data-tipo="num">Brecha</th><th class="num" data-tipo="num">Exceso</th></tr></thead>
 <tbody>{% for r in peores %}
-<tr><td><span class="sem sem-{{ r.semaforo }}">{{ SEMAFORO_TXT[r.semaforo] }}</span></td><td>{{ r.fecha|fecha }}</td>
-<td><a href="/licitacion/{{ r.proceso_id }}">{{ r.organismo or '—' }}</a></td><td>{{ r.descripcion }}</td>
+<tr><td><span class="sem sem-{{ r.semaforo }}">{{ SEMAFORO_TXT[r.semaforo] }}</span></td><td data-valor="{{ r.fecha or '' }}">{{ r.fecha|fecha }}</td>
+<td data-valor="{{ r.organismo or '' }}"><a href="/licitacion/{{ r.proceso_id }}">{{ r.organismo or '—' }}</a></td><td>{{ r.descripcion }}</td>
 <td class="small">{{ r.proveedor or '—' }}</td>
-<td class="num">{{ r.precio_unidad_base|ars(2, moneda) }}/{{ r.unidad_base }}</td>
-<td class="num">{{ r.ref_principal_valor|ars(2, moneda) }}<div class="muted small">{{ REF_TXT.get(r.ref_principal, r.ref_principal) }}</div></td>
-<td class="num {% if r.sobreprecio_ajustado_pct and r.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}">{{ r.sobreprecio_ajustado_pct|pct }}</td>
-<td class="num">{{ r.exceso_ars|ars(0, moneda) }}</td></tr>
+<td class="num" data-valor="{{ r.precio_unidad_base if r.precio_unidad_base is not none else '' }}">{{ r.precio_unidad_base|ars(2, moneda) }}/{{ r.unidad_base }}</td>
+<td class="num" data-valor="{{ r.ref_principal_valor if r.ref_principal_valor is not none else '' }}">{{ r.ref_principal_valor|ars(2, moneda) }}<div class="muted small">{{ REF_TXT.get(r.ref_principal, r.ref_principal) }}</div></td>
+<td class="num {% if r.sobreprecio_ajustado_pct and r.sobreprecio_ajustado_pct > 0 %}pos{% else %}neg{% endif %}" data-valor="{{ r.sobreprecio_ajustado_pct if r.sobreprecio_ajustado_pct is not none else '' }}">{{ r.sobreprecio_ajustado_pct|pct }}</td>
+<td class="num" data-valor="{{ r.exceso_ars if r.exceso_ars is not none else '' }}">{{ r.exceso_ars|ars(0, moneda) }}</td></tr>
 {% endfor %}</tbody></table></div>
 
 <script>

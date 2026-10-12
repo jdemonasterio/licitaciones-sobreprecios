@@ -717,4 +717,126 @@ def test_fuentes_descarga_copia_de_seguridad(page, seeded_app):
     assert path and path.stat().st_size > 0
     assert open(path, "rb").read(16) == b"SQLite format 3\x00"
 
+
+# ── 19. Tablas interactivas: orden, filtro y persistencia (tablas.js) ──────────────────────
+
+def _valores_columna_licitaciones(page, idx):
+    """data-valor (numero crudo) de la columna `idx` para cada fila, en el orden actual del DOM.
+    None para las celdas vacias. Se lee el dato crudo (nunca una fila puntual por posicion):
+    otros tests de esta misma corrida comparten la base (session-scoped, ver conftest.seeded_app)
+    y pueden agregar procesos o recalcular los existentes antes de que corra este test."""
+    return page.evaluate(
+        "(idx) => Array.from(document.querySelectorAll('table[data-tabla-id=\"licitaciones\"] tbody tr'))"
+        ".map(tr => { const v = tr.children[idx].getAttribute('data-valor'); "
+        "return (v === '' || v === null) ? null : parseFloat(v); })", idx)
+
+
+def test_tabla_licitaciones_ordena_asc_desc_y_deja_vacios_al_final(page, seeded_app):
+    """Click en un encabezado numerico ordena por el dato crudo (nunca el texto formateado) y
+    alterna asc/desc; en "Peor brecha", "sin comparacion" (yerba, sin dato) queda SIEMPRE al
+    final en los dos sentidos (regla "empty sorts last" de tablas.js)."""
+    page.goto("/")
+    tabla = page.locator('table[data-tabla-id="licitaciones"]')
+
+    # Monto (columna 6): nunca es nulo (COALESCE a 0 en la consulta): sirve para probar que el
+    # orden de verdad se invierte, sin depender de datos que OTRO test de esta corrida pueda
+    # haber recalculado (p.ej. "marcar precio de programa como no corresponde" deja a azucar
+    # sin comparacion, lo que le borraria su "Peor brecha").
+    boton_monto = tabla.locator("thead th", has_text="Monto").locator("button.tabla-th-btn")
+    boton_monto.click()
+    asc = _valores_columna_licitaciones(page, 6)
+    assert asc == sorted(asc), f"Monto ascendente no quedo ordenado: {asc}"
+    boton_monto.click()
+    desc = _valores_columna_licitaciones(page, 6)
+    assert desc == sorted(desc, reverse=True), f"Monto descendente no quedo ordenado: {desc}"
+    assert len(set(asc)) >= 2, "la semilla deberia tener montos distintos (leche vs azucar/yerba)"
+
+    # Peor brecha (columna 7): puede tener vacios (gris/sin comparacion) — yerba siempre es uno,
+    # pase lo que pase con otros procesos de la corrida.
+    boton_brecha = tabla.locator("thead th", has_text="Peor brecha").locator("button.tabla-th-btn")
+    boton_brecha.click()
+    assert tabla.locator("thead th", has_text="Peor brecha").get_attribute("aria-sort") == "ascending"
+    fila_yerba = tabla.locator("tbody tr", has_text="ORGANISMO SEED YERBA")
+    assert fila_yerba.locator("td").nth(7).get_attribute("data-valor") == ""
+    valores_asc = _valores_columna_licitaciones(page, 7)
+    no_nulos = [v for v in valores_asc if v is not None]
+    assert valores_asc == no_nulos + [None] * (len(valores_asc) - len(no_nulos)), (
+        f"los vacios no quedaron al final (ascendente): {valores_asc}")
+
+    boton_brecha.click()
+    assert tabla.locator("thead th", has_text="Peor brecha").get_attribute("aria-sort") == "descending"
+    valores_desc = _valores_columna_licitaciones(page, 7)
+    no_nulos2 = [v for v in valores_desc if v is not None]
+    assert valores_desc == no_nulos2 + [None] * (len(valores_desc) - len(no_nulos2)), (
+        f"los vacios no quedaron al final (descendente): {valores_desc}")
+
+    conftest.assert_clean(page)
+
+
+def test_tabla_licitaciones_filtra_semaforo_por_checklist(page, seeded_app):
+    """El boton-embudo del encabezado "Semaforo" abre un menu de checkboxes; destildar un valor
+    oculta esas filas y actualiza "Mostrando X de Y filas". Usa la cuenta que el propio panel
+    muestra por valor (en vez de un total fijo): otros tests de esta corrida pueden haber
+    agregado procesos antes de este."""
+    page.goto("/")
+    tabla = page.locator('table[data-tabla-id="licitaciones"]')
+    total = tabla.locator("tbody tr").count()
+    fila_yerba = tabla.locator("tbody tr", has_text="ORGANISMO SEED YERBA")
+    assert fila_yerba.is_visible()
+
+    page.get_by_role("button", name="Filtrar por Semáforo").click()
+    panel = page.locator(".tabla-filtro-panel")
+    assert panel.is_visible()
+    item_gris = panel.locator(".tabla-filtro-item", has_text="Sin comparación")
+    cuenta_gris = int(item_gris.locator(".muted.small").inner_text().strip(" ()"))
+    item_gris.locator("input[type=checkbox]").uncheck()
+
+    esperado = total - cuenta_gris
+    assert tabla.locator("tbody tr:visible").count() == esperado
+    assert f"Mostrando {esperado} de {total} filas" in page.locator(".tabla-status").inner_text()
+    assert not fila_yerba.is_visible()
+
+    page.keyboard.press("Escape")
+    assert not panel.is_visible()
+    page.get_by_role("button", name="Limpiar filtros").click()
+    assert tabla.locator("tbody tr:visible").count() == total
+    assert fila_yerba.is_visible()
+
+    conftest.assert_clean(page)
+
+
+def test_tabla_renglones_orden_sobrevive_a_refresco_softnav(page, seeded_app):
+    """Ordenar la tabla de renglones y despues guardar la revision (soft-nav, misma pagina): el
+    orden elegido se vuelve a aplicar solo tras el refresco en el lugar."""
+    page.goto(f"/licitacion/{seeded_app.proceso_leche_id}")
+    tabla = page.locator('table[data-tabla-id="renglones"]')
+    tabla.locator("thead th", has_text="Exceso").locator("button.tabla-th-btn").click()
+    assert tabla.locator("thead th", has_text="Exceso").get_attribute("aria-sort") == "ascending"
+    orden_antes = tabla.locator("tbody tr[data-soft-key^='reng:']").all_inner_texts()
+
+    marker = f"nav-check-{time.time()}"
+    page.evaluate(f"window.__e2e_marker = {marker!r}")
+    page.locator('form[action$="/revision"] textarea[name="nota"]').fill(f"nota soft-nav {time.time()}")
+    page.locator('form[action$="/revision"] button:has-text("Guardar")').click()
+    _toast_text(page)
+    assert page.evaluate("window.__e2e_marker") == marker, "la pagina recargo completo (no fue soft-nav)"
+
+    tabla = page.locator('table[data-tabla-id="renglones"]')
+    orden_despues = tabla.locator("tbody tr[data-soft-key^='reng:']").all_inner_texts()
+    assert orden_antes == orden_despues, "el orden de los renglones no sobrevivio al refresco en el lugar"
+    assert tabla.locator("thead th", has_text="Exceso").get_attribute("aria-sort") == "ascending"
+
+    conftest.assert_clean(page)
+
+
+def test_tabla_filtro_mobile_390px_sin_scroll_horizontal(page, seeded_app):
+    """El menu desplegable de un filtro categorico, abierto a 390px, no genera scroll horizontal
+    (el panel es position:fixed y se acomoda al ancho de pantalla)."""
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto("/")
+    page.get_by_role("button", name="Filtrar por Semáforo").click()
+    assert page.locator(".tabla-filtro-panel").is_visible()
+    assert _no_scroll_horizontal(page), "scroll horizontal a 390px con el filtro de Semaforo abierto"
+    conftest.assert_clean(page)
+
     conftest.assert_clean(page)

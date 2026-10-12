@@ -37,13 +37,13 @@ un Excel y un CSV. Incluye la metodología y las limitaciones. Conviene filtrar 
 expediente para periodista" en <code>/licitacion/&lt;id&gt;</code>) e incluye el comprobante de cálculo de los
 renglones elegidos; aparece acá con los mismos formatos de descarga.</p>
 {% if reportes %}
-<div class="table-wrap"><table>
-<thead><tr><th>#</th><th>Tipo</th><th>Título</th><th>Filtros</th><th>Fecha</th><th>Descargar</th></tr></thead>
+<div class="table-wrap"><table class="tabla-interactiva" data-tabla-id="reportes">
+<thead><tr><th class="num" data-tipo="num">#</th><th data-tipo="cat">Tipo</th><th data-tipo="texto">Título</th><th>Filtros</th><th data-tipo="fecha">Fecha</th><th>Descargar</th></tr></thead>
 <tbody>{% for r in reportes %}
-<tr data-soft-key="rep:{{ r.id }}"><td>{{ r.id }}</td>
-<td><span class="tag {% if r.tipo == 'expediente' %}tag-alerta{% endif %}">{{ 'Expediente' if r.tipo == 'expediente' else 'Reporte' }}</span></td>
+<tr data-soft-key="rep:{{ r.id }}"><td class="num">{{ r.id }}</td>
+<td data-valor="{{ 'Expediente' if r.tipo == 'expediente' else 'Reporte' }}"><span class="tag {% if r.tipo == 'expediente' %}tag-alerta{% endif %}">{{ 'Expediente' if r.tipo == 'expediente' else 'Reporte' }}</span></td>
 <td>{{ r.titulo }}{% if r.tipo == 'expediente' and r.proceso_id %} · <a href="/licitacion/{{ r.proceso_id }}" class="small">ver licitación →</a>{% endif %}</td>
-<td class="small muted">{{ r.filtros_json }}</td><td class="small">{{ r.created_at|fecha(con_hora=True) }}</td>
+<td class="small muted">{{ r.filtros_json }}</td><td class="small" data-valor="{{ r.created_at or '' }}">{{ r.created_at|fecha(con_hora=True) }}</td>
 <td>{% if r.html_path %}<a class="btn btn-sm" href="/reportes/{{ r.id }}/html" target="_blank">Ver / imprimir</a>
 {% if r.tipo == 'expediente' %}<a class="btn btn-sm" href="/reportes/{{ r.id }}/zip">ZIP</a>{% else %}
 <a class="btn btn-sm" href="/reportes/{{ r.id }}/xlsx">Excel</a> <a class="btn btn-sm" href="/reportes/{{ r.id }}/csv">CSV</a>{% endif %}

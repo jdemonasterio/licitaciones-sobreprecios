@@ -385,6 +385,18 @@ información pública de compras del Estado.
 
 ## Pantallas (webui)
 
+**#52 — Ordenar y filtrar columnas en las tablas principales. HECHO (2026-10-12).**
+`sobreprecios/web/static/tablas.js` (vanilla JS, sin librerías) + estilos en `styles.css`: click en un
+encabezado numérico/fecha/texto ordena asc/desc (vacío siempre al final); una columna categórica (proveedores,
+productos, organismo, semáforo, origen, estado, programa/edición) suma un botón-embudo con un menú de
+checkboxes (buscador, "Todos"/"Ninguno", cuenta por valor) que combinan con Y entre columnas. Sobrevive a un
+refresco en el lugar de soft-nav.js (estado en sessionStorage). Aplicado a las ~10 tablas principales:
+licitaciones, licitación (renglones + ofertas por renglón), analítica (rankings + peores renglones), revisión,
+empresas, empresa, precios de programa, reportes, impacto de una corrida, corridas del juez. Detalle y
+decisiones en `DESIGN_sobreprecios.md` (sección 2).
+Cómo verificar: en "Licitaciones" hacé click en "Peor brecha" (ordena, flecha cambia) y abrí el embudo de
+"Semáforo" (destildar un valor oculta esas filas y actualiza "Mostrando X de Y filas").
+
 **#14 — Tabla de correspondencias de organismos renombrados.**
 Ya esta implementado que el sistema NO une renombres automaticamente (ej.
 Desarrollo Social → Capital Humano), pero falta la vista de agrupacion

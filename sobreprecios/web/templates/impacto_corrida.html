@@ -18,24 +18,24 @@ Foto de {{ datos.n_renglones }} renglón(es) antes de recalcular.</p>
 recálculo no tuvo impacto visible sobre lo que ya estaba calculado.</div>
 {% else %}
 <div class="table-wrap">
-<table>
+<table class="tabla-interactiva" data-tabla-id="impacto-cambios">
 <thead><tr>
-    <th>Renglón</th><th>Antes</th><th>Después</th><th class="num">Brecha antes</th><th class="num">Brecha después</th>
-    <th class="num">Cambio en el exceso</th><th>Publicable</th>
+    <th data-tipo="texto">Renglón</th><th data-tipo="cat">Antes</th><th data-tipo="cat">Después</th><th class="num" data-tipo="num">Brecha antes</th><th class="num" data-tipo="num">Brecha después</th>
+    <th class="num" data-tipo="num">Cambio en el exceso</th><th data-tipo="cat">Publicable</th>
 </tr></thead>
 <tbody>
 {% for c in datos.cambios %}
 <tr>
     <td><a href="/licitacion/{{ c.proceso_id }}#reng-{{ c.renglon_id }}">{{ c.descripcion or ('renglón ' + c.renglon_id|string) }}</a>
         <div class="small"><a href="/revision/{{ c.renglon_id }}">abrir revisión →</a></div></td>
-    <td><span class="sem sem-{{ c.semaforo_antes }}">{{ SEMAFORO_TXT[c.semaforo_antes] }}</span>
+    <td data-valor="{{ SEMAFORO_TXT[c.semaforo_antes] }}"><span class="sem sem-{{ c.semaforo_antes }}">{{ SEMAFORO_TXT[c.semaforo_antes] }}</span>
         <div class="muted small">{{ MOTIVO_CODIGO_TXT.get(c.motivo_antes, c.motivo_antes or '—') }}</div></td>
-    <td><span class="sem sem-{{ c.semaforo_despues }}">{{ SEMAFORO_TXT[c.semaforo_despues] }}</span>
+    <td data-valor="{{ SEMAFORO_TXT[c.semaforo_despues] }}"><span class="sem sem-{{ c.semaforo_despues }}">{{ SEMAFORO_TXT[c.semaforo_despues] }}</span>
         <div class="muted small">{{ MOTIVO_CODIGO_TXT.get(c.motivo_despues, c.motivo_despues or '—') }}</div></td>
-    <td class="num">{{ c.sobreprecio_antes|pct }}</td>
-    <td class="num">{{ c.sobreprecio_despues|pct }}</td>
-    <td class="num {% if c.cambio_exceso and c.cambio_exceso > 0 %}pos{% else %}neg{% endif %}">{{ c.cambio_exceso|ars }}</td>
-    <td>{% if c.publicable_revocado %}<span class="tag tag-alerta" title="Estaba marcado publicable y este recálculo lo revocó: hay que volver a revisarlo a mano">revocado</span>{% else %}—{% endif %}</td>
+    <td class="num" data-valor="{{ c.sobreprecio_antes if c.sobreprecio_antes is not none else '' }}">{{ c.sobreprecio_antes|pct }}</td>
+    <td class="num" data-valor="{{ c.sobreprecio_despues if c.sobreprecio_despues is not none else '' }}">{{ c.sobreprecio_despues|pct }}</td>
+    <td class="num {% if c.cambio_exceso and c.cambio_exceso > 0 %}pos{% else %}neg{% endif %}" data-valor="{{ c.cambio_exceso if c.cambio_exceso is not none else '' }}">{{ c.cambio_exceso|ars }}</td>
+    <td data-valor="{{ 'revocado' if c.publicable_revocado else '' }}">{% if c.publicable_revocado %}<span class="tag tag-alerta" title="Estaba marcado publicable y este recálculo lo revocó: hay que volver a revisarlo a mano">revocado</span>{% else %}—{% endif %}</td>
 </tr>
 {% endfor %}
 </tbody>

@@ -51,23 +51,23 @@ compartir un caso (se revoca sola si el cálculo cambia después). Ninguna de la
 <a href="/fuentes">Datos y fuentes</a>, puede que todavía no haya grises/rojos nuevos, o que ya estén todos
 revisados (probá limpiar el filtro de estado).</div>
 {% else %}
-<div class="table-wrap"><table>
-<thead><tr><th>Origen de la alerta</th><th>Color</th><th>Motivo</th><th>Fecha</th><th>Organismo</th><th>Bien</th><th class="num">Brecha</th>
-<th>Estado</th><th>Veredicto</th></tr></thead>
+<div class="table-wrap"><table class="tabla-interactiva" data-tabla-id="revision">
+<thead><tr><th data-tipo="cat">Origen de la alerta</th><th data-tipo="cat">Color</th><th data-tipo="cat">Motivo</th><th data-tipo="fecha">Fecha</th><th data-tipo="cat">Organismo</th><th data-tipo="texto">Bien</th><th class="num" data-tipo="num">Brecha</th>
+<th data-tipo="cat">Estado</th><th data-tipo="texto">Veredicto</th></tr></thead>
 <tbody>
 {% set ORIGEN_TXT = {'gris':'Gris','equivalencia':'Equivalencia','rojo':'Rojo','monto':'Monto inconsistente','juez':'Juez externo','manual':'Agregado a mano'} %}
 {% for it in items %}
 <tr data-soft-key="rev:{{ it.renglon_id }}" class="row-link" onclick="location.href='/revision/{{ it.renglon_id }}'">
-    <td><span class="tag">{{ ORIGEN_TXT.get(it.origen, it.origen) }}</span>
+    <td data-valor="{{ ORIGEN_TXT.get(it.origen, it.origen) }}"><span class="tag">{{ ORIGEN_TXT.get(it.origen, it.origen) }}</span>
         {% if it.monto_inconsistente %}<div><span class="tag tag-alerta">monto inconsistente</span></div>{% endif %}</td>
-    <td><span class="sem sem-{{ it.semaforo or 'gris' }}">{{ SEMAFORO_TXT[it.semaforo or 'gris'] }}</span></td>
+    <td data-valor="{{ SEMAFORO_TXT[it.semaforo or 'gris'] }}"><span class="sem sem-{{ it.semaforo or 'gris' }}">{{ SEMAFORO_TXT[it.semaforo or 'gris'] }}</span></td>
     <td class="small" style="max-width:260px">{{ explicar_semaforo(it) }}</td>
-    <td>{{ it.fecha|fecha if it.fecha else '—' }}</td>
+    <td data-valor="{{ it.fecha or '' }}">{{ it.fecha|fecha if it.fecha else '—' }}</td>
     <td>{{ it.organismo or '—' }}</td>
     <td><a href="/revision/{{ it.renglon_id }}">{{ it.resumen_corto }}</a>
         <details onclick="event.stopPropagation()" style="margin-top:2px"><summary class="small muted">ver descripción completa</summary>
         <div class="small muted" style="max-width:320px">{{ it.descripcion }}</div></details></td>
-    <td class="num {% if it.brecha and it.brecha > 0 %}pos{% else %}neg{% endif %}">{{ it.brecha|pct }}</td>
+    <td class="num {% if it.brecha and it.brecha > 0 %}pos{% else %}neg{% endif %}" data-valor="{{ it.brecha if it.brecha is not none else '' }}">{{ it.brecha|pct }}</td>
     <td class="small">{{ it.estado }}</td>
     <td class="small">{{ it.veredicto or '—' }}</td>
 </tr>
