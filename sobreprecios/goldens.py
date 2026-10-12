@@ -195,6 +195,41 @@ def moneda(conn: sqlite3.Connection, desde: str = "2019-01") -> Path:
     return _write("validation_moneda", header, out)
 
 
+def precios_programa(conn: sqlite3.Connection) -> Path:
+    """Precios Cuidados/Justos/Máximos (sources/precios_programa.py): una fila por producto de
+    la fuente de prensa (no una por fecha repetida), con lo que ya se sabe (juez LLM, si corrió)
+    para que el humano decida más rápido. Alternativa a revisar en el webui /precios-programa."""
+    rows = conn.execute(
+        "SELECT pm.fuente, pm.obs_key, pm.descripcion, pm.marca, pm.contenido_base, pm.unidad_base, "
+        "pm.precio, pm.precio_unidad_base, pm.producto_id, pr.nombre producto_nombre, pm.url "
+        "FROM precios_mercado pm LEFT JOIN productos pr ON pr.id = pm.producto_id "
+        "WHERE pm.canal = 'programa' GROUP BY pm.fuente, pm.obs_key "
+        "ORDER BY pm.fuente, pm.producto_id IS NULL, pr.nombre, pm.descripcion").fetchall()
+    out = []
+    for r in rows:
+        partes = r["fuente"].split(":", 2)
+        programa, edicion_id = (partes[1], partes[2]) if len(partes) > 2 else ("", r["fuente"])
+        desc = (r["descripcion"] or "").split(" [vigente")[0]
+        vigencia = (r["descripcion"] or "")
+        vigencia = vigencia[vigencia.find("[vigente") + 1:-1] if "[vigente" in vigencia else ""
+        presentacion = f"{r['contenido_base']:g} {r['unidad_base']}" if r["contenido_base"] else ""
+        juez = conn.execute(
+            "SELECT veredicto, nota FROM validaciones_programa WHERE fuente=? AND obs_key=? AND autor='juez_llm'",
+            (r["fuente"], r["obs_key"])).fetchone()
+        humano = conn.execute(
+            "SELECT veredicto, nota FROM validaciones_programa WHERE fuente=? AND obs_key=? AND autor='humano'",
+            (r["fuente"], r["obs_key"])).fetchone()
+        out.append([programa, edicion_id, vigencia, r["fuente"], r["obs_key"], desc, r["marca"], presentacion,
+                    r["precio"], r["precio_unidad_base"], r["producto_nombre"] or "(sin producto del catálogo)",
+                    r["url"], juez["veredicto"] if juez else "", juez["nota"] if juez else "",
+                    humano["veredicto"] if humano else ""])
+    header = ["Programa", "Edición", "Vigencia", "fuente", "obs_key", "Texto original", "Marca", "Presentación",
+              "Precio", "Precio por u. base", "Producto asignado", "URL de la fuente",
+              "Veredicto del juez (automático)", "Nota del juez", "Tu veredicto actual (webui)"]
+    return _write("validation_precios_programa", header, out)
+
+
 def run(conn: sqlite3.Connection) -> list[Path]:
     return [extraccion_vs_quijote(conn), comparaciones(conn), precios_hoy(conn), comprar(conn), entidades(conn),
+            precios_programa(conn),
             moneda(conn)]

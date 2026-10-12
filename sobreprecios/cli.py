@@ -26,6 +26,7 @@ Uso:
   python -m sobreprecios.cli pipeline --desde 2026-01-01 --hasta 2026-09-30
   python -m sobreprecios.cli servir [--puerto 8000]
   python -m sobreprecios.cli precios-hoy           # foto diaria de precios (súper + mayoristas)
+  python -m sobreprecios.cli precios-programa      # Precios Cuidados/Justos/Máximos (config/precios_programa.yml)
   python -m sobreprecios.cli investigar "https://www.boletinoficial.gob.ar/detalleAviso/primera/341035/20260422"
   python -m sobreprecios.cli goldens               # TSV de validación en _scratch/licitaciones/
   python -m sobreprecios.cli importar-juez 20261012-1530   # carga una corrida de auditoria/juez.py a /revision/juez
@@ -269,6 +270,33 @@ def precios_hoy_cmd(fuentes):
     """Releva precios de HOY (supermercados y mayoristas). Correr una vez por día."""
     from .sources import precios_hoy
     _run("precios_hoy", lambda c: precios_hoy.run(c, list(fuentes) or None))
+
+
+@cli.command("precios-programa")
+@click.option("--edicion", "edicion_id", default=None,
+             help="Una sola edición de config/precios_programa.yml (default: todas).")
+@click.option("--juez", "juez_tsv", type=click.Path(exists=True), default=None,
+             help="TSV de auditoría externa a importar como veredictos (autor=juez_llm), ver "
+                  "validaciones_programa.importar_juez_tsv.")
+def precios_programa_cmd(edicion_id, juez_tsv):
+    """Precios Cuidados/Justos/Máximos: baja, parsea, machea y guarda (config/precios_programa.yml).
+
+    Corre match_mercado (envase implausible) y cuarentena al final, igual que machear/comprar.
+    Con --juez, además importa un TSV de auditoría externa como referencia (nunca excluye solo:
+    la exclusión del comparador es siempre por revisión humana en el webui /precios-programa).
+    """
+    from .pipeline import compare, match
+    from .sources import precios_programa
+
+    def fn(conn):
+        msgs = [precios_programa.importar(conn, edicion_id, progress=click.echo)]
+        msgs.append(match.match_mercado(conn))
+        msgs.append(compare.run(conn))
+        if juez_tsv:
+            from . import validaciones_programa as vp
+            msgs.append(vp.importar_juez_tsv(conn, juez_tsv))
+        return " · ".join(msgs)
+    _run("precios_programa", fn, edicion=edicion_id, juez_tsv=juez_tsv)
 
 
 @cli.command()

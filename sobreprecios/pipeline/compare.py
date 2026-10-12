@@ -196,6 +196,23 @@ def _a_la_fecha(o: Obs, fecha: str, indice: dict[str, float]) -> Obs:
                    descripcion=o.descripcion + f" [llevado al mes de la compra por IPC x{factor:.3f}]")
 
 
+def _aplicar_fallback_programa(obs: list[Obs]) -> list[Obs]:
+    """canal "programa" (Precios Cuidados/Justos/Máximos, sources/precios_programa.py) es un
+    dato de mercado MÁS, pero SOLO cuando no hay nada mejor en la fecha (jdemonasterio
+    2026-10-12): en el mercado libre las empresas suelen querer cobrar MÁS que el precio
+    pactado/techo, no menos, así que funciona más como un piso que como el mínimo real.
+
+    Si hay cualquier observación mayorista o minorista entre las candidatas, se descartan las
+    de programa (no deben bajar ni subir la referencia si hay un precio de góndola real). Si no
+    hay ninguna, las de programa quedan y se tratan como si fueran minoristas en `compare`
+    (ref_min_minorista / min_mercado) — pero nunca pueden corroborarse solas: `familia_fuente`
+    agrupa todas las ediciones de un mismo programa en una sola familia.
+    """
+    if any(o.canal in {"mayorista", "minorista"} for o in obs):
+        return [o for o in obs if o.canal != "programa"]
+    return obs
+
+
 def select_observations(obs: list[Obs], fecha: str, contenido_estado: float | None,
                         indice: dict[str, float], cfg: dict, exacta: bool = False,
                         gap_maximo: int | None = None, info: dict | None = None) -> tuple[list[Obs], int | None]:
@@ -224,6 +241,9 @@ def select_observations(obs: list[Obs], fecha: str, contenido_estado: float | No
         if not exactas and info is not None:
             info["sin_presentacion"] = True
         elegidas = exactas
+    if not elegidas:
+        return [], None
+    elegidas = _aplicar_fallback_programa(elegidas)
     if not elegidas:
         return [], None
     return ([_a_la_fecha(o, fecha, indice) for o in elegidas],
@@ -275,6 +295,12 @@ def familia_fuente(fuente: str) -> str:
     scraper directo de una cadena es la misma empresa que su archivo SEPA (P16).
     """
     f = (fuente or "").lower()
+    if f.startswith("programa:"):
+        # "programa:<precios_cuidados|precios_justos|precios_maximos>:<edicion>": todas las
+        # ediciones de UN programa son la misma familia (el programa no puede corroborarse a sí
+        # mismo con su propia edición de otro mes); dos programas distintos sí son independientes.
+        partes = f.split(":")
+        return "programa:" + partes[1] if len(partes) > 1 else "programa"
     if f.startswith("sepa_archivo:c"):
         return "sepa:" + f.split(":")[1]
     if f in _SCRAPER_GRUPO:
@@ -389,7 +415,9 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
         o.contenido_base and abs(o.contenido_base - contenido_estado) <= tol_pres * contenido_estado for o in selected))
     low, high = float(cfg.get("outlier_bajo", 0.4)), float(cfg.get("outlier_alto", 2.5))
     may = _filter_outliers([o for o in selected if o.canal == "mayorista"], low, high)
-    mino = _filter_outliers([o for o in selected if o.canal == "minorista"], low, high)
+    # "programa" solo llega hasta acá (select_observations ya lo descartó) si NO había mayorista
+    # ni minorista: se trata como minorista para las referencias (min_minorista / min_mercado).
+    mino = _filter_outliers([o for o in selected if o.canal in {"minorista", "programa"}], low, high)
     oficial = indec_reference(obs, fecha)
     res.gap_dias = gap
     if may:
@@ -570,6 +598,9 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
     minimo = min(pool, key=lambda o: o.precio_ub) if pool else None
     if minimo and minimo.posterior:
         notas.append("el mínimo observado es posterior a la fecha")
+    programas = sorted({tuple(o.fuente.split(":", 2)[1:3]) for o in pool if o.fuente.startswith("programa:")})
+    for prog, ed in programas:
+        notas.append(f"referencia: precio de programa {prog} ({ed})")
     if res.ref_corroborada:
         notas.append(f"{res.sobreprecio_corroborado_pct:+.1f}% vs el mínimo confirmado por 2 fuentes "
                      f"(${res.ref_corroborada:,.2f}) con {plazo_rojo:g} meses de plazo")
@@ -593,7 +624,12 @@ def load_index(conn: sqlite3.Connection, serie: str) -> dict[str, float]:
 def load_observations(conn: sqlite3.Connection, producto_id: str) -> list[Obs]:
     rows = conn.execute(
         "SELECT fuente, canal, fecha, precio_unidad_base, contenido_base, descripcion, url "
-        "FROM precios_mercado WHERE producto_id=? AND precio_unidad_base IS NOT NULL AND cuarentena IS NULL",
+        "FROM precios_mercado WHERE producto_id=? AND precio_unidad_base IS NOT NULL AND cuarentena IS NULL "
+        # Revisión humana de precios de programa (webui /precios-programa, validaciones_programa.py):
+        # un ✗ de un humano descarta la fila del comparador; el juicio del juez LLM NUNCA excluye
+        # solo (jdemonasterio 2026-10-12, "un resultado falso es peor que ninguno").
+        "AND NOT EXISTS (SELECT 1 FROM validaciones_programa v WHERE v.fuente = precios_mercado.fuente "
+        "AND v.obs_key = precios_mercado.obs_key AND v.autor = 'humano' AND v.veredicto = 'no')",
         (producto_id,)).fetchall()
     return [Obs(r["fuente"], r["canal"], r["fecha"], r["precio_unidad_base"], r["contenido_base"],
                 r["descripcion"] or "", r["url"]) for r in rows]

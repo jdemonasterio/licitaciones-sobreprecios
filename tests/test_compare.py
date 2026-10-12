@@ -18,6 +18,11 @@ def may(precio, fecha="2021-06-05", fuente="maxiconsumo", contenido=1.0, desc=No
     return Obs(fuente, "mayorista", fecha, precio, contenido, desc or f"Yerba X{precio:g} 1 kg")
 
 
+def prog(precio, fecha="2021-06-05", fuente="programa:precios_cuidados:ed1", contenido=1.0, desc=None):
+    # Precio de Precios Cuidados/Justos/Máximos (sources/precios_programa.py): canal "programa".
+    return Obs(fuente, "programa", fecha, precio, contenido, desc or f"Yerba programa {precio:g} 1 kg")
+
+
 def test_percentile_interpolates():
     assert percentile([100, 200, 300, 400, 500], 0.25) == 200
     assert percentile([100, 200], 0.25) == 125
@@ -257,3 +262,82 @@ def test_compra_generica_acepta_variantes_compatibles():
     # Una compra de tirabuzón no se confirma con mostachol.
     solo = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, CFG_MIN, variante="tirabuzon", variante_obs=vfn)
     assert solo.ref_corroborada is None and solo.semaforo == "amarillo"
+
+
+# ── canal "programa" (Precios Cuidados/Justos/Máximos): fallback solo sin mercado real ──────
+
+def test_familia_fuente_agrupa_programa_por_programa_no_por_edicion():
+    # Dos ediciones del MISMO programa son la misma familia: un programa no se corrobora a sí
+    # mismo con otra foto suya. Dos programas distintos sí son familias independientes.
+    assert (familia_fuente("programa:precios_cuidados:precios_cuidados_2020_01")
+            == familia_fuente("programa:precios_cuidados:precios_cuidados_2022_01")
+            == "programa:precios_cuidados")
+    assert familia_fuente("programa:precios_justos:precios_justos_2022_11") == "programa:precios_justos"
+    assert (familia_fuente("programa:precios_cuidados:ed1")
+            != familia_fuente("programa:precios_justos:ed2"))
+
+
+def test_select_observations_descarta_programa_si_hay_mercado_real():
+    # Con mayorista/minorista real en la fecha, las de "programa" se descartan (no son piso ni
+    # techo de nada si hay un precio de góndola real para comparar).
+    con_mercado = [may(300, fuente="a"), prog(100)]
+    selected, _ = select_observations(con_mercado, "2021-06-08", 1.0, IPC, CFG)
+    assert [o.canal for o in selected] == ["mayorista"]
+    # Sin ningún mayorista ni minorista, la de "programa" sí queda (es lo único que hay).
+    solo_programa = [prog(100)]
+    selected2, _ = select_observations(solo_programa, "2021-06-08", 1.0, IPC, CFG)
+    assert [o.canal for o in selected2] == ["programa"]
+
+
+def test_programa_se_usa_como_piso_solo_sin_mercado_real():
+    cfg = dict(CFG, referencia_principal="min_mercado")
+    # Sin mercado real: las dos "programa" (de programas DISTINTOS: familias independientes)
+    # se tratan como minoristas y, si se corroboran entre sí (±2%), pueden dar rojo — igual que
+    # un mínimo mayorista corroborado por dos fuentes reales (mismos números que el test de
+    # "dos fuentes independientes" de más arriba, con canal programa en vez de mayorista).
+    solo = [prog(250, fuente="programa:precios_cuidados:edA"), prog(251, fuente="programa:precios_cuidados:edA2"),
+            prog(300, fuente="programa:precios_justos:edB"), prog(320, fuente="programa:precios_justos:edB")]
+    res = compare(330.0, 10.0, "2021-06-08", 1.0, solo, IPC, cfg)
+    assert res.ref_principal in {"min_mercado", "min_minorista"} and res.ref_principal_valor == 250
+    assert res.ref_n_minorista == len(solo)
+    # Las dos ediciones "edA"/"edA2" son la MISMA familia (precios_cuidados): no corroboran solas.
+    assert res.ref_corroborada is None and res.semaforo == "amarillo"
+    assert "referencia: precio de programa precios_cuidados" in res.motivo
+    # Con una segunda familia (precios_justos) que confirma el mínimo (±2%), sí hay corroboración.
+    dos = solo + [prog(252, fuente="programa:precios_justos:edB2")]
+    res2 = compare(330.0, 10.0, "2021-06-08", 1.0, dos, IPC, cfg)
+    assert res2.fuentes_independientes_min == 2 and res2.semaforo == "rojo"
+
+
+def test_programa_no_pisa_mercado_real_aunque_sea_mas_barato():
+    # El precio de programa es mucho más bajo, pero hay mercado real: el comparador ignora el
+    # de programa por completo (no baja la referencia ni aparece en la evidencia).
+    obs = [may(300, fuente="a"), prog(100)]
+    res = compare(310.0, 10.0, "2021-06-08", 1.0, obs, IPC, dict(CFG, referencia_principal="min_mercado"))
+    assert res.ref_principal_valor == 300 and res.ref_n_minorista == 0
+    assert all(not e["fuente"].startswith("programa:") for e in res.evidencia)
+
+
+def test_load_observations_excluye_fila_marcada_no_por_un_humano(tmp_path):
+    from sobreprecios import db, validaciones_programa as vp
+    from sobreprecios.pipeline.compare import load_observations
+
+    with db.session(tmp_path / "t.db") as conn:
+        conn.execute(
+            "INSERT INTO precios_mercado (fuente, canal, fecha, descripcion, precio, precio_unidad_base, "
+            "producto_id, obs_key) VALUES ('programa:precios_cuidados:ed1', 'programa', '2021-06-01', "
+            "'Yerba X', 100, 100, 'yerba_mate', 'k1')")
+        conn.commit()
+        assert len(load_observations(conn, "yerba_mate")) == 1
+
+        # El veredicto del JUEZ solo no excluye nada (riesgo del prime: "un resultado falso es
+        # peor que ninguno" exige confirmación humana).
+        vp.guardar(conn, "programa:precios_cuidados:ed1", "k1", "no", None, autor="juez_llm")
+        assert len(load_observations(conn, "yerba_mate")) == 1
+
+        vp.guardar(conn, "programa:precios_cuidados:ed1", "k1", "no", "marcado por un humano", autor="humano")
+        assert load_observations(conn, "yerba_mate") == []
+
+        # "ok" o "no_se" de un humano no excluye (solo "no" lo hace).
+        vp.guardar(conn, "programa:precios_cuidados:ed1", "k1", "ok", None, autor="humano")
+        assert len(load_observations(conn, "yerba_mate")) == 1

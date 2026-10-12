@@ -17,6 +17,8 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | COMPR.AR | `sources/comprar.py`, `pipeline/comprar_import.py` | Procesos, renglones, ofertas (cuadro comparativo), adjudicación (dictamen), actos administrativos, ofertas desestimadas con causa y plazo de pago del pliego (regex, casi siempre sin dato); público, httpx puro |
 | Registro de Sociedades | `sources/registro_sociedades.py` | CUIT, constitución, domicilios, actividades (todas las provincias) |
 | Precios | `sources/indec.py`, `sources/precios_hoy.py`, `sources/legacy_quijotes.py` | INDEC/IPC, foto diaria, dataset 2021 |
+| Precios de programa | `sources/precios_programa.py`, `config/precios_programa.yml` | Precios Cuidados/Justos/Máximos recuperados de prensa (PDF, Infogram, texto diario): fallback de mercado |
+| Validación de programa | `sobreprecios/validaciones_programa.py` | Revisión humana (webui `/precios-programa`) + import de un juicio LLM externo por TSV |
 | Extracción | `pipeline/extract.py` | Renglones adjudicados: regex → LLM, validación de montos |
 | Macheo | `pipeline/match.py` | Producto canónico + precio por unidad base (renglones y mercado) |
 | Comparación | `pipeline/compare.py` | Referencia, sobreprecio, confianza, semáforo, evidencia |
@@ -209,6 +211,61 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   - **Desactivar**: no hay flag — es el gate de revisión en sí. Para no verlo, no entrar a `/revision` ni a
     `/licitacion/<id>`; el pipeline sigue funcionando igual sin que nadie corrija ni valide nada (correcciones y
     validaciones son estrictamente aditivas, nunca requeridas).
+- **2026-10-12 · Precios de programa (Precios Cuidados/Justos/Máximos) como FALLBACK de mercado**
+  (jdemonasterio): en el mercado libre las empresas suelen querer cobrar MÁS que el precio pactado/techo, no menos
+  — funcionan más como un PISO que como el mínimo real de góndola. No hay Boletín Oficial para esto (las
+  resoluciones remiten a un Anexo que nunca se publica, ver `_scratch/licitaciones/historico_precios/RESUMEN.md`):
+  la única fuente es prensa que reproduce el listado oficial de la Secretaría de Comercio. Ediciones registradas
+  en `config/precios_programa.yml` (id, programa, vigencia, formato, urls, notas de qué se probó);
+  `sources/precios_programa.py` las baja (con caché y reintento por URL), parsea tres formatos de fuente
+  (`pdf_texto`: columnas detectadas por posición de palabra, no por cantidad fija — una edición trae
+  Descripción/Marca/Proveedor/Precio y otra solo Producto/Precio; `infogram`: el widget embebido vía Wayback trae
+  su JSON de datos tal cual dentro del HTML; `texto_diario`: una lista `<li>` o un párrafo separado por `;`, mismo
+  parser para los dos porque el filtro real es el catálogo) y machea contra `config/productos.yml` igual que
+  `precios_hoy.py`. Cada fila se guarda con `canal="programa"` y se REPLICA el 1 y el 16 de cada mes dentro de su
+  vigencia (el comparador solo mira ±15 días de la fecha de la compra); `obs_key` es un hash del texto original
+  (idempotente: reimportar la misma edición no duplica).
+  - **Fallback en el comparador** (`pipeline/compare.py`, cambio mínimo): `select_observations` descarta las
+    observaciones `programa` si hay cualquier mayorista/minorista en la fecha; si no hay ninguna, se tratan como
+    minoristas (`ref_min_minorista` / `min_mercado`) y el motivo agrega la nota "referencia: precio de programa
+    `<programa>` (`<edición>`)". `familia_fuente("programa:<programa>:<edición>")` devuelve `"programa:<programa>"`
+    (una familia por PROGRAMA, no por edición): dos ediciones de Precios Cuidados nunca se corroboran entre sí: un
+    programa solo nunca da rojo (la regla general de 2 familias independientes sigue igual; Precios Cuidados +
+    Precios Justos SÍ son familias distintas).
+  - **Cobertura lograda** (productos del catálogo con al menos una edición, de 34 totales): 2020 (ene, Cronista,
+    18), 2021 (ene, Infogram vía Wayback, 24), 2022 (ene, PDF Drive 4 columnas CABA, 27; oct, PDF Drive 2 columnas
+    nacional, 24), 2022-11→2023-03 (El Economista, Precios Justos AMBA, 11) — 28/34 productos cubiertos por al
+    menos una edición; nunca aparecieron en ninguna: caballa, carne vacuna en conserva, merluza, picadillo,
+    porotos, resma A4 (no estaban en esas canastas puntuales, no es límite del parser).
+  - **Búsqueda de ediciones 2023** (pedido explícito: "para 2023 no hay otra fuente, el precio de programa ES la
+    fuente"): abr-dic 2023 queda sin cerrar — ~12 búsquedas y ~16 notas de prensa revisadas, todas con links de
+    Drive caídos o sin el listado embebido (detalle y un candidato de bajo esfuerzo para el backlog —
+    LA NACIÓN 2023-10-31, 3 productos en prosa narrativa— en las notas de `config/precios_programa.yml`).
+  - **Validación manual: webui `/precios-programa`** (nueva solapa): lista cada edición con cuántas filas tiene y
+    cuántas ya se revisaron; al abrir una, cada fila muestra el texto original (con el link a la fuente), el
+    producto/variante asignado, el precio por unidad base, el veredicto de una auditoría LLM externa si existe
+    (automático, nunca excluye solo) y tres botones para la revisión humana (✓ Ok / ✗ No / ? No sé + comentario),
+    guardados sin recargar la página (soft-nav.js). Tabla `validaciones_programa` (`fuente`, `obs_key`, `autor`,
+    `veredicto`, `nota`; `UNIQUE(fuente, obs_key, autor)` — guardar de nuevo pisa la marca anterior del mismo
+    autor, no deja historial). Solo un ✗ de autor="humano" excluye la fila del comparador
+    (`pipeline/compare.load_observations`, `NOT EXISTS` contra `validaciones_programa`): "un resultado falso es
+    peor que ninguno", el juez LLM solo no alcanza. Marcar ✗ recalcula `compare.run()` en el momento.
+  - **Import de un juez externo por TSV** (`validaciones_programa.importar_juez_tsv`, CLI `precios-programa
+    --juez <tsv>`): empareja por `fecha_publicacion` → edición (`config/precios_programa.yml`) y por texto
+    normalizado (sin precio, sin el sufijo `[vigente...]`) contra `precios_mercado`; filas del TSV sin producto
+    del catálogo (se descartaron en la importación) no tienen con qué emparejar y quedan afuera, no es un error.
+    Confirmado con un lote de 55 filas (2020-2022, `_scratch/licitaciones/historico_precios/
+    validacion_precios_cuidados_final_20261012-1213.tsv`): 44/55 emparejaron; detectó dos errores reales de la
+    fuente que el import muestra tal cual (no se "arreglan" en el parser): "Leche Larga Vida Entera Sancor x 1000
+    cc $68" (2021) es en realidad el precio de la descremada, y confirmó que "Yerba Mate con Palo Ecopack Cruz de
+    Malta 500 Gr" (2022) es $224,67 (la muestra manual original lo había marcado "no legible", el parser por
+    posición de palabra sí lo recuperó bien).
+  - **Límite conocido del PDF 2022-01**: algunas filas consecutivas de "Aceite Girasol/Mezcla" en el PDF oficial
+    directamente OMITEN la palabra "Aceite" en la columna Descripción (confirmado mirando las palabras y su
+    posición: no es un error de lectura de columnas, el PDF fuente dice literalmente "GIRASOL 900 ml Cocinero").
+    El catálogo correctamente no matchea "girasol" solo (exige la frase "aceite girasol"): ~3 % de filas de esa
+    edición se pierden por diseño en vez de adivinar — ver `tests/test_precios_programa.py` y la nota en
+    `config/precios_programa.yml`.
 
 ## 3. Cómo operar
 
@@ -221,6 +278,7 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Caso puntual | ＋ Investigar · `investigar "<link>"` |
 | Cambiar criterio | `config/settings.yml` → `comparacion` y después "Recalcular sobreprecios" |
 | Agregar un producto | `config/productos.yml` (incluye/excluye/busqueda/indec) → "Asignar productos" → "Recalcular" |
+| Precios de programa | botón en Datos y fuentes · `precios-programa [--edicion ID] [--juez tsv]` · revisar en "Precios de programa" |
 | Sin IA | `LIC_LLM_OFFLINE=1` |
 | Validar | `python -m sobreprecios.cli goldens` → TSV en `_scratch/licitaciones/` |
 | Normalizar entidades | `python -m sobreprecios.cli normalizar` (también corre dentro del pipeline) |
@@ -231,7 +289,8 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Validar un renglón sin abrir el caso | `/licitacion/<id>` → desplegar el renglón → "Validación rápida" (✓/✗/?) |
 | Importar una corrida del juez a la cola | `python -m sobreprecios.cli importar-juez <carpeta>` o botón en `/revision/juez` |
 | Mirar un documento (BO/COMPR.AR) sin salir | botón "Ver documento" en `/revision/<renglon_id>` (proxy `/doc`, solo esos hosts) |
-| Antes de entregar | `simular.bat` / `python scripts/simular.py`: 19 recorridos de usuario tienen que dar OK |
+| Bajar / validar precios de programa (Precios Cuidados/Justos) | `python -m sobreprecios.cli precios-programa [--edicion ID] [--juez TSV]` · solapa `/precios-programa` |
+| Antes de entregar | `simular.bat` / `python scripts/simular.py`: 20 recorridos de usuario tienen que dar OK |
 
 ## 4. Tests
 
@@ -243,7 +302,9 @@ con regresión del falso positivo "Requiere pago"), revisión humana (`tests/tes
 por campo y su recálculo, la cola no pisa una decisión humana, exclusión de referencias de mercado, resumen de
 validación por renglón, parser de `items.tsv`/`resumen.md` del juez, allowlist de host del proxy de documentos incl.
 redirect a host no permitido). El simulador (`tests/e2e/`) cubre los journeys de `/revision` y de la validación
-in-line en `/licitacion/<id>` con un navegador real.
+in-line en `/licitacion/<id>` con un navegador real, precios de programa (los tres formatos con fixtures, macheo, réplica por
+vigencia, idempotencia, fallback y familia en el comparador) y validaciones de programa (guardar/leer, import de TSV
+del juez); el simulador también cubre marcar una fila de "programa" ✗ y verla excluida del comparador.
 
 ## 5. Límites conocidos
 
@@ -266,3 +327,6 @@ in-line en `/licitacion/<id>` con un navegador real.
   esto de raíz cuando se implemente.
 - El proxy de documentos (`/doc`) no persiste nada más que un cache de 1 día: no sirve como archivo para un
   reporte que se vaya a mandar después (para eso, descargar el PDF directo con el link de "Abrir el proceso").
+- Precios de programa: abr-dic 2023 sin edición encontrada (ver decisión 2026-10-12); PDF de 2022-01 pierde ~3 %
+  de filas de aceite por una omisión de palabra en la fuente misma (ver esa decisión); el PDF nacional de
+  2022-01 con ~30.000 precios (12,6 MB) no se incorporó, solo el de CABA.

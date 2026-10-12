@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Precios de programa · Sobreprecios{% endblock %}
+{% block content %}
+<h1>Precios de programa (Precios Cuidados / Justos / Máximos)</h1>
+<div class="help">Estos precios son PACTADOS entre el Estado y las empresas (o techos fijados por decreto), no el
+mínimo real de góndola: en el mercado libre las empresas suelen querer cobrar MÁS, no menos, así que funcionan más
+como un piso. El comparador los usa SOLO cuando no hay ningún precio real de mayorista o supermercado en la fecha
+(ver <code>DESIGN_sobreprecios.md</code>). Revisá cada fila: si está mal (producto distinto, precio de otra línea,
+marca que no corresponde), marcala <b>✗ No</b> y se excluye del comparador — se recalculan los sobreprecios solos.</div>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Edición</th><th>Programa</th><th>Vigencia</th><th class="num">Filas</th><th class="num">Revisadas</th><th class="num">Descartadas</th><th></th></tr></thead>
+<tbody>
+{% for e in ediciones %}
+<tr data-soft-key="ed:{{ e.fuente }}">
+    <td>{{ e.edicion_id }}</td>
+    <td>{{ e.programa }}</td>
+    <td class="small">{{ e.desde }} a {{ e.hasta }}</td>
+    <td class="num">{{ e.n_filas }}</td>
+    <td class="num">{{ e.n_revisadas }}{% if e.n_filas %}<div class="muted small">{{ (100 * e.n_revisadas / e.n_filas)|round|int }}%</div>{% endif %}</td>
+    <td class="num">{{ e.n_descartadas }}</td>
+    <td><a class="btn btn-sm" href="/precios-programa?edicion={{ e.fuente|urlencode }}">{% if abierta == e.fuente %}Cerrar{% else %}Ver filas{% endif %}</a></td>
+</tr>
+{% else %}
+<tr><td colspan="7" class="muted">Todavía no se bajó ninguna lista. Ir a "Datos y fuentes" → "Bajar listas de Precios
+Cuidados/Justos 2020-2023".</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+
+{% if abierta %}
+<h2>Filas de {{ abierta }}</h2>
+<div class="table-wrap">
+<table>
+<thead><tr>
+    <th>Texto original</th><th>Producto asignado</th><th class="num">Precio</th><th class="num">$/u. base</th>
+    <th>Juez (automático)</th><th>Tu revisión</th>
+</tr></thead>
+<tbody>
+{% for f in filas %}
+<tr data-soft-key="fila:{{ f.obs_key }}">
+    <td>{% if f.url %}<a href="{{ f.url }}" target="_blank" rel="noopener">{{ f.descripcion }}</a>{% else %}{{ f.descripcion }}{% endif %}
+        {% if f.marca %}<div class="small muted">marca: {{ f.marca }}</div>{% endif %}</td>
+    <td>{% if f.producto_nombre %}{{ f.producto_nombre }}{% if f.producto_id %}<div class="small muted"><a href="/producto/{{ f.producto_id }}">ver serie →</a></div>{% endif %}
+        {% else %}<span class="tag tag-alerta">sin producto del catálogo</span>{% endif %}</td>
+    <td class="num">{{ f.precio|ars(2) }}</td>
+    <td class="num">{{ f.precio_unidad_base|ars(2) }}<span class="muted small">/{{ f.unidad_base or '?' }}</span></td>
+    <td>
+        {% if f.juez %}
+        <details>
+            <summary><span class="sem sem-{{ 'verde' if f.juez.veredicto == 'ok' else ('rojo' if f.juez.veredicto == 'no' else 'gris') }}">
+                {{ {'ok': 'ok', 'no': 'error', 'no_se': 'dudoso / no aplica'}.get(f.juez.veredicto, f.juez.veredicto) }}</span></summary>
+            <p class="small muted" style="max-width:420px">{{ f.juez.nota or 'sin nota' }}</p>
+        </details>
+        {% else %}<span class="muted small">sin auditoría</span>{% endif %}
+    </td>
+    <td>
+        {% if f.humano %}<div class="small"><span class="sem sem-{{ 'verde' if f.humano.veredicto == 'ok' else ('rojo' if f.humano.veredicto == 'no' else 'gris') }}">
+            {{ {'ok': '✓ Ok', 'no': '✗ No', 'no_se': '? No sé'}.get(f.humano.veredicto, f.humano.veredicto) }}</span>
+            {% if f.humano.nota %}<div class="muted">{{ f.humano.nota }}</div>{% endif %}</div>{% endif %}
+        <form method="post" action="/precios-programa/veredicto" style="margin-top:4px">
+            <input type="hidden" name="fuente" value="{{ f.fuente }}">
+            <input type="hidden" name="obs_key" value="{{ f.obs_key }}">
+            <textarea name="nota" placeholder="Comentario (opcional)" style="min-height:40px;width:220px;font-size:12px">{{ f.humano.nota if f.humano else '' }}</textarea>
+            <div style="display:flex;gap:4px;margin-top:4px">
+                <button class="btn btn-sm" type="submit" name="veredicto" value="ok">✓ Ok</button>
+                <button class="btn btn-sm" type="submit" name="veredicto" value="no">✗ No</button>
+                <button class="btn btn-sm" type="submit" name="veredicto" value="no_se">? No sé</button>
+            </div>
+        </form>
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+{% endif %}
+{% endblock %}
