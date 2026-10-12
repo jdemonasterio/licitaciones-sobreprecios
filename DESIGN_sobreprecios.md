@@ -803,6 +803,46 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   sin tilde y uno bien escrito, respeta `agrupar_subunidades=false`, idempotente), `tests/test_config.py`
   (default y override del flag), `tests/test_queries.py` (las 3 queries exponen `organismo_canonico`),
   `tests/test_goldens.py` (una fila por crudo, orden por tamaño de grupo).
+- **2026-10-12 · Journey E2E de "corregir → recalcular → publicable" y caso sintético validado por el prime
+  (MEJORAS #50, último punto)** (jdemonasterio): dos piezas separadas.
+  - **Journey de punta a punta** (`tests/e2e/test_user_journeys.py::test_journey_corregir_recalcular_publicar_y_revocar_solo`):
+    sembrado a MITAD de sesión con el mismo código real que usa `conftest._seed` (`db.upsert` + `match.
+    match_renglones` + `compare.run`), nunca agregado al seed compartido — otros journeys de ese archivo dependen
+    de conteos fijos sobre la semilla original ("3 filas en la home", "5 renglones de leche") y un 4º proceso ahí
+    arriba los rompe; en cambio, corre DESPUÉS de todos los demás (no hay plugin de orden aleatorio en `pytest.ini`,
+    la corrida es top-to-bottom) y se identifica todo por id/texto propio, nunca por conteos. Cubre: abrir un caso
+    gris por variedad mal asignada (leche en polvo entera sin la palabra "fortificada" en la descripción → cae a
+    la variante default "comun" → sin referencia de esa variante en el mercado sembrado), corregirlo en el lugar
+    (sin recarga, mismo mecanismo de `_wait_job_done` + `_force_soft_refresh` que el resto de la suite), ver el
+    color cambiar (gris → verde), verlo en `/impacto` y en `/?revision=publicable` tras marcarlo "publicable", y
+    una segunda corrección (precio) que cambia el cálculo (verde → rojo) revoca el "publicable" SOLO
+    (`sobreprecios/revision.py:revocar_si_cambio`, disparado dentro de `pipeline/compare.py:run()`) — y, el punto
+    que de verdad importa, **deshacer** esa segunda corrección deja el cálculo IDÉNTICO al que se había aprobado
+    (mismo color, mismos números) y el estado sigue en "revisado", nunca vuelve solo a "publicable": el gate se
+    revoca solo pero JAMÁS se reafirma solo, eso exige un humano.
+  - **Caso sintético con respuesta conocida** (`scripts/caso_sintetico.py`, nunca toca `data/sobreprecios.db`: una
+    base propia en `_scratch/licitaciones/caso_sintetico/caso_sintetico.db`): yerba mate 1 kg comprada a
+    $1.300/kg, dos cadenas de familias de fuente DISTINTAS el mismo día ($1.000/kg y $1.020/kg, dentro de la
+    tolerancia de corroboración del 5%) e IPC alimentos sembrado a mano (ene-2024=100, feb-2024=102, +2%
+    mensual) — nunca la serie real del INDEC. La cuenta a mano (misma fórmula que `pipeline/compare.py:compare()`,
+    documentada paso a paso en el docstring del script): referencia = mínimo de mercado ($1.000), mínimo
+    corroborado por 2 fuentes = $1.020, ajustado a 1 mes de plazo +27,45% (rojo por el escenario de 2 meses,
+    +22,50% contra el corroborado, ≥ `umbral_rojo_pct`), exceso $274.509,80. `tests/test_caso_sintetico.py`
+    assertea esos números EXACTOS contra lo que de verdad calcula el motor (no una aproximación). `scripts/
+    caso_sintetico.py screenshots` saca 3 capturas (Playwright, 1280×800) de `/licitacion/<id>`, `/renglon/<id>/
+    comprobante` y el expediente armado con `reports.crear_expediente()`, a `_scratch/licitaciones/caso_sintetico/`.
+  - **Validación del prime** (`scripts/caso_sintetico.py validar-prime`, modelo `gpt-6-astra` vía `sobreprecios/
+    llm.py:complete_json(role="juez")` con `LIC_LLM_ROLE_JUEZ` overrideado, mismo mecanismo de `auditoria/
+    juez.py`): le manda el comprobante + el expediente (HTML completo) y le pide verificar la cuenta, la
+    coherencia del color con las reglas descriptas en el propio documento, y si un periodista no técnico
+    entendería qué se afirma — clasificando cada hallazgo como `bug_real` / `mejora_texto` / `opinión`. Costo
+    real USD 0,10 (tope USD 2,00 de esta validación; ledger compartido `_scratch/licitaciones/auditoria/
+    gasto_prime.tsv`, prefijo `[presupuesto 2]`, igual que `auditoria/juez.py`). Resultado: recalculó la cuenta
+    de forma independiente y le dio la razón al motor (mismos números exactos, 0 `bug_real`); los 4 hallazgos
+    fueron `mejora_texto` — hacer explícitos en el comprobante/expediente los umbrales de rojo/amarillo, la
+    tolerancia de corroboración, y qué escenario (1 mes contra el mínimo vs. 2 meses contra el corroborado)
+    explica cada porcentaje mostrado (ninguno de esos 3 textos cambió: son mejoras de redacción para una ronda
+    aparte, no bugs de cálculo). Resumen completo en `_scratch/licitaciones/caso_sintetico/VALIDACION_PRIME.md`.
 
 ## 3. Cómo operar
 
@@ -839,6 +879,8 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Antes de entregar | `simular.bat` / `python scripts/simular.py`: 26 recorridos de usuario tienen que dar OK |
 | Ver qué cambió un recálculo (webui/revisión) | `/impacto` → elegir corrida → "Ver qué cambió" |
 | Antes de entregar | `simular.bat` / `python scripts/simular.py`: 21 recorridos de usuario tienen que dar OK |
+| Caso sintético (respuesta conocida, para auditar el motor) | `python scripts/caso_sintetico.py build` (imprime los números) / `screenshots` (+ 3 capturas) / `validar-prime` (+ segunda opinión del modelo prime) |
+| Antes de entregar | `simular.bat` / `python scripts/simular.py`: 32 recorridos de usuario tienen que dar OK |
 
 ## 4. Tests
 
@@ -907,6 +949,12 @@ y etiqueta "precio de HOY" para el flujo Investigar (`test_gap_hasta_120_dias_pu
 corrobora (`test_precio_posterior_dentro_de_la_ventana_corrobora_y_puede_dar_rojo`) y más allá de la ventana
 sigue sin corroborar (`test_precio_posterior_mas_alla_de_la_ventana_no_corrobora`), y los 17 casos de catálogo
 nuevos en `tests/test_catalog.py` (uno por decisión del owner sobre productos).
+
+Journey de "corregir → recalcular → publicable → se revoca solo" y caso sintético (MEJORAS #50):
+`tests/e2e/test_user_journeys.py::test_journey_corregir_recalcular_publicar_y_revocar_solo` (escenario 20 del
+simulador) y `tests/test_caso_sintetico.py` (2 tests: el número exacto de `comparaciones` y la normalización
+precio/cantidad-base, ambos corriendo `scripts.caso_sintetico.sembrar()` sobre una base en `tmp_path`, nunca la
+del simulador ni `data/sobreprecios.db`).
 
 ## 5. Límites conocidos
 

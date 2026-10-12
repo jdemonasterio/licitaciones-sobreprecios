@@ -22,7 +22,10 @@ import httpx
 import pytest
 
 import conftest  # mismo directorio: fixtures ya puestas por pytest en sys.path
+from sobreprecios import db as db_mod
 from sobreprecios import reports
+from sobreprecios.pipeline import compare as compare_mod
+from sobreprecios.pipeline import match as match_mod
 
 PROVEEDORES_MDS = [
     "COMPAÑÍA AMERICANA DE ALIMENTOS",
@@ -838,5 +841,187 @@ def test_tabla_filtro_mobile_390px_sin_scroll_horizontal(page, seeded_app):
     assert page.locator(".tabla-filtro-panel").is_visible()
     assert _no_scroll_horizontal(page), "scroll horizontal a 390px con el filtro de Semaforo abierto"
     conftest.assert_clean(page)
+
+
+# ── 20. Journey de punta a punta: corregir → recalcular → publicar → revocar solo (MEJORAS #50) ──
+#
+# Sembrado A MITAD DE SESION (no en conftest._seed): otros journeys de este archivo dependen de
+# conteos fijos sobre la semilla original (p.ej. "3 filas en la home", "5 renglones de leche") y
+# agregar un 4to proceso ahi arriba los rompe. En cambio, este test crea su propio proceso+renglon
+# en caliente (misma base/servidor de la sesion, con el mismo codigo real que usa conftest._seed:
+# db.upsert + match.match_renglones + compare.run) DESPUES de que todos los demas tests ya corrieron
+# (es el ultimo del archivo, y esta suite no usa un plugin de orden aleatorio: pytest.ini no declara
+# ninguno y la corrida es siempre top-to-bottom), asi que no le cambia el piso a nadie. Todo se busca
+# por id/texto propio (nunca por conteos), como indica el docstring de arriba.
+
+def _sembrar_caso_variedad_mal_asignada(db_path) -> tuple[int, int]:
+    """Un renglon de "leche en polvo entera" SIN ninguna palabra de variedad en la descripcion
+    (la compra real exige la fortificada por Ley 25.459, pero el renglon no lo dice): el
+    comparador no puede decidir sola la variedad, cae a la variante_default "comun" y, como el
+    mercado sembrado para leche_polvo_entera (conftest._seed, 2021-06-07) es todo "fortificada",
+    queda gris "sin_referencia_variante" — el mismo tipo de error (producto/variedad mal
+    asignada) que ya cubre el journey de la yerba, pero en un caso propio y aislado.
+
+    Precio 490 (el mismo que ya usa conftest._seed para COMPAÑÍA AMERICANA en el proceso de
+    leche real: ahi da "verde" contra el minimo corroborado 460): elegido A PROPOSITO por debajo
+    del umbral de rojo (20%) para que el gris de "variedad sin referencia" NO escale solo a
+    "amarillo: equivalencia por verificar" (pipeline/compare.py, bloqueo + sp>=umbral_rojo_pct ->
+    amarillo aunque la variedad no este verificada) — con un precio mas alto el gris inicial de
+    este journey hubiera sido amarillo, no gris, por esa regla aparte.
+
+    Misma fecha (2021-06-07) que esas 4 observaciones mayoristas YA sembradas (seed_mayorista_a/b,
+    457/460/480/495) para poder comparar gap=0 en cuanto se corrija la variedad, sin inventar
+    datos de mercado nuevos. Devuelve (proceso_id, renglon_id)."""
+    with db_mod.session(db_path) as conn:
+        proceso_id = db_mod.upsert(conn, "procesos", {
+            "fuente": "bo_primera", "external_id": "e2e/journey/variedad1",
+            "numero": "99-7777-XXXX", "organismo": "ORGANISMO SEED E2E JOURNEY",
+            "tipo_procedimiento": "licitacion_publica",
+            "fecha_adjudicacion": "2021-06-07", "fecha_publicacion": "2021-06-07",
+            "monto_total": 98000000.0, "estado_revision": "pendiente",
+            "created_at": db_mod.now_iso(), "updated_at": db_mod.now_iso(),
+        }, ("fuente", "external_id"))
+        renglon_id = db_mod.upsert(conn, "renglones", {
+            "proceso_id": proceso_id, "nro_renglon": 1,
+            "descripcion": "Leche en polvo entera instantanea, libre de gluten",
+            "cantidad": 200000.0, "unidad_compra": "kilogramos",
+            "precio_unitario": 490.0, "monto_total": 98000000.0,
+            "proveedor": "PROVEEDOR E2E JOURNEY SRL", "proveedor_cuit": "30-99999999-4",
+            "external_key": "e2e:journey:variedad:1",
+        }, ("proceso_id", "external_key"))
+        match_mod.match_renglones(conn, use_llm=False)   # solo_pendientes=True: no toca lo ya matcheado
+        compare_mod.run(conn, [proceso_id])
+    return proceso_id, renglon_id
+
+
+def test_journey_corregir_recalcular_publicar_y_revocar_solo(page, seeded_app):
+    """De punta a punta (MEJORAS #50): abrir un caso con un error sembrado (variedad mal
+    asignada), corregirlo SIN recargar la pagina, ver que se recalculo en el lugar (color/brecha
+    cambian a lo esperado), marcar la licitacion "publicable" y verla como tal en la lista y en
+    /impacto, y despues invalidar el calculo (otra correccion) para comprobar que el "publicable"
+    se revoca SOLO — y que, aunque el calculo vuelva a ser idéntico al aprobado, nunca se reafirma
+    solo (sobreprecios/revision.py, sobreprecios/impacto.py)."""
+    proceso_id, renglon_id = _sembrar_caso_variedad_mal_asignada(seeded_app.db_path)
+
+    # a) Abrir el caso: gris, por una variedad que el comparador no puede decidir solo.
+    page.goto(f"/revision/{renglon_id}")
+    assert "sem-gris" in (page.locator(".sem").first.get_attribute("class") or "")
+    por_que_antes = page.locator("dt:has-text('Por qué') + dd").inner_text()
+
+    # b) Corregir la variedad EN EL LUGAR (soft-nav: nunca una navegacion completa).
+    marker1 = f"nav-check-{time.time()}"
+    page.evaluate(f"window.__e2e_marker = {marker1!r}")
+    page.select_option('#form-revision select[name="variante"]', "fortificada_hierro_zinc_c")
+    page.fill("#form-revision textarea[name='nota']", "e2e: variedad mal asignada, era fortificada (Ley 25.459)")
+    page.fill("#form-revision input[name='revisor']", "e2e")
+    page.click('#form-revision button:has-text("Guardar y recalcular")')
+    assert "recalculando" in _toast_text(page).lower()
+
+    estado1 = _wait_job_done(seeded_app.base_url, f"revision_{renglon_id}")
+    assert not estado1.get("error"), estado1
+    assert "revocad" not in (estado1.get("message") or "").lower(), (
+        "nada deberia revocarse todavia: el caso nunca estuvo publicable")
+    _force_soft_refresh(page, estado1.get("message"))
+
+    # c) El recalculo se ve EN EL LUGAR: el marcador de JS sobrevive (nunca hubo reload completo),
+    # la correccion quedo precargada, y el color pasa de gris a verde (490 esta en linea con el
+    # minimo corroborado de mercado, 460).
+    assert page.evaluate("window.__e2e_marker") == marker1, (
+        "la pagina de revision recargo completo en vez de refrescar en el lugar")
+    assert page.locator('#form-revision select[name="variante"]').input_value() == "fortificada_hierro_zinc_c"
+    assert "sem-verde" in (page.locator(".sem").first.get_attribute("class") or "")
+    por_que_despues = page.locator("dt:has-text('Por qué') + dd").inner_text()
+    assert por_que_despues != por_que_antes, "el cambio de variedad no recalculo la comparacion"
+
+    # d1) Esa corrida aparece en /impacto, identificada por el renglon propio (nunca por posicion:
+    # otros journeys de esta sesion ya agregaron corridas antes que esta).
+    page.goto("/impacto")
+    fila_impacto = page.locator("tr", has_text=f"revision:{renglon_id}")
+    fila_impacto.wait_for(timeout=10000)
+    fila_impacto.locator('a:has-text("Ver qué cambió")').click()
+    page.wait_for_url("**/impacto/*")
+    fila_detalle = page.locator("tr", has=page.locator(f'a[href="/revision/{renglon_id}"]'))
+    assert fila_detalle.count() == 1
+    assert "sem-gris" in (fila_detalle.locator(".sem").nth(0).get_attribute("class") or "")
+    assert "sem-verde" in (fila_detalle.locator(".sem").nth(1).get_attribute("class") or "")
+    assert "revocado" not in fila_detalle.inner_text().lower(), "todavia no era publicable: nada que revocar"
+
+    # d2) Marcar la licitacion "publicable" (el mismo gate de sobreprecios/revision.py).
+    page.goto(f"/licitacion/{proceso_id}")
+    page.locator('form[action$="/revision"] button:has-text("Guardar")').scroll_into_view_if_needed()
+    page.select_option('form[action$="/revision"] select[name="estado"]', "publicable")
+    page.fill('form[action$="/revision"] textarea[name="nota"]', "e2e: caso revisado, publicable")
+    page.click('form[action$="/revision"] button:has-text("Guardar")')
+    toast_publicable = _toast_text(page).lower()
+    assert "publicable" in toast_publicable and "revoca sola" in toast_publicable
+
+    page.reload()   # persistencia real, no solo del lado del cliente
+    assert page.locator('form[action$="/revision"] select[name="estado"]').input_value() == "publicable"
+
+    # d3) Aparece como tal en la lista (filtro "Revisión" de la home), por texto propio.
+    page.goto("/?revision=publicable")
+    assert page.locator("tr", has_text="ORGANISMO SEED E2E JOURNEY").count() == 1
+
+    # e) Invalidar el calculo (otra correccion: el precio corregido a un valor muy por encima del
+    # minimo de mercado, rojo) y comprobar que el "publicable" se REVOCA SOLO.
+    page.goto(f"/revision/{renglon_id}")
+    marker2 = f"nav-check-{time.time()}"
+    page.evaluate(f"window.__e2e_marker = {marker2!r}")
+    page.fill("#form-revision input[name='precio_unitario']", "650")
+    page.fill("#form-revision textarea[name='nota']", "e2e: precio mal cargado, dato corregido")
+    page.click('#form-revision button:has-text("Guardar y recalcular")')
+    assert "recalculando" in _toast_text(page).lower()
+
+    estado2 = _wait_job_done(seeded_app.base_url, f"revision_{renglon_id}")
+    assert not estado2.get("error"), estado2
+    assert "publicable" in (estado2.get("message") or "").lower() and \
+        "revocad" in (estado2.get("message") or "").lower(), (
+        f"el mensaje del job tendria que avisar el publicable revocado: {estado2}")
+    _force_soft_refresh(page, estado2.get("message"))
+
+    assert page.evaluate("window.__e2e_marker") == marker2, (
+        "la pagina de revision recargo completo en vez de refrescar en el lugar")
+    assert "sem-rojo" in (page.locator(".sem").first.get_attribute("class") or "")
+
+    page.goto(f"/licitacion/{proceso_id}")
+    assert page.locator('form[action$="/revision"] select[name="estado"]').input_value() == "revisado", (
+        "el publicable deberia haberse revocado solo al cambiar el calculo")
+    nota_proceso = page.locator('form[action$="/revision"] textarea[name="nota"]').input_value()
+    assert "revocado" in nota_proceso.lower()
+
+    page.goto("/?revision=publicable")
+    assert page.locator("tr", has_text="ORGANISMO SEED E2E JOURNEY").count() == 0, (
+        "sigue apareciendo como publicable despues de la revocacion automatica"
+    )
+
+    # La misma corrida (ahora SI habia algo publicable que perder) queda marcada "revocado" en
+    # /impacto, sin ambiguedad sobre cual corrida es (de nuevo, por el renglon propio).
+    page.goto("/impacto")
+    fila_impacto2 = page.locator("tr", has_text=f"revision:{renglon_id}").first
+    fila_impacto2.wait_for(timeout=10000)
+    fila_impacto2.locator('a:has-text("Ver qué cambió")').click()
+    page.wait_for_url("**/impacto/*")
+    fila_detalle2 = page.locator("tr", has=page.locator(f'a[href="/revision/{renglon_id}"]'))
+    assert fila_detalle2.count() == 1
+    assert "sem-verde" in (fila_detalle2.locator(".sem").nth(0).get_attribute("class") or "")
+    assert "sem-rojo" in (fila_detalle2.locator(".sem").nth(1).get_attribute("class") or "")
+    assert "revocado" in fila_detalle2.inner_text().lower()
+
+    # f) Nunca se reafirma solo: deshacer la correccion de precio deja el calculo IDENTICO al que
+    # se habia aprobado como publicable (verde, 490 de nuevo) — y el estado tiene que seguir en
+    # "revisado", no volver solo a "publicable" (esa reafirmacion exige un humano).
+    page.goto(f"/revision/{renglon_id}")
+    page.locator("tr", has_text="Precio unitario").locator('button:has-text("Deshacer")').click()
+    assert "recalculando" in _toast_text(page).lower()
+    estado3 = _wait_job_done(seeded_app.base_url, f"revision_{renglon_id}")
+    assert not estado3.get("error"), estado3
+    _force_soft_refresh(page, estado3.get("message"))
+    assert "sem-verde" in (page.locator(".sem").first.get_attribute("class") or "")
+
+    page.goto(f"/licitacion/{proceso_id}")
+    estado_final = page.locator('form[action$="/revision"] select[name="estado"]').input_value()
+    assert estado_final == "revisado", (
+        f"el publicable NUNCA debe reaparecer solo, aunque el calculo vuelva a ser identico al "
+        f"aprobado (sobreprecios/revision.py): quedo en {estado_final!r}")
 
     conftest.assert_clean(page)
