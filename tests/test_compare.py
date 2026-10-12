@@ -512,3 +512,14 @@ def test_precio_inferido_hacia_atras_en_un_hueco_sin_datos():
     # Si hay algo antes (aunque viejo), no se infiere: se respeta el gap máximo.
     viejo = obs + [may(150, fecha="2020-11-01", fuente="c", desc="vieja")]
     assert compare(400.0, 10.0, "2021-04-10", 1.0, viejo, ipc, CFG_MIN).motivo_codigo == "sin_datos"
+
+
+
+def test_falta_el_envase_no_se_reporta_como_falta_la_variedad():
+    vfn = lambda d: "fortificada" if "fortificada" in d.lower() else "comun"
+    obs = [may(240, fuente="a", contenido=0.8, desc="Leche polvo comun 800 g"),
+           may(245, fuente="b", contenido=0.8, desc="Leche polvo otra 800 g")]
+    res = compare(400.0, 10.0, "2021-06-08", 1.0, obs, IPC, dict(CFG_MIN, equivalencia_no_verificada="gris"),
+                  presentacion_exacta=True, variante="fortificada", variante_obs=vfn,
+                  variantes_ok={"fortificada", "comun"})
+    assert res.motivo_codigo == "sin_referencia_presentacion"

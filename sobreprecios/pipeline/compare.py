@@ -480,8 +480,11 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
         elif estado in {"verificado", "por_defecto", "verificado (humano)"} and variante:
             aceptadas = variantes_ok or {variante}
             misma = [o for o in obs if o.canal == "oficial" or variante_obs(o.descripcion) in aceptadas]
+            # La variante se chequea SIN exigir el envase exacto: si falta el envase (no la variedad), lo
+            # resuelve después la regla de presentación (gris "envase sin referencia" o "equivalencia por
+            # verificar"), con el motivo correcto (leche fortificada 1 kg vs 800 g, 2026-10-12).
             if select_observations(misma, fecha, contenido_estado, indice, cfg,
-                                   exacta=presentacion_exacta, gap_maximo=gap_maximo,
+                                   exacta=False, gap_maximo=gap_maximo,
                                    publicaciones=publicaciones)[0]:
                 obs = misma
             elif cfg.get("variante_sin_mercado", "gris") == "gris":
