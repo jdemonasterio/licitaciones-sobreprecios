@@ -2,7 +2,8 @@
 {% block title %}Caso {{ c.id }} · Revisión · Sobreprecios{% endblock %}
 {% block jobs %}datos,investigar,reporte,revision_{{ c.id }}{% endblock %}
 {% block content %}
-<p class="small"><a href="/revision">← Revisión</a> · <a href="/licitacion/{{ c.proceso_id }}">Ver la licitación completa →</a></p>
+<p class="small"><a href="/revision">← Revisión</a> · <a href="/licitacion/{{ c.proceso_id }}">Ver la licitación completa →</a> ·
+<a href="/renglon/{{ c.id }}/comprobante" target="_blank">Comprobante de cálculo imprimible →</a></p>
 <h1>{{ c.organismo or 'Organismo sin identificar' }}</h1>
 <p class="muted">{{ c.numero or '' }}{% if c.producto_nombre %} · {{ c.producto_nombre }}{% endif %}
 · <span class="sem sem-{{ c.semaforo or 'gris' }}">{{ SEMAFORO_TXT[c.semaforo or 'gris'] }}</span>
@@ -20,14 +21,18 @@
         <dt>Precio unitario</dt><dd>{{ c.precio_unitario|ars(2) }}</dd>
         <dt>Proveedor</dt><dd>{% if c.proveedor_cuit %}<a href="/empresa/{{ c.proveedor_cuit }}">{{ c.proveedor or c.proveedor_cuit }}</a> ({{ c.proveedor_cuit }}){% else %}{{ c.proveedor or '—' }}{% endif %}</dd>
         <dt>Marca</dt><dd>{{ c.marca or '—' }}</dd>
-        <dt>Fecha del proceso</dt><dd>{{ c.fecha_proceso or '—' }} <span class="muted small">(adjudicación o publicación)</span></dd>
+        <dt>Fechas</dt><dd>
+            <div>Apertura de ofertas: <b>{{ c.fecha_apertura or 'sin dato' }}</b>{% if c.fecha_apertura %} <span class="muted small">(con esta se compara)</span>{% endif %}</div>
+            <div>Adjudicación: {{ c.fecha_adjudicacion or 'sin dato' }}</div>
+            <div>Publicación: {{ c.fecha_publicacion or 'sin dato' }}</div>
+        </dd>
         <dt>Producto asignado</dt><dd>{{ c.producto_nombre or 'sin producto comparable' }}{% if c.match_razon %}<div class="muted">{{ c.match_razon }}</div>{% endif %}</dd>
     </dl>
     {% if c.alertas_list %}{% for a in c.alertas_list %}<div><span class="tag tag-alerta">{{ a }}</span></div>{% endfor %}{% endif %}
 
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
         {% if c.proceso_url %}
-        <a class="btn btn-sm" href="{{ c.proceso_url }}" target="_blank" rel="noopener">Abrir el proceso ↗</a>
+        <a class="btn btn-sm" href="{{ c.proceso_url }}" target="_blank" rel="noopener">{{ 'Abrir el aviso en el Boletín Oficial ↗' if c.fuente == 'bo_primera' else 'Abrir el proceso en COMPR.AR ↗' }}</a>
         {% endif %}
         {% if c.doc_url and c.doc_url != c.proceso_url %}
         <a class="btn btn-sm" href="{{ c.doc_url }}" target="_blank" rel="noopener">Abrir el aviso del Boletín Oficial ↗</a>
@@ -66,7 +71,7 @@
 <div class="card">
     <h3>b. La comparación</h3>
     <dl class="meta-grid small">
-        <dt>Semáforo</dt><dd><span class="sem sem-{{ c.semaforo or 'gris' }}">{{ SEMAFORO_TXT[c.semaforo or 'gris'] }}</span></dd>
+        <dt>Semáforo</dt><dd><span class="sem sem-{{ c.semaforo or 'gris' }}">{{ SEMAFORO_TXT[c.semaforo or 'gris'] }}</span> <span class="small">{{ explicar_semaforo(c) }}</span></dd>
         <dt>Por qué</dt><dd>{{ MOTIVO_CODIGO_TXT.get(c.motivo_codigo, c.motivo_codigo or 'sin calcular todavía') }}</dd>
         <dt>Detalle</dt><dd>{{ c.motivo or '—' }}</dd>
         {% if c.estado_atributo %}<dt>Variedad</dt><dd>{{ ATRIBUTO_TXT.get(c.estado_atributo, c.estado_atributo) }}</dd>{% endif %}
@@ -79,6 +84,34 @@
         <dt>Antigüedad del precio de mercado</dt><dd>{{ c.gap_dias if c.gap_dias is not none else '—' }} días como máximo respecto de esa fecha</dd>
     </dl>
 </div>
+</div>
+
+<div class="card" data-soft-key="explicaciones">
+    <h3>Explicaciones alternativas</h3>
+    <p class="muted small">Una brecha de precio no prueba una irregularidad: marcá cada explicación posible como
+    verificada (de verdad explica la brecha) o no aplica a este caso, con una nota. Queda guardado y se muestra en
+    el comprobante de cálculo y en el expediente para periodista; no recalcula nada.</p>
+    <div class="table-wrap"><table class="small">
+        <thead><tr><th>Explicación</th><th>Estado</th><th>Nota</th><th></th></tr></thead>
+        <tbody>{% for item in EXPLICACIONES_ITEMS %}
+        {% set e = c.explicaciones.get(item) %}
+        <tr>
+            <td>{{ EXPLICACION_TXT[item] }}</td>
+            <td>{% if e and e.autor %}<span class="tag {% if e.estado == 'verificado' %}tag-alerta{% endif %}">{{ EXPLICACION_ESTADO_TXT.get(e.estado, e.estado) }}</span>{% else %}<span class="muted small">pendiente</span>{% endif %}</td>
+            <td class="small">{{ e.nota if e else '' }}</td>
+            <td>
+                <form method="post" action="/revision/{{ c.id }}/explicacion" style="display:flex;gap:3px;flex-wrap:wrap;align-items:center">
+                    <input type="hidden" name="item" value="{{ item }}">
+                    <select name="estado" style="font-size:12px;padding:1px">
+                    {% for s in EXPLICACION_ESTADOS %}<option value="{{ s }}" {% if e and e.estado == s %}selected{% endif %}>{{ EXPLICACION_ESTADO_TXT[s] }}</option>{% endfor %}
+                    </select>
+                    <input type="text" name="nota" placeholder="nota" style="width:160px;font-size:12px" value="{{ e.nota if e else '' }}">
+                    <button type="submit" class="btn btn-sm">Guardar</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}</tbody>
+    </table></div>
 </div>
 
 <div class="card">
@@ -102,7 +135,7 @@
             <td class="num">{{ o.precio_envase|ars(2) if o.precio_envase is not none else '—' }}</td>
             <td class="num">{{ o.contenido_base|num(3) if o.contenido_base is not none else '—' }}</td>
             <td class="num">{{ o.precio_ub|ars(2) }}</td>
-            <td class="small">{{ 'x%.3f' % o.factor_ipc if o.factor_ipc else '—' }}</td>
+            <td class="small">{% if o.factor_ipc %}{{ o.fecha[:7] }} → {{ c.fecha_compra[:7] if c.fecha_compra else '?' }} (x{{ '%.3f'|format(o.factor_ipc) }}){% elif o.fecha and c.fecha_compra and o.fecha[:7] == c.fecha_compra[:7] %}mismo mes{% else %}sin ajuste{% endif %}</td>
             <td>{% if o.exploratoria %}<span class="tag">exploratoria</span>{% endif %}</td>
             <td>
                 {% if o.validacion %}<div class="small"><span class="tag {% if o.validacion.juicio in ('no_es_mismo_producto','precio_o_tamano_mal_leido') %}tag-alerta{% endif %}">{{ {'equivalente':'Equivalente','no_es_mismo_producto':'No es el mismo producto','precio_o_tamano_mal_leido':'Precio/tamaño mal leído','no_se':'No sé'}[o.validacion.juicio] }}</span></div>{% endif %}

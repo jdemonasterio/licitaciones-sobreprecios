@@ -6,9 +6,20 @@
 rojos (la brecha más fuerte), equivalencias que el catálogo aceptó sin confirmar y lo que marcó el juez LLM
 externo (importado en <a href="/revision/juez">Corridas del juez</a>). {{ LEGENDA_INVESTIGACION }}</p>
 
+<p class="help"><b>Resolver</b> (dentro de un caso puntual) es dejar tu veredicto sobre ESE renglón: confirma,
+descarta, corrige o "no se puede saber". <b>"Validé esta licitación"</b> es un atajo distinto, en la página de la
+licitación completa: marca TODO el proceso como revisado. <b>Publicable</b> es la marca que de verdad habilita a
+compartir un caso (se revoca sola si el cálculo cambia después). Ninguna de las tres es automática ni se pisa sola.</p>
+
+<h3 class="small">Por color (en vivo — igual que en Licitaciones)</h3>
 <div class="kpis">
-    <div class="kpi"><div class="label">Gris</div><div class="value"><span class="sem sem-gris">{{ counts.gris }}</span></div></div>
-    <div class="kpi"><div class="label">Rojo</div><div class="value"><span class="sem sem-rojo">{{ counts.rojo }}</span></div></div>
+    <div class="kpi"><div class="label">Rojo</div><div class="value"><span class="sem sem-rojo">{{ colores.rojo }}</span></div></div>
+    <div class="kpi"><div class="label">Amarillo</div><div class="value"><span class="sem sem-amarillo">{{ colores.amarillo }}</span></div></div>
+    <div class="kpi"><div class="label">Verde</div><div class="value"><span class="sem sem-verde">{{ colores.verde }}</span></div></div>
+    <div class="kpi"><div class="label">Gris</div><div class="value"><span class="sem sem-gris">{{ colores.gris }}</span></div></div>
+</div>
+<h3 class="small">Por qué entró a la cola</h3>
+<div class="kpis">
     <div class="kpi"><div class="label">Equivalencia por verificar</div><div class="value">{{ counts.equivalencia }}</div></div>
     <div class="kpi"><div class="label">Juez externo</div><div class="value">{{ counts.juez }}</div></div>
     <div class="kpi"><div class="label">Agregados a mano</div><div class="value">{{ counts.manual }}</div></div>
@@ -39,17 +50,21 @@ externo (importado en <a href="/revision/juez">Corridas del juez</a>). {{ LEGEND
 revisados (probá limpiar el filtro de estado).</div>
 {% else %}
 <div class="table-wrap"><table>
-<thead><tr><th>Origen</th><th>Semáforo</th><th>Fecha</th><th>Organismo</th><th>Bien</th><th class="num">Brecha</th>
+<thead><tr><th>Origen de la alerta</th><th>Color</th><th>Motivo</th><th>Fecha</th><th>Organismo</th><th>Bien</th><th class="num">Brecha</th>
 <th>Estado</th><th>Veredicto</th></tr></thead>
 <tbody>
 {% set ORIGEN_TXT = {'gris':'Gris','equivalencia':'Equivalencia','rojo':'Rojo','juez':'Juez externo','manual':'Agregado a mano'} %}
 {% for it in items %}
 <tr data-soft-key="rev:{{ it.renglon_id }}" class="row-link" onclick="location.href='/revision/{{ it.renglon_id }}'">
-    <td><span class="tag">{{ ORIGEN_TXT.get(it.origen, it.origen) }}</span></td>
+    <td><span class="tag">{{ ORIGEN_TXT.get(it.origen, it.origen) }}</span>
+        {% if it.monto_inconsistente %}<div><span class="tag tag-alerta">monto inconsistente</span></div>{% endif %}</td>
     <td><span class="sem sem-{{ it.semaforo or 'gris' }}">{{ SEMAFORO_TXT[it.semaforo or 'gris'] }}</span></td>
+    <td class="small" style="max-width:260px">{{ explicar_semaforo(it) }}</td>
     <td>{{ it.fecha or '—' }}</td>
     <td>{{ it.organismo or '—' }}</td>
-    <td><a href="/revision/{{ it.renglon_id }}">{{ it.descripcion }}</a><div class="muted small">{{ (it.producto or '')|replace('_', ' ') }}</div></td>
+    <td><a href="/revision/{{ it.renglon_id }}">{{ it.resumen_corto }}</a>
+        <details onclick="event.stopPropagation()" style="margin-top:2px"><summary class="small muted">ver descripción completa</summary>
+        <div class="small muted" style="max-width:320px">{{ it.descripcion }}</div></details></td>
     <td class="num {% if it.brecha and it.brecha > 0 %}pos{% else %}neg{% endif %}">{{ it.brecha|pct }}</td>
     <td class="small">{{ it.estado }}</td>
     <td class="small">{{ it.veredicto or '—' }}</td>

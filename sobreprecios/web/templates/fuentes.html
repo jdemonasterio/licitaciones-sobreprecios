@@ -41,6 +41,24 @@ costo acumulado USD {{ resumen.llm.usd or 0 }}.</p>
 </div>
 </div>
 
+{% if not modo_publico %}
+<h2>Copia de seguridad</h2>
+<div class="card">
+    <p class="muted small">Sin consola: descargá un archivo con toda la base tal como está ahora, o restaurá una
+    copia anterior. Restaurar reemplaza los datos actuales (se guarda una copia fechada de la base de hoy al lado,
+    nunca se borra, por si hace falta volver atrás).</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+        <a class="btn" href="/fuentes/backup">Descargar copia de seguridad</a>
+        <form method="post" action="/fuentes/restaurar" enctype="multipart/form-data" data-soft="off" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="file" name="archivo" accept=".db" required>
+            <label style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" name="confirmo" value="si" required>
+            Confirmo que quiero reemplazar los datos actuales</label>
+            <button class="btn" type="submit" onclick="return confirm('Esto reemplaza la base actual (se guarda una copia fechada al lado). ¿Seguro?')">Restaurar copia</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
 <h2>Últimas corridas</h2>
 <div class="table-wrap"><table class="small">
 <thead><tr><th>#</th><th>Tipo</th><th>Inicio</th><th>Estado</th><th>Resultado</th></tr></thead>

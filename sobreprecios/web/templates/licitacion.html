@@ -1,9 +1,33 @@
 {% extends "base.html" %}
+{% import "_macros.html" as m %}
 {% block title %}{{ p.numero or p.norma or 'Licitación' }} · Sobreprecios{% endblock %}
+{% block jobs %}datos,investigar,reporte,expediente_{{ p.id }}{% endblock %}
 {% block content %}
 <p class="small"><a href="/">← Licitaciones</a></p>
 <h1>{{ p.organismo or 'Organismo sin identificar' }}</h1>
 <p class="muted">{{ p.norma or '' }}{% if p.numero %} · {{ p.numero }}{% endif %}</p>
+
+<div class="card" data-soft-key="resumen">
+    <h3>Síntesis de esta licitación</h3>
+    <div class="kpis">
+        <div class="kpi"><div class="label">Renglones</div><div class="value">{{ resumen.total }}</div>
+            <div class="sub">{{ resumen.comparados }} comparados</div></div>
+        <div class="kpi"><div class="label">Rojo / amarillo / verde / gris</div>
+            <div class="value"><span class="sem sem-rojo">{{ resumen.rojos }}</span> <span class="sem sem-amarillo">{{ resumen.amarillos }}</span> <span class="sem sem-verde">{{ resumen.verdes }}</span> <span class="sem sem-gris">{{ resumen.grises }}</span></div></div>
+        <div class="kpi"><div class="label">Equivalencia por verificar / validados</div>
+            <div class="value">{{ resumen.equivalencia_por_verificar }} / {{ resumen.validados }}</div></div>
+        <div class="kpi"><div class="label">Monto total del proceso</div><div class="value">{{ resumen.monto_total_proceso|ars }}</div>
+            <div class="sub">declarado en la norma</div></div>
+        <div class="kpi"><div class="label">Monto de los renglones analizados</div><div class="value">{{ resumen.monto_renglones|ars }}</div>
+            {% if resumen.monto_inconsistente %}<div class="sub"><span class="tag tag-alerta">no coincide con el total del proceso</span></div>{% endif %}</div>
+        <div class="kpi"><div class="label">Exceso estimado</div><div class="value">{{ resumen.exceso|ars }}</div>
+            <div class="sub">solo renglones rojo/amarillo</div></div>
+        <div class="kpi"><div class="label">Cobertura</div><div class="value">{% if resumen.cobertura_pct is not none %}{{ resumen.cobertura_pct }}%{% else %}—{% endif %}</div>
+            <div class="sub">renglones con comparación posible</div></div>
+    </div>
+    <p class="small" style="margin-top:8px"><b>Qué falta para publicar:</b>
+    {% if resumen.bloqueantes %}{{ resumen.bloqueantes|join('; ') }}.{% else %}nada pendiente detectado automáticamente — igual revisá a mano antes de compartir.{% endif %}</p>
+</div>
 
 <div class="grid-2">
 <div class="card">
@@ -11,20 +35,33 @@
     <dl class="meta-grid">
         <dt>Procedimiento</dt><dd>{{ (p.tipo_procedimiento or 'sin dato')|replace('_', ' ') }}</dd>
         <dt>Número</dt><dd>{{ p.numero or 'sin dato' }}</dd>
-        <dt>Fechas</dt><dd>{% if p.fecha_apertura %}apertura de ofertas {{ p.fecha_apertura }} (con esta se compara) · {% endif %}{% if p.fecha_adjudicacion %}adjudicación {{ p.fecha_adjudicacion }}{% else %}publicación {{ p.fecha_publicacion or 'sin dato' }}{% endif %}</dd>
+        <dt>Fechas</dt><dd>
+            <div>Apertura de ofertas: <b>{{ p.fecha_apertura or 'sin dato' }}</b>{% if p.fecha_apertura %} <span class="muted small">(fecha de comparación)</span>{% endif %}</div>
+            <div>Adjudicación: {{ p.fecha_adjudicacion or 'sin dato' }}</div>
+            <div>Publicación: {{ p.fecha_publicacion or 'sin dato' }}</div>
+            {% if not p.fecha_apertura %}<div class="muted small">Sin fecha de apertura: se compara contra {{ 'la adjudicación' if p.fecha_adjudicacion else 'la publicación' }}.</div>{% endif %}
+        </dd>
         <dt>Objeto</dt><dd>{{ p.objeto or '—' }}</dd>
         <dt>Categoría</dt><dd>{{ (p.categoria or '—')|replace('_', ' ') }}</dd>
         <dt>Plazo de pago (pliego)</dt><dd>{% if p.plazo_pago_dias is not none %}{{ p.plazo_pago_dias }} días corridos<div class="muted small">{{ p.plazo_pago_texto }}</div>{% else %}sin dato <span class="muted small">(no se encontró como texto en COMPR.AR; se usa el supuesto general de {{ cfg.plazo_pago_meses|num(0) }} mes/es)</span>{% endif %}</dd>
-        <dt>Monto adjudicado</dt><dd>{{ p.monto_total|ars }}{% if p.monto_total and (equiv.usd or equiv.real) %}
-            <div class="muted small">{% if equiv.usd %}≈ {{ equiv.usd|millones('usd') }} en {{ equiv.usd_txt }} a {{ equiv.tasa|ars(2) }}{% endif %}{% if equiv.real %}{% if equiv.usd %} · {% endif %}≈ {{ equiv.real|millones }} en {{ equiv.real_txt }}{% endif %}</div>{% endif %}</dd>
+        <dt>Monto total del proceso</dt><dd>{{ p.monto_total|ars }}{% if p.monto_total and (equiv.usd or equiv.real) %}
+            <div class="muted small">{% if equiv.usd %}≈ {{ equiv.usd|millones('usd') }} en {{ equiv.usd_txt }} a {{ equiv.tasa|ars(2) }}{% endif %}{% if equiv.real %}{% if equiv.usd %} · {% endif %}≈ {{ equiv.real|millones }} en {{ equiv.real_txt }}{% endif %}</div>{% endif %}
+            <div class="muted small">(declarado en la norma; puede diferir de la suma de los renglones analizados — ver síntesis arriba)</div></dd>
         <dt>Fuente</dt><dd>{% if p.url %}<a href="{{ p.url }}" target="_blank" rel="noopener">Aviso en el Boletín Oficial ↗</a>{% else %}carga manual{% endif %}
-            {% if p.numero and '-' in p.numero %} · <a href="https://comprar.gob.ar/BuscarAvanzado.aspx" target="_blank" rel="noopener">Buscar {{ p.numero }} en COMPR.AR ↗</a>{% endif %}</dd>
+            {% if p.numero and '-' in p.numero %} · <a href="https://comprar.gob.ar/BuscarAvanzado.aspx" target="_blank" rel="noopener">Buscar {{ p.numero }} en COMPR.AR ↗</a>{% endif %}
+            {{ m.doc_viewer(p.url, 'Ver el aviso acá', 'doc-fuente-' ~ p.id) }}</dd>
     </dl>
 </div>
 <div class="card">
-    <h3>Revisión humana</h3>
+    <h3>Revisión humana y publicación</h3>
     <p class="muted small">Antes de mandar un caso a un periodista: abrir el aviso, chequear que el producto, la
-    cantidad y el precio estén bien leídos, y mirar de dónde sale la referencia (desplegando cada renglón).</p>
+    cantidad y el precio estén bien leídos, y mirar de dónde sale la referencia (desplegando cada renglón).
+    <b>Guardar</b> solo anota tu comentario y el estado que elijas. <b>Validé esta licitación</b> es un atajo que
+    guarda el comentario y marca el proceso como "revisado". <b>Publicable</b> es la marca que de verdad habilita a
+    compartir: queda atada a una huella de este cálculo exacto (renglones, referencias, semáforos) y se
+    <b>revoca sola</b> si algo cambia después (otro precio de mercado, otra corrección) — nunca se reafirma sola,
+    así que hay que volver a marcarla a mano. Los reportes y expedientes exportan igual aunque falte, pero con los
+    avisos de la síntesis de arriba bien visibles.</p>
     <form method="post" action="/licitacion/{{ p.id }}/revision">
         <label>Estado</label>
         <select name="estado">
@@ -41,6 +78,33 @@
 </div>
 </div>
 
+<div class="card" data-soft-key="expediente">
+    <h3>Armar expediente para periodista</h3>
+    <p class="muted small">Junta la síntesis de arriba y el "comprobante de cálculo" de los renglones que elijas
+    (datos originales, normalización, referencias, factores de IPC y los dos escenarios de plazo) en un HTML y un
+    ZIP que se pueden mandar o imprimir sin abrir esta página. Sin elegir ninguno, usa los renglones en rojo o
+    amarillo.</p>
+    <form method="post" action="/licitacion/{{ p.id }}/expediente">
+        <label>Título (opcional)</label>
+        <input type="text" name="titulo" placeholder="Ej.: Compra de leche en polvo — Ministerio X">
+        <label style="margin-top:8px">Renglones a incluir</label>
+        <select name="renglon_ids" multiple style="min-height:110px">
+        {% for r in renglones %}
+        <option value="{{ r.id }}" selected>{{ r.descripcion }} — {{ SEMAFORO_TXT[r.semaforo or 'gris'] }}</option>
+        {% endfor %}
+        </select>
+        <button class="btn btn-primary" type="submit" style="margin-top:8px">Armar expediente para periodista</button>
+    </form>
+    {% if expedientes %}
+    <div class="table-wrap" style="margin-top:10px"><table class="small">
+        <thead><tr><th>Título</th><th>Fecha</th><th>Descargar</th></tr></thead>
+        <tbody>{% for e in expedientes %}<tr><td>{{ e.titulo }}</td><td class="small">{{ (e.created_at or '')[:16]|replace('T', ' ') }}</td>
+        <td>{% if e.html_path %}<a class="btn btn-sm" href="/reportes/{{ e.id }}/html" target="_blank">Ver</a>
+        <a class="btn btn-sm" href="/reportes/{{ e.id }}/zip">ZIP</a>{% else %}<span class="muted small">armándose…</span>{% endif %}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% endif %}
+</div>
+
 {% if p.alertas_proceso %}
 <h2>Para revisar en este proceso</h2>
 {% for a in p.alertas_proceso %}<div class="banner"><span class="sem sem-amarillo">{{ {'oc_sin_recomendacion':'OC sin recomendación', 'oc_supera_dictamen':'OC mayor que el dictamen', 'prorroga_ampliacion':'Prórroga/ampliación', 'dictamen_incompleto':'Dictamen incompleto'}.get(a.tipo, a.tipo) }}</span>
@@ -54,7 +118,8 @@ compra registran el contrato (no lo pagado). Una prórroga puede estar prevista 
 <div class="table-wrap"><table class="small">
 <thead><tr><th>Acto</th><th>Número</th><th>Fecha</th><th></th></tr></thead>
 <tbody>{% for a in p.actos %}<tr><td>{{ a.descripcion or a.tipo }}</td><td>{{ a.numero }}</td><td>{{ a.fecha or '—' }}</td>
-<td>{% if a.url %}<a href="{{ a.url }}" target="_blank" rel="noopener">Ver documento ↗</a>{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+<td>{% if a.url %}<a href="{{ a.url }}" target="_blank" rel="noopener">Abrir en COMPR.AR ↗</a>
+{{ m.doc_viewer(a.url, 'Ver acá (sección actos)', 'doc-acto-' ~ a.id) }}{% endif %}</td></tr>{% endfor %}</tbody></table></div>
 <p class="muted small">El link abre el proceso en COMPR.AR en la sección "Actos administrativos": no hay PDF
 descargable sin iniciar sesión (el botón "Ver" del sitio abre un visor de GDE que lo requiere).</p>
 {% endif %}
@@ -82,10 +147,12 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
 <tr data-soft-key="reng:{{ r.id }}">
     <td><span class="sem sem-{{ r.semaforo or 'gris' }}">{{ SEMAFORO_TXT[r.semaforo or 'gris'] }}</span>{% if r.motivo_codigo == 'equivalencia_por_verificar' %}
         <div><span class="tag tag-alerta" title="La brecha llega a rojo contra productos parecidos, pero no se pudo verificar que sea el mismo producto, variedad o envase">⚠ equivalencia por verificar</span></div>{% endif %}
+        <div class="muted small" style="max-width:220px">{{ explicar_semaforo(r) }}</div>
         {% if r.confianza %}<div class="muted small">confianza {{ r.confianza }}</div>{% endif %}
         {% set val = validaciones.get(r.id) %}
         {% if val %}<div class="small"><span class="tag {% if val.resumen == 'con objeciones' %}tag-alerta{% endif %}">{{ val.resumen }}</span></div>{% endif %}
-        <div class="small"><a href="/revision/{{ r.id }}">abrir revisión completa →</a></div></td>
+        <div class="small"><a href="/revision/{{ r.id }}">abrir revisión completa →</a></div>
+        <div class="small"><a href="/renglon/{{ r.id }}/comprobante" target="_blank">comprobante de cálculo (imprimible) →</a></div></td>
     <td>{{ r.descripcion }}{% if r.marca %} <span class="tag">marca {{ r.marca }}</span>{% endif %}
         {% if r.producto_nombre %}<div class="small muted">→ {{ r.producto_nombre }}</div>{% else %}<div class="small muted">sin producto comparable</div>{% endif %}
         {% for a in r.alertas_list %}<div><span class="tag tag-alerta">{{ a }}</span></div>{% endfor %}</td>
@@ -140,11 +207,12 @@ Se descuenta {{ cfg.plazo_pago_meses|num(0) }} mes(es) de inflación por el plaz
             <div>
             {% if r.evidencia %}
             <table class="small">
-                <thead><tr><th>Fuente</th><th>Fecha</th><th>Producto en góndola</th><th class="num">$/u. base</th></tr></thead>
+                <thead><tr><th>Fuente</th><th>Fecha</th><th>Producto en góndola</th><th class="num">$/u. base</th><th>Mes IPC usado</th></tr></thead>
                 <tbody>{% for o in r.evidencia[:25] %}
                 <tr><td>{{ o.fuente }}<div class="muted">{{ o.canal }}</div></td><td>{{ o.fecha }}{% if o.posterior %}<div class="muted">posterior a la compra</div>{% endif %}</td>
                     <td>{% if o.url %}<a href="{{ o.url }}" target="_blank" rel="noopener">{{ o.descripcion }}</a>{% else %}{{ o.descripcion }}{% endif %}</td>
-                    <td class="num">{{ o.precio_ub|ars(2) }}</td></tr>
+                    <td class="num">{{ o.precio_ub|ars(2) }}</td>
+                    <td class="small">{% if o.factor_ipc %}{{ o.fecha[:7] }} → {{ r.fecha_compra[:7] if r.fecha_compra else '?' }} (x{{ '%.3f'|format(o.factor_ipc) }}){% elif o.fecha and r.fecha_compra and o.fecha[:7] == r.fecha_compra[:7] %}mismo mes{% else %}sin ajuste{% endif %}</td></tr>
                 {% endfor %}</tbody>
             </table>
             {% if r.evidencia|length > 25 %}<p class="muted small">y {{ r.evidencia|length - 25 }} observaciones más</p>{% endif %}

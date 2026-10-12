@@ -121,6 +121,63 @@ def list_procesos(conn: sqlite3.Connection, filtros: dict, orden: str = "exceso"
     return out
 
 
+def resumen_proceso(proc: dict, renglones: list[dict], validaciones: dict) -> dict:
+    """Síntesis para el encabezado de /licitacion/<id> (MEJORAS #49.1): cuántos renglones hay en
+    cada estado, el monto TOTAL del proceso (declarado en la norma) vs el monto de los renglones
+    que efectivamente se pudieron analizar (dos cosas distintas: antes la pantalla usaba "monto
+    adjudicado" para ambas), el exceso estimado, la cobertura y una lista en castellano de qué
+    falta para poder marcar la licitación "publicable".
+
+    Puramente en Python sobre datos YA cargados por la ruta (`renglones()` trae `k.*` de
+    comparaciones; `validaciones_renglones()` ya se llama para la tabla de abajo): evita una
+    segunda consulta SQL para lo mismo.
+    """
+    total = len(renglones)
+    rojos = sum(1 for r in renglones if r.get("semaforo") == "rojo")
+    amarillos = sum(1 for r in renglones if r.get("semaforo") == "amarillo")
+    verdes = sum(1 for r in renglones if r.get("semaforo") == "verde")
+    comparados = rojos + amarillos + verdes
+    grises = total - comparados
+    equivalencia = sum(1 for r in renglones if r.get("motivo_codigo") == "equivalencia_por_verificar")
+    validados = sum(1 for v in (validaciones or {}).values() if (v.get("resumen") or "").startswith("validado"))
+    con_objeciones = sum(1 for v in (validaciones or {}).values() if v.get("resumen") == "con objeciones")
+    sin_validar = total - len(validaciones or {})
+    monto_renglones = sum(r.get("monto_total") or 0 for r in renglones)
+    exceso = sum(r.get("exceso_ars") or 0 for r in renglones if r.get("semaforo") in ("rojo", "amarillo"))
+    monto_total_proceso = proc.get("monto_total")
+    monto_inconsistente = (monto_total_proceso is not None and monto_renglones
+                           and abs(monto_total_proceso - monto_renglones) > max(1.0, 0.01 * monto_total_proceso))
+    inferidos = sum(1 for r in renglones if r.get("motivo") and "PRECIO INFERIDO" in r["motivo"])
+    de_programa = sum(1 for r in renglones if r.get("motivo") and "precio de programa" in r["motivo"])
+
+    bloqueantes = []
+    if grises:
+        bloqueantes.append(f"{grises} renglón(es) sin comparación (gris): no hay evidencia de sobreprecio ni de lo contrario")
+    if equivalencia:
+        bloqueantes.append(f"{equivalencia} renglón(es) con una brecha alta pero la equivalencia de producto todavía sin confirmar")
+    if con_objeciones:
+        bloqueantes.append(f"{con_objeciones} renglón(es) con objeciones en la validación rápida")
+    if sin_validar:
+        bloqueantes.append(f"{sin_validar} renglón(es) sin validar (extracción / producto / referencia)")
+    if monto_inconsistente:
+        bloqueantes.append("el monto total del proceso no coincide con la suma de los renglones (revisar la extracción)")
+    if inferidos:
+        bloqueantes.append(f"{inferidos} renglón(es) con precio INFERIDO (sin dato real de mercado en esa fecha)")
+    if de_programa:
+        bloqueantes.append(f"{de_programa} renglón(es) comparados contra un precio de programa (Precios Cuidados/Justos), no contra el mercado libre")
+    if proc.get("estado_revision") != "publicable":
+        bloqueantes.append('la licitación todavía no está marcada "publicable"')
+
+    return {
+        "total": total, "comparados": comparados, "rojos": rojos, "amarillos": amarillos, "verdes": verdes,
+        "grises": grises, "equivalencia_por_verificar": equivalencia, "validados": validados,
+        "con_objeciones": con_objeciones, "sin_validar": sin_validar,
+        "monto_total_proceso": monto_total_proceso, "monto_renglones": monto_renglones, "exceso": exceso,
+        "cobertura_pct": round(100 * comparados / total, 1) if total else None,
+        "monto_inconsistente": monto_inconsistente, "bloqueantes": bloqueantes,
+    }
+
+
 def proceso(conn: sqlite3.Connection, proceso_id: int) -> dict | None:
     row = conn.execute(
         "SELECT p.*, d.titulo norma, d.texto texto, d.url doc_url FROM procesos p "

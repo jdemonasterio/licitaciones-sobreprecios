@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% import "_macros.html" as m %}
+{% block title %}Comprobante de cálculo — renglón {{ c.nro_renglon or c.id }} · Sobreprecios{% endblock %}
+{% block content %}
+<p class="small no-print"><a href="/licitacion/{{ c.proceso_id }}">← Volver a la licitación</a> ·
+<a href="/revision/{{ c.id }}">Abrir la revisión completa de este caso →</a> ·
+<button type="button" class="btn btn-sm" onclick="window.print()">Imprimir / guardar como PDF</button></p>
+
+<h1>Comprobante de cálculo</h1>
+<p class="muted">Renglón {{ c.nro_renglon or c.id }} · {{ c.organismo or 'Organismo sin identificar' }}{% if c.numero %} · {{ c.numero }}{% endif %}
+· <span class="sem sem-{{ c.semaforo or 'gris' }}">{{ SEMAFORO_TXT[c.semaforo or 'gris'] }}</span></p>
+<p class="help">{{ explicar_semaforo(c) }} {{ LEGENDA_INVESTIGACION }}</p>
+
+<h2>a. Dato original</h2>
+<div class="card">
+    <dl class="meta-grid">
+        <dt>Descripción</dt><dd>{{ c.descripcion }}</dd>
+        <dt>Cantidad</dt><dd>{{ c.cantidad|num }} {{ c.unidad_compra or '' }}</dd>
+        <dt>Precio unitario</dt><dd>{{ c.precio_unitario|ars(2) }}</dd>
+        <dt>Proveedor</dt><dd>{{ c.proveedor or '—' }}{% if c.proveedor_cuit %} ({{ c.proveedor_cuit }}){% endif %}</dd>
+        <dt>Marca</dt><dd>{{ c.marca or '—' }}</dd>
+        <dt>Fuente del dato</dt><dd>{{ c.extraccion_metodo or '—' }}
+            {% if c.proceso_url %}· <a href="{{ c.proceso_url }}" target="_blank" rel="noopener">{{ 'abrir el aviso del Boletín Oficial ↗' if c.fuente == 'bo_primera' else 'abrir el proceso en COMPR.AR ↗' }}</a>
+            {{ m.doc_viewer(c.proceso_url, 'Ver acá', 'doc-fuente-' ~ c.id) }}{% endif %}</dd>
+    </dl>
+    <dl class="meta-grid" style="margin-top:8px">
+        <dt>Apertura de ofertas</dt><dd><b>{{ c.fecha_apertura or 'sin dato' }}</b>{% if c.fecha_apertura %} <span class="muted small">(fecha de comparación)</span>{% endif %}</dd>
+        <dt>Adjudicación</dt><dd>{{ c.fecha_adjudicacion or 'sin dato' }}</dd>
+        <dt>Publicación</dt><dd>{{ c.fecha_publicacion or 'sin dato' }}</dd>
+    </dl>
+    {% if c.fuente_fragmento %}
+    <div class="grid-2" style="margin-top:8px">
+        <div><b class="small">Lo que dice el dictamen</b>
+        {% if c.fuente_fragmento.dictamen %}<dl class="meta-grid small">
+        {% for k, v in c.fuente_fragmento.dictamen.items() %}<dt>{{ k }}</dt><dd>{{ v }}</dd>{% endfor %}
+        </dl>{% else %}<p class="muted small">Sin dato.</p>{% endif %}</div>
+        <div><b class="small">Lo que dice el pliego</b>
+        {% if c.fuente_fragmento.pliego %}<dl class="meta-grid small">
+        {% for k, v in c.fuente_fragmento.pliego.items() %}<dt>{{ k }}</dt><dd>{{ v }}</dd>{% endfor %}
+        </dl>{% else %}<p class="muted small">Sin fila de pliego para este renglón.</p>{% endif %}</div>
+    </div>
+    {% endif %}
+</div>
+
+<h2>b. Normalización</h2>
+<div class="card">
+    <p>{{ c.precio_unitario|ars(2) }} ÷ {{ c.contenido_base|num(3) if c.contenido_base is not none else '—' }} {{ c.unidad_base or '' }}
+    = <b>{{ c.precio_unidad_base|ars(2) }} por {{ c.unidad_base or 'unidad base' }}</b></p>
+    <p class="muted small">Producto asignado: {{ c.producto_nombre or 'sin producto comparable' }}{% if c.match_razon %} — {{ c.match_razon }}{% endif %}.
+    {% if c.estado_atributo %}Variedad: {{ ATRIBUTO_TXT.get(c.estado_atributo, c.estado_atributo) }}.{% endif %}</p>
+</div>
+
+<h2>c. Fecha de comparación</h2>
+<div class="card">
+    <p><b>{{ c.fecha_compra or c.fecha_proceso or '—' }}</b> — se compara contra esta fecha porque los precios se
+    fijan al ofertar (apertura de ofertas); si no hay fecha de apertura, se usa la de adjudicación o publicación.
+    Antigüedad máxima de los precios de mercado usados: {{ c.gap_dias if c.gap_dias is not none else '—' }} días.</p>
+</div>
+
+<h2>d. Referencias de mercado usadas</h2>
+<div class="card">
+    <dl class="meta-grid">
+        <dt>Referencia principal</dt><dd>{{ c.ref_principal_valor|ars(2) }} <span class="muted small">({{ REF_TXT.get(c.ref_principal, c.ref_principal or '—') }})</span></dd>
+        <dt>Mínimo confirmado (2 fuentes independientes)</dt><dd>{{ c.ref_corroborada|ars(2) if c.ref_corroborada else 'sin confirmar por dos fuentes' }}</dd>
+        <dt>INDEC (contexto, nunca decide solo)</dt><dd>{{ c.ref_indec|ars(2) }}</dd>
+    </dl>
+    {% if c.par_corroborado %}
+    <p class="small"><b>Par que confirma el mínimo</b> (observaciones de dos grupos comerciales distintos, dentro de
+    la tolerancia de corroboración):</p>
+    <div class="table-wrap"><table class="small">
+        <thead><tr><th>Fuente</th><th>Grupo comercial</th><th>Fecha</th><th>Producto en góndola</th><th class="num">$/u. base</th></tr></thead>
+        <tbody>{% for o in c.par_corroborado %}<tr><td>{{ o.fuente }}</td><td class="muted">{{ o.familia }}</td><td>{{ o.fecha }}</td>
+        <td>{{ o.descripcion }}</td><td class="num">{{ o.precio_ub|ars(2) }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% endif %}
+</div>
+
+<h2>e. Factores IPC</h2>
+<div class="card">
+    <p class="small">Cada precio de mercado se lleva al mes de la compra con el IPC del mes exacto (si falta el
+    índice de alguno de los dos meses, el precio queda sin ajustar y rotulado). Ajuste financiero por el plazo de
+    pago del Estado: <b>{{ c.ajuste_financiero_pct|num(1) }}%</b>.</p>
+    {% if c.evidencia %}
+    <div class="table-wrap"><table class="small">
+        <thead><tr><th>Fuente</th><th>Fecha de la observación</th><th class="num">$/u. base</th><th>Mes IPC usado</th></tr></thead>
+        <tbody>{% for o in c.evidencia[:15] %}<tr><td>{{ o.fuente }}</td><td>{{ o.fecha }}</td><td class="num">{{ o.precio_ub|ars(2) }}</td>
+        <td>{% if o.factor_ipc %}{{ o.fecha[:7] }} → {{ c.fecha_compra[:7] if c.fecha_compra else '?' }} (x{{ '%.3f'|format(o.factor_ipc) }}){% elif o.fecha and c.fecha_compra and o.fecha[:7] == c.fecha_compra[:7] %}mismo mes{% else %}sin ajuste{% endif %}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    {% endif %}
+</div>
+
+<h2>f. Escenarios financieros</h2>
+<div class="card">
+    <dl class="meta-grid">
+        <dt>Sin ajustar</dt><dd>{{ c.sobreprecio_pct|pct }}</dd>
+        <dt>Escenario amarillo (1 mes de plazo de pago)</dt><dd>{{ c.sensibilidad.get('1m')|pct }} vs. referencia principal</dd>
+        <dt>Escenario rojo (2 meses de plazo, mínimo confirmado)</dt><dd>{{ c.sobreprecio_corroborado_pct|pct if c.sobreprecio_corroborado_pct is not none else '—' }} vs. mínimo confirmado</dd>
+    </dl>
+    <p class="muted small">Sensibilidad completa (brecha contra la referencia principal según el plazo de pago supuesto):
+    0 meses {{ c.sensibilidad.get('0m')|pct }} · 1 mes {{ c.sensibilidad.get('1m')|pct }} ·
+    2 meses {{ c.sensibilidad.get('2m')|pct }} · 3 meses {{ c.sensibilidad.get('3m')|pct }}.</p>
+</div>
+
+<h2>g. Correcciones y validaciones humanas</h2>
+<div class="card">
+    {% if c.correcciones %}
+    <table class="small"><thead><tr><th>Campo</th><th>Valor</th><th>Nota</th><th>Autor</th></tr></thead>
+    <tbody>{% for campo, corr in c.correcciones.items() %}<tr><td>{{ campo }}</td><td>{{ corr.valor }}</td>
+    <td class="small">{{ corr.nota or '—' }}</td><td class="small">{{ corr.autor or '—' }}</td></tr>{% endfor %}</tbody></table>
+    {% else %}<p class="muted small">Sin correcciones manuales.</p>{% endif %}
+    {% if c.revision %}<p class="small">Veredicto humano: <b>{{ c.revision.veredicto or 'sin decidir' }}</b>{% if c.revision.revisor %} — {{ c.revision.revisor }}{% endif %}{% if c.revision.nota %}: {{ c.revision.nota }}{% endif %}</p>{% endif %}
+    <h4 class="small">Explicaciones alternativas revisadas</h4>
+    <ul class="small">
+    {% for item in EXPLICACIONES_ITEMS %}{% set e = c.explicaciones.get(item) %}
+    <li>{{ EXPLICACION_TXT[item] }}: {{ EXPLICACION_ESTADO_TXT.get(e.estado, e.estado) if e else 'Pendiente' }}{% if e and e.nota %} — {{ e.nota }}{% endif %}</li>
+    {% endfor %}
+    </ul>
+</div>
+
+<h2>h. Versión y estado de publicación</h2>
+<div class="card">
+    <p class="small">Cálculo del {{ c.computed_at[:16]|replace('T', ' ') if c.computed_at else '—' }}.
+    Estado de la licitación: <b>{{ c.proceso_estado.estado_revision or 'pendiente' }}</b>
+    {% if c.proceso_estado.estado_revision == 'publicable' %}(huella {{ c.proceso_estado.revision_huella }}){% else %}— todavía no está marcada "publicable"{% endif %}.</p>
+</div>
+{% endblock %}
