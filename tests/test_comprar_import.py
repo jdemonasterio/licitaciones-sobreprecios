@@ -16,8 +16,12 @@ def detalle():
         d.pop(k, None)
     d["ofertas"] = comprar.parse_cuadro_comparativo_html((FIX / "cuadro_comparativo_80-0014-LPU25.html").read_text(encoding="utf-8"))
     d["adjudicaciones"] = comprar.parse_dictamen_html((FIX / "dictamen_80-0014-LPU25.html").read_text(encoding="utf-8"))
+    d["ofertas_desestimadas"] = comprar.parse_ofertas_desestimadas_html(
+        (FIX / "dictamen_80-0014-LPU25.html").read_text(encoding="utf-8"))
     d["organismo"] = "310 - Ministerio de Salud"
     d["url"] = "https://comprar.gob.ar/PLIEGO/VistaPreviaPliegoCiudadano.aspx?qs=x"
+    for acto in d["actos_administrativos"]:
+        acto["url"] = d["url"] + "#" + comprar.ACTOS_ANCHOR_ID
     return d
 
 
@@ -37,6 +41,10 @@ def test_store_detalle_creates_renglones_and_offers(tmp_path, detalle):
         info = brecha_ofertas(conn, pid, 1, 67400.0)
         assert info["oferta_min"] == 18337.0
         assert info["brecha_oferta_min_pct"] == pytest.approx(267.56, abs=0.01)
+        # Pedido de jdemonasterio 2026-10-12: si la más baja fue desestimada, se tiene que
+        # poder decir por qué (no "sobreprecio 267%" a secas).
+        assert info["oferta_min_desestimada"] is True
+        assert "requisitos técnicos" in info["oferta_min_causa"].lower()
 
 
 def test_store_detalle_is_idempotent(tmp_path, detalle):
@@ -45,6 +53,62 @@ def test_store_detalle_is_idempotent(tmp_path, detalle):
         b = store_detalle(conn, detalle)
         assert a == b
         assert conn.execute("SELECT COUNT(*) FROM renglones").fetchone()[0] == len(detalle["adjudicaciones"])
+
+
+def test_store_detalle_guarda_actos_administrativos(tmp_path, detalle):
+    """Pedido de jdemonasterio 2026-10-12: autorización de pliego/llamado y adjudicación
+    quedan en `comprar_actos` con número, fecha y el link (al proceso, con fragmento — no
+    hay PDF descargable sin sesión, ver sources/comprar.py)."""
+    with db.session(tmp_path / "t.db") as conn:
+        pid = store_detalle(conn, detalle)
+        actos = conn.execute(
+            "SELECT * FROM comprar_actos WHERE proceso_id=? ORDER BY fecha", (pid,)).fetchall()
+        assert len(actos) == 3
+        adjudicacion = next(a for a in actos if a["tipo"] == "Adjudicación y OC")
+        assert adjudicacion["numero"] == "RESOL-2026-346-MS"
+        assert adjudicacion["fecha"] == "2026-03-04"
+        assert adjudicacion["url"] == detalle["url"] + "#" + comprar.ACTOS_ANCHOR_ID
+        assert "GDE" in adjudicacion["descripcion"]
+        # Reimportar no duplica (UNIQUE proceso_id+tipo+numero) y refleja cambios de fecha/url.
+        store_detalle(conn, detalle)
+        assert conn.execute("SELECT COUNT(*) FROM comprar_actos WHERE proceso_id=?", (pid,)).fetchone()[0] == 3
+
+
+def test_store_detalle_marca_ofertas_desestimadas_con_causa_y_cuenta_proceso(tmp_path, detalle):
+    """Las ofertas que el dictamen desestimó quedan `estado='desestimada'` con su causa; las
+    demás, `admitida`. El total también se guarda a nivel proceso (pedido explícito de
+    jdemonasterio: 'store also a process-level count')."""
+    with db.session(tmp_path / "t.db") as conn:
+        pid = store_detalle(conn, detalle)
+        p = conn.execute("SELECT ofertas_desestimadas_n FROM procesos WHERE id=?", (pid,)).fetchone()
+        assert p["ofertas_desestimadas_n"] == len(detalle["ofertas_desestimadas"]) == 21
+        alemana = conn.execute(
+            "SELECT estado, causa_desestimacion FROM ofertas WHERE proceso_id=? AND nro_renglon=1 "
+            "AND proveedor LIKE 'DROGUERIA Y ORTOPEDIA%'", (pid,)).fetchone()
+        assert alemana["estado"] == "desestimada" and alemana["causa_desestimacion"]
+        ganador = conn.execute(
+            "SELECT estado, causa_desestimacion FROM ofertas WHERE proceso_id=? AND nro_renglon=1 "
+            "AND proveedor LIKE 'MICROSULES%'", (pid,)).fetchone()
+        assert ganador["estado"] == "admitida" and ganador["causa_desestimacion"] is None
+
+
+def test_store_detalle_guarda_plazo_de_pago_del_pliego(tmp_path, detalle):
+    """Cuando el plazo de pago SÍ se pudo leer (caso raro, ver DESIGN_sobreprecios.md), queda
+    en `procesos.plazo_pago_dias`/`plazo_pago_texto` para que compare.py lo use."""
+    detalle_con_plazo = dict(detalle, plazo_pago_dias=45, plazo_pago_texto="45 dias corridos")
+    with db.session(tmp_path / "t.db") as conn:
+        pid = store_detalle(conn, detalle_con_plazo)
+        p = conn.execute("SELECT plazo_pago_dias, plazo_pago_texto FROM procesos WHERE id=?", (pid,)).fetchone()
+        assert p["plazo_pago_dias"] == 45 and p["plazo_pago_texto"] == "45 dias corridos"
+
+
+def test_store_detalle_sin_plazo_de_pago_queda_sin_dato(tmp_path, detalle):
+    """El caso real y mayoritario: COMPR.AR no trae el dato -> columna en NULL, nunca un
+    número inventado."""
+    with db.session(tmp_path / "t.db") as conn:
+        pid = store_detalle(conn, detalle)
+        p = conn.execute("SELECT plazo_pago_dias FROM procesos WHERE id=?", (pid,)).fetchone()
+        assert p["plazo_pago_dias"] is None
 
 
 def test_store_detalle_enriches_existing_bo_process(tmp_path, detalle):

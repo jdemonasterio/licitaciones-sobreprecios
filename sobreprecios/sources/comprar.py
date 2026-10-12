@@ -102,6 +102,29 @@ Gotchas / nombres ambiguos del propio sitio (para quien use estos dicts):
 Ritmo: no se detectó WAF/challenge, pero es infraestructura pública de un
 organismo de control — misma regla que boletin_oficial.py: ir despacio
 (DELAY_S entre requests), sin paralelismo.
+
+Actos administrativos, ofertas desestimadas y plazo de pago (verificado en vivo 2026-10-12
+contra 6 procesos 2018-2026: 14/2-0001-LPR19, 14/1-0424-CDI18, 132/61-0010-CDI19, 21-0001-LPU22,
+14/2-0031-LPU22, 80-0014-LPU25 — ver DESIGN_sobreprecios.md):
+  - "Actos administrativos" (autorización de pliego, autorización de llamado, adjudicación y OC)
+    SÍ aparece en VistaPreviaPliegoCiudadano (tabla `UC_ActosAdministrativos_gvActosAdministrativos`,
+    `_parse_actos_administrativos`) en TODOS los procesos probados, viejos y nuevos. Pero su botón
+    "Ver" es el mismo gotcha de arriba (postback a un visor de GDE que no resolvió sin sesión al
+    probarlo de nuevo): no hay PDF descargable sin login. Por eso `documentos`/`comprar_actos` no
+    guardan el acto, guardan el link al PROCESO con un fragmento (`ACTOS_ANCHOR_ID`) que salta a esa
+    sección, para que una persona lo abra y lea número/fecha del acto con sus propios ojos.
+  - "Ofertas desestimadas" con su causa SÍ está en el dictamen (PreAdjudicarVisualizarDictamen.aspx,
+    sección aparte de "Ofertas recomendadas", repetidor `rptOfertasNoCumplieron`) — ver
+    `parse_ofertas_desestimadas_html`. No está paginada junto al grid de recomendadas.
+  - "Plazo de pago" (cuántos días tarda el Estado en pagarle al proveedor) NO aparece como campo
+    estructurado en ninguno de los 6 procesos probados (ni viejos ni nuevos): el Pliego Único de
+    Bases y Condiciones Generales (Decreto 1030/2016) lo fija a nivel nacional en un documento GEDO
+    común a casi todo proceso, no descargable sin sesión. Lo que SÍ hay en la página (y no hay que
+    confundir): "Plazo mantenimiento de la oferta" (validez de la oferta, no de pago), "Fecha
+    estimada del inicio del contrato" (plazo de ENTREGA tras la orden de compra) y "Duración del
+    contrato". `parse_plazo_pago` solo rescata el caso en que el plazo de pago SÍ aparece como texto
+    libre (cláusula particular citada inline, o el texto de un aviso del BO); en los 6 procesos
+    probados da (None, None) en los 6 — "sin dato" es el resultado correcto y esperado hoy.
 """
 from __future__ import annotations
 
@@ -116,6 +139,7 @@ import httpx
 from bs4 import BeautifulSoup
 
 from .. import config
+from ..textnorm import norm
 from ..units import parse_ars, parse_number
 
 logger = logging.getLogger(__name__)
@@ -142,6 +166,14 @@ _POSTBACK_TARGET_RE = re.compile(r"__doPostBack\('([^']+)'")
 _POSTBACK_OPTIONS_RE = re.compile(
     r'WebForm_PostBackOptions\("[^"]*",\s*"[^"]*",\s*\w+,\s*"[^"]*",\s*"([^"]*)"'
 )
+
+# El id del <span> título de "Actos administrativos" es un control DECLARADO en el .aspx
+# (UC_ActosAdministrativos), no uno autonumerado por DevExpress (ctl02, ctl03...): es estable
+# entre procesos (verificado 2026-10-12 en 6 procesos 2018-2026). Se usa como ancla (#fragmento)
+# del link al proceso para "Ver documento" de un acto: NO hay descarga directa confirmada (el
+# botón "Ver" es un postback que abre un visor de GDE que requiere sesión — mismo gotcha que
+# acta/dictamen en PDF, ver docstring del módulo).
+ACTOS_ANCHOR_ID = "ctl00_CPH1_UCVistaPreviaPliego_UC_ActosAdministrativos_lblTitulo"
 
 
 class ComprarError(RuntimeError):
@@ -373,6 +405,12 @@ class ComprarClient:
         cuadro_target = data.pop("_cuadro_comparativo_target", None)
 
         data["url"] = url
+        # Sin link de descarga directo confirmado al acto (ver ACTOS_ANCHOR_ID): se linkea al
+        # proceso con un fragmento que salta a la sección "Actos administrativos" (pedido de
+        # jdemonasterio: mostrar el link para que lo abra una persona, no bajar el PDF).
+        acto_url = f"{url}#{ACTOS_ANCHOR_ID}"
+        for acto in data.get("actos_administrativos") or []:
+            acto["url"] = acto_url
         alcance = parse_alcance_html(html)
         data["organismo"] = (fila or {}).get("saf", "")
         # La grilla a veces trae columnas corridas ("7" como SAF): si no tiene letras, vale el Alcance.
@@ -391,9 +429,13 @@ class ComprarClient:
         data["ofertas"] = ofertas
 
         adjudicaciones: list[dict] = []
+        desestimadas: list[dict] = []
         if dictamen_url:
             try:
                 dictamen_html = self._fetch_cached(dictamen_url, "dictamen")
+                # "Ofertas desestimadas" no está paginada junto a gvItems: se parsea una sola
+                # vez de la primera página (si se leyera de cada página paginada, se duplicaría).
+                desestimadas = parse_ofertas_desestimadas_html(dictamen_html)
                 grid = re.search(r"__doPostBack\('([^']*gvItems)','Page\$2'\)", _html.unescape(dictamen_html))
                 paginas = (self._all_pages(dictamen_url, dictamen_html, grid.group(1), "dictamen")
                            if grid else [dictamen_html])
@@ -411,6 +453,7 @@ class ComprarClient:
             except httpx.HTTPError as exc:
                 logger.warning("no se pudo bajar dictamen de %s: %s", url, exc)
         data["adjudicaciones"] = adjudicaciones
+        data["ofertas_desestimadas"] = desestimadas
 
         documentos = []
         if acta_url:
@@ -559,6 +602,81 @@ def _parse_actos_administrativos(soup: BeautifulSoup) -> list[dict]:
     return actos
 
 
+# --- Plazo de pago: regex sobre el texto plano de la página (sin tabla propia; ver
+# docstring del módulo / DESIGN_sobreprecios.md — en los 6 procesos 2018-2026 chequeados en
+# vivo NO aparece un campo estructurado "Plazo de pago": el Decreto 1030/2016 fija un plazo
+# general en el Pliego Único de Bases y Condiciones Generales, que es un documento GEDO
+# común a (casi) todo proceso nacional y no se puede leer sin sesión. Esta función solo rescata
+# el caso en que la cláusula SÍ aparece como texto libre (cláusulas particulares citadas en la
+# vista previa, o en el texto del aviso del BO para procesos viejos). Si no hay match: (None,
+# None) — "sin dato" es preferible a inventar un plazo (regla del repo). ---
+
+_NUM_PALABRAS = {
+    "uno": 1, "dos": 2, "tres": 3, "cuatro": 4, "cinco": 5, "seis": 6, "siete": 7, "ocho": 8,
+    "nueve": 9, "diez": 10, "once": 11, "doce": 12, "trece": 13, "catorce": 14, "quince": 15,
+    "dieciseis": 16, "diecisiete": 17, "dieciocho": 18, "diecinueve": 19, "veinte": 20,
+    "veintiuno": 21, "veintidos": 22, "veintitres": 23, "veinticuatro": 24, "veinticinco": 25,
+    "veintiseis": 26, "veintisiete": 27, "veintiocho": 28, "veintinueve": 29, "treinta": 30,
+    "cuarenta": 40, "cincuenta": 50, "sesenta": 60, "setenta": 70, "ochenta": 80, "noventa": 90,
+    "cien": 100,
+}
+# norm() ya sacó tildes/puntuación (": (30)" -> " 30 "), así que un "treinta (30) dias" original
+# queda "treinta 30 dias": el número en dígitos (más confiable que la palabra) alcanza para
+# capturarlo sin depender de los paréntesis.
+_PAGO_CERCA_RE = r"(?:pago|pagar\w*|abonar\w*|factura\w*)"
+_DIAS_DIGITO_RE = re.compile(r"\b(\d{1,3})\s+dias?\s*(habiles|corridos)?\b")
+_DIAS_PALABRA_RE = re.compile(r"\b([a-z]+)\s+dias?\s*(habiles|corridos)?\b")
+_CONTRA_ENTREGA_RE = re.compile(r"\bcontra\s+entrega\b")
+_PLAZO_PAGO_ANTES = 90   # caracteres ANTES del número: alcanza para "el pago se hara dentro de los"
+_PLAZO_PAGO_DESPUES = 20  # caracteres DESPUES: deliberadamente corto (ver regresión abajo)
+
+
+def _cerca_de_pago(texto: str, inicio: int, fin: int) -> bool:
+    """¿Hay una mención a pago/factura pegada a este número de días?
+
+    Ventana asimétrica (90 antes, 20 después): en español administrativo la mención a pago
+    casi siempre antecede al plazo ("el pago se efectuara dentro de los... días"), nunca al
+    revés por mucha distancia. Un radio "después" largo y simétrico generaba un falso positivo
+    real (regresión 2026-10-12, ver tests): en VistaPreviaPliegoCiudadano el campo "Plazo
+    mantenimiento de la oferta: 60 Días corridos" queda, en el texto plano de la página, a ~30
+    caracteres de la label SIGUIENTE "Requiere pago" (que no tiene nada que ver: es si hay que
+    pagar para RETIRAR el pliego, no cuánto tarda el Estado en pagarle al proveedor). Por eso
+    además se ignora "requiere pago" como mención válida.
+    """
+    ventana = texto[max(0, inicio - _PLAZO_PAGO_ANTES):fin + _PLAZO_PAGO_DESPUES].replace("requiere pago", "")
+    return re.search(_PAGO_CERCA_RE, ventana) is not None
+
+
+def parse_plazo_pago(texto: str) -> tuple[int | None, str | None]:
+    """Plazo de pago del Estado al proveedor, en días CORRIDOS -> (dias, texto_legible).
+
+    Busca "contra entrega" o "N días (corridos|hábiles)" cerca de una mención a pago/factura
+    (ventana de ~90 caracteres: lo bastante para la misma cláusula, no para cruzar a otra). Si
+    el plazo está en días hábiles se informa el equivalente aproximado en corridos (factor 1,4x,
+    pedido de jdemonasterio 2026-10-12) y se aclara en el texto; nunca se devuelve un número sin
+    decir de dónde salió. Sin match: (None, None).
+    """
+    t = norm(texto)
+    for m in _CONTRA_ENTREGA_RE.finditer(t):
+        if _cerca_de_pago(t, m.start(), m.end()):
+            return 0, "contra entrega"
+    for patron in (_DIAS_DIGITO_RE, _DIAS_PALABRA_RE):
+        for m in patron.finditer(t):
+            if not _cerca_de_pago(t, m.start(), m.end()):
+                continue
+            crudo = m.group(1)
+            dias = int(crudo) if crudo.isdigit() else _NUM_PALABRAS.get(crudo)
+            if not dias:
+                continue
+            tipo = m.group(2) or "corridos"
+            if tipo == "habiles":
+                dias_corridos = round(dias * 1.4)
+                return dias_corridos, (f"{dias} dias habiles (equivalente a ~{dias_corridos} dias "
+                                        "corridos, factor 1,4x)")
+            return dias, f"{dias} dias corridos"
+    return None, None
+
+
 def parse_busqueda_html(html: str) -> list[dict]:
     """Grilla de resultados de BuscarAvanzado.aspx (búsqueda rápida o avanzada) -> filas.
 
@@ -607,6 +725,7 @@ def parse_detalle_html(html: str) -> dict:
     renglones = _parse_renglones(soup)
     actos = _parse_actos_administrativos(soup)
     fecha_adjudicacion = next((a["fecha"] for a in actos if "adjudicaci" in a["documento"].lower()), "")
+    plazo_pago_dias, plazo_pago_texto = parse_plazo_pago(soup.get_text(" "))
 
     action_links = _extract_actionurl_links(soup)
     acta_url = next((v for k, v in action_links.items() if "apertura" in k.lower()), None)
@@ -632,6 +751,9 @@ def parse_detalle_html(html: str) -> dict:
             "adjudicacion": fecha_adjudicacion,
         },
         "renglones": renglones,
+        "actos_administrativos": actos,
+        "plazo_pago_dias": plazo_pago_dias,
+        "plazo_pago_texto": plazo_pago_texto,
         "_acta_url": acta_url,
         "_dictamen_url": dictamen_url,
         "_cuadro_comparativo_target": cuadro_target,
@@ -797,3 +919,70 @@ def parse_dictamen_html(html: str) -> list[dict]:
             "total": parse_ars(tds[8].get_text(strip=True)),
         })
     return adjudicaciones
+
+
+_CUIT_FIN_RE = re.compile(r"(\d{10,11})\s*$")
+
+
+def parse_ofertas_desestimadas_html(html: str) -> list[dict]:
+    """PreAdjudicarVisualizarDictamen.aspx -> sección "Ofertas desestimadas" (pedido de
+    jdemonasterio 2026-10-12: parsear la causa de cada oferta rechazada, no solo el ganador).
+
+    Por cada oferente desestimado hay dos tablas repetidas (`rptOfertasNoCumplieron`, un
+    user-control con el mismo id `UCProveedorRenglonDescartadoBastrap` por oferente):
+      - `gvEvaluacionDescartada`: evaluación a nivel de TODA la oferta (un requisito
+        administrativo/técnico que la descarta completa, sin renglón puntual).
+      - `gvRenglonesDescartados`: un renglón por fila, con su causa (columnas "Evaluación
+        Técnica"/"Evaluación Económica"). Si esas dos columnas vienen vacías para un renglón
+        (pasa cuando la causa es administrativa y aplica a toda la oferta), se usa como causa
+        la evaluación de `gvEvaluacionDescartada` del mismo oferente.
+    No está paginada junto al dictamen (`gvItems`): el mismo bloque completo aparece en TODAS
+    las páginas de un dictamen paginado, así que ComprarClient la parsea una sola vez (de la
+    primera página), no dentro de `_all_pages`.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    admin_text: dict[str, str] = {}
+    for tabla in soup.find_all("table", id=re.compile(r"_gvEvaluacionDescartada$")):
+        prefix = tabla["id"][: -len("_gvEvaluacionDescartada")]
+        body = tabla.find("tbody") or tabla
+        textos = []
+        for tr in body.find_all("tr"):
+            tds = tr.find_all("td")
+            if len(tds) < 4 or tds[0].find_parent("thead"):
+                continue
+            for td in tds[1:]:
+                val = _clean_text(td.get_text(" ", strip=True))
+                if val:
+                    textos.append(val)
+        if textos:
+            admin_text[prefix] = " | ".join(dict.fromkeys(textos))
+
+    out = []
+    for tabla in soup.find_all("table", id=re.compile(r"_gvRenglonesDescartados$")):
+        prefix = tabla["id"][: -len("_gvRenglonesDescartados")]
+        proveedor_span = soup.find(id=f"{prefix}_lblProveedor")
+        nombre_cuit = _clean_text(proveedor_span.get_text(" ", strip=True)) if proveedor_span else ""
+        cuit_match = _CUIT_FIN_RE.search(nombre_cuit)
+        cuit = cuit_match.group(1) if cuit_match else ""
+        proveedor = nombre_cuit[:cuit_match.start()].strip() if cuit_match else nombre_cuit
+        body = tabla.find("tbody") or tabla
+        for tr in body.find_all("tr"):
+            tds = tr.find_all("td")
+            if len(tds) < 6:
+                continue
+            renglon_txt = tds[0].get_text(strip=True)
+            if not renglon_txt.isdigit():
+                continue
+            causa = " | ".join(dict.fromkeys(
+                _clean_text(td.get_text(" ", strip=True)) for td in (tds[4], tds[5])
+                if _clean_text(td.get_text(" ", strip=True))))
+            if not causa:
+                causa = admin_text.get(prefix, "")
+            out.append({
+                "renglon": int(renglon_txt),
+                "alternativa": tds[1].get_text(strip=True),
+                "proveedor": proveedor,
+                "cuit": cuit,
+                "causa": causa or "sin motivo detallado en el dictamen",
+            })
+    return out

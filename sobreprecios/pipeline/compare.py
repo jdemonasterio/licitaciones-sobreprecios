@@ -334,8 +334,17 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
             cfg: dict, marca: str | None = None, presentacion_exacta: bool = False,
             gap_maximo: int | None = None, indec_principal: bool = True,
             variante: str | None = None, variante_obs=None, estado_atributo: str | None = None,
-            bloquear_rojo: str | None = None, variantes_ok: set[str] | None = None) -> Resultado:
-    """Núcleo puro (sin base): referencia, sobreprecio, confianza y semáforo."""
+            bloquear_rojo: str | None = None, variantes_ok: set[str] | None = None,
+            plazo_pago_dias: int | None = None) -> Resultado:
+    """Núcleo puro (sin base): referencia, sobreprecio, confianza y semáforo.
+
+    `plazo_pago_dias`: cuando se conoce el plazo de pago del PLIEGO (sources/comprar.
+    parse_plazo_pago), reemplaza el supuesto genérico de `cfg.plazo_pago_meses` para el
+    escenario default (amarillo) y se usa como piso del escenario rojo (nunca lo acorta: P2,
+    jdemonasterio 2026-10-12 — "perfecto, usá el plazo de pago de la licitación"). Sigue siendo
+    el caso raro: en los procesos de COMPR.AR probados en vivo casi nunca aparece (ver
+    DESIGN_sobreprecios.md), así que por default esto es None y el comportamiento no cambia.
+    """
     res = Resultado(precio_estado_ub=precio_estado_ub)
     if precio_estado_ub is None or not fecha:
         res.motivo = "sin precio por unidad base o sin fecha"
@@ -458,8 +467,16 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
 
     # ── Plazo de pago: escenario por defecto (decide amarillo) y el más largo plausible (decide rojo).
     inflation = max(monthly_inflation(indice, fecha) or 0.0, 0.0)
-    plazo = float(cfg.get("plazo_pago_meses", 1.0))
-    plazo_rojo = float(cfg.get("plazo_escenarios_rojo_meses", 2.0))
+    plazo_fuente: str | None = None
+    if plazo_pago_dias:
+        plazo = plazo_pago_dias / 30.0
+        # El plazo del pliego nunca ACORTA el escenario rojo (piso, no reemplazo): si encima es
+        # más largo que el supuesto genérico, manda el real.
+        plazo_rojo = max(plazo, float(cfg.get("plazo_escenarios_rojo_meses", 2.0)))
+        plazo_fuente = f"plazo de pago del pliego: {plazo_pago_dias} días"
+    else:
+        plazo = float(cfg.get("plazo_pago_meses", 1.0))
+        plazo_rojo = float(cfg.get("plazo_escenarios_rojo_meses", 2.0))
     factor = lambda m: (1 + inflation) ** m   # compuesto, no lineal (riesgo señalado por el prime)
     res.ajuste_financiero_pct = round((factor(plazo) - 1) * 100, 2)
     res.sobreprecio_pct = _pct(precio_estado_ub, res.ref_principal_valor)
@@ -541,6 +558,8 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
         res.semaforo = "verde"
 
     notas = []
+    if plazo_fuente:
+        notas.append(plazo_fuente)
     if res.presentacion_exacta:
         notas.append("misma presentación")
     if variante and res.estado_atributo in {"verificado", "por_defecto"}:
@@ -593,7 +612,8 @@ def run(conn: sqlite3.Connection, proceso_ids: list[int] | None = None,
         params.extend(proceso_ids)
     rows = conn.execute(
         # Los precios se fijan al ofertar: se compara a la fecha de apertura cuando existe (riesgo del prime).
-        f"SELECT r.*, COALESCE(p.fecha_apertura, p.fecha_adjudicacion, p.fecha_publicacion) AS fecha "
+        f"SELECT r.*, p.plazo_pago_dias AS plazo_pago_dias, "
+        f"COALESCE(p.fecha_apertura, p.fecha_adjudicacion, p.fecha_publicacion) AS fecha "
         f"FROM renglones r JOIN procesos p ON p.id = r.proceso_id WHERE {where}", params).fetchall()
     obs_cache: dict[str, list[Obs]] = {}
     counts = {"rojo": 0, "amarillo": 0, "verde": 0, "gris": 0}
@@ -621,7 +641,7 @@ def run(conn: sqlite3.Connection, proceso_ids: list[int] | None = None,
                       gap_maximo=gap_maximo,
                       indec_principal=bool(prod and prod.indec.get("verificado") == "oficial"),
                       variante=var, variante_obs=vfn, estado_atributo=estado_attr, bloquear_rojo=bloquear,
-                      variantes_ok=variantes_aceptadas(prod, var))
+                      variantes_ok=variantes_aceptadas(prod, var), plazo_pago_dias=r["plazo_pago_dias"])
         row = asdict(res)
         row["evidencia_json"] = json.dumps(row.pop("evidencia"), ensure_ascii=False)
         row["sensibilidad_json"] = json.dumps(row.pop("sensibilidad"), ensure_ascii=False)

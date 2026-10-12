@@ -57,6 +57,33 @@ def test_compare_flags_red_only_with_confidence_and_financial_adjustment():
     assert ok.sobreprecio_corroborado_pct == pytest.approx((330 / 1.03 ** 2 / 251 - 1) * 100, abs=0.05)
 
 
+def test_compare_usa_plazo_de_pago_del_pliego_para_el_ajuste_amarillo():
+    """P2 (jdemonasterio 2026-10-12): 'perfecto, usá el plazo de pago de la licitación' en vez
+    del supuesto genérico de 1 mes. Con 90 días (3 meses) el descuento financiero es mayor que
+    el default -> compara contra un precio más bajo -> menos sobreprecio ajustado."""
+    obs = [may(p, fuente=f) for p, f in [(240, "a"), (250, "b"), (260, "a"), (300, "b"), (320, "a")]]
+    base = compare(330.0, 1000.0, "2021-06-08", 1.0, obs, IPC, CFG)
+    con_plazo = compare(330.0, 1000.0, "2021-06-08", 1.0, obs, IPC, CFG, plazo_pago_dias=90)
+    assert con_plazo.ajuste_financiero_pct == pytest.approx((1.03 ** 3 - 1) * 100, abs=0.01)
+    assert con_plazo.ajuste_financiero_pct > base.ajuste_financiero_pct
+    assert con_plazo.sobreprecio_ajustado_pct == pytest.approx(
+        (330 / 1.03 ** 3 / 250 - 1) * 100, abs=0.05)
+    assert "plazo de pago del pliego: 90 días" in con_plazo.motivo
+
+
+def test_compare_plazo_de_pago_del_pliego_nunca_acorta_el_escenario_rojo():
+    """El plazo real es un PISO para el escenario rojo, nunca lo acorta: si el pliego dice
+    15 días (0,5 meses) pero el escenario rojo configurado ya usa 2 meses, el rojo sigue
+    evaluándose con 2 meses (no con 0,5) — así no se "ablanda" el rojo con un plazo corto."""
+    obs = [may(p, fuente=f) for p, f in [(240, "a"), (250, "b"), (260, "a"), (300, "b"), (320, "a"), (251, "a")]]
+    sin_plazo = compare(330.0, 1000.0, "2021-06-08", 1.0, obs, IPC, CFG)
+    con_plazo_corto = compare(330.0, 1000.0, "2021-06-08", 1.0, obs, IPC, CFG, plazo_pago_dias=15)
+    assert sin_plazo.semaforo == con_plazo_corto.semaforo == "rojo"
+    assert con_plazo_corto.sobreprecio_corroborado_pct == sin_plazo.sobreprecio_corroborado_pct
+    # Pero el ajuste del escenario amarillo SÍ usa el plazo corto real (0,5 meses, no 1).
+    assert con_plazo_corto.ajuste_financiero_pct == pytest.approx((1.03 ** 0.5 - 1) * 100, abs=0.01)
+
+
 def test_compare_same_brand_beats_statistical_reference():
     obs = [may(240, desc="Yerba Playadito 1 kg"), may(250), may(400, desc="Yerba Playadito 1 kg", fuente="b"),
            may(260), may(270, fuente="b")]

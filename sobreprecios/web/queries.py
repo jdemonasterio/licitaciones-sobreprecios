@@ -132,6 +132,8 @@ def proceso(conn: sqlite3.Connection, proceso_id: int) -> dict | None:
         "SELECT * FROM ordenes_compra WHERE proceso_id=? ORDER BY fecha, numero_oc", (proceso_id,))]
     data["alertas_proceso"] = [dict(r) for r in conn.execute(
         "SELECT * FROM alertas_proceso WHERE proceso_id=? ORDER BY monto DESC", (proceso_id,))]
+    data["actos"] = [dict(r) for r in conn.execute(
+        "SELECT * FROM comprar_actos WHERE proceso_id=? ORDER BY fecha, id", (proceso_id,))]
     return data
 
 
