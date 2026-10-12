@@ -30,6 +30,8 @@ Uso:
   python -m sobreprecios.cli investigar "https://www.boletinoficial.gob.ar/detalleAviso/primera/341035/20260422"
   python -m sobreprecios.cli goldens               # TSV de validación en _scratch/licitaciones/
   python -m sobreprecios.cli importar-juez 20261012-1530   # carga una corrida de auditoria/juez.py a /revision/juez
+  python -m sobreprecios.cli abreviaturas --buscar --con-llm --limite 20   # MEJORAS #1: minar abreviaturas
+  python -m sobreprecios.cli organismos-historia --con-llm   # MEJORAS #39: sucesión/renombres de organismos
   python -m sobreprecios.cli estado
 
 Tips:
@@ -248,11 +250,63 @@ def empresas(zip_path):
     _run("registro_sociedades", lambda c: registro_sociedades.run(c, Path(zip_path) if zip_path else None))
 
 
+@cli.command("organismos-historia")
+@click.option("--sin-llm", is_flag=True, help="Solo buscar y contar resultados, sin pedirle al LLM que confirme.")
+@click.option("--max-resultados", default=6, type=int, help="Resultados de noticias por búsqueda.")
+def organismos_historia_cmd(sin_llm, max_resultados):
+    """Grafo de sucesión de organismos (MEJORAS #39, P13): busca en Google News + LLM barato.
+
+    Semillas: `renombres` de config/organismos.yml (ej. Desarrollo Social -> Capital Humano).
+    Exige >= 4 medios independientes confirmando para marcar un arco 'confirmado'; con menos
+    queda 'propuesto' (nunca se borra lo encontrado). Nunca guarda un arco que cierre un ciclo.
+    """
+    from . import organismos_historia as oh
+    _run("organismos_historia", lambda c: oh.run(c, con_llm=not sin_llm, max_resultados=max_resultados))
+
+
 @cli.command()
 def normalizar():
     """Re-aplica la normalización de entidades (organismos, proveedores, personas) a toda la base."""
     from .normalize import aplicar
     _run("normalizar", aplicar.run)
+
+
+@cli.command()
+@click.option("--buscar", is_flag=True, help="Minar candidatos de abreviatura en descripciones sin producto.")
+@click.option("--limite", default=20, type=int, help="Tope de candidatos nuevos a proponer (con --buscar).")
+@click.option("--con-llm", is_flag=True, help="Verificar cada candidato con el LLM barato (role=cheap).")
+@click.option("--aprobar", default=None, help="Marca una abreviatura ya minada/propuesta como aprobada.")
+@click.option("--rechazar", default=None, help="Marca una abreviatura ya minada/propuesta como rechazada.")
+def abreviaturas(buscar, limite, con_llm, aprobar, rechazar):
+    """Diccionario de abreviaturas de producto (MEJORAS #1, P22): minar, listar, aprobar/rechazar.
+
+    Sin flags: lista config/abreviaturas.yml. --buscar mina descripciones SIN producto (renglones
+    y precios_mercado) y agrega candidatos nuevos con estado=propuesta (nunca aprobada, con o sin
+    --con-llm: el veredicto del LLM queda en 'nota' para que un humano decida). --aprobar/--rechazar
+    cambian el estado de una entrada ya existente (texto exacto de `abreviatura`, ej. "fid" o "p descr").
+    """
+    from . import abreviaturas as abrev
+
+    if aprobar:
+        ok = abrev.aprobar(aprobar, "aprobada")
+        click.echo(f"{'aprobada' if ok else 'no encontrada en config/abreviaturas.yml'}: {aprobar!r}")
+        return
+    if rechazar:
+        ok = abrev.aprobar(rechazar, "rechazada")
+        click.echo(f"{'rechazada' if ok else 'no encontrada en config/abreviaturas.yml'}: {rechazar!r}")
+        return
+    if buscar:
+        with db.session() as conn:
+            nuevas = abrev.proponer(conn, limite=limite, con_llm=con_llm)
+        if not nuevas:
+            click.echo("sin candidatos nuevos (o ya estaban todos en config/abreviaturas.yml)")
+            return
+        click.echo(f"{len(nuevas)} candidatos nuevos como 'propuesta' en config/abreviaturas.yml:")
+        for n in nuevas:
+            click.echo(f"  {n['abreviatura']!r} -> {n['expande']!r} ({n.get('producto_id') or 'varios'})")
+        return
+    for a in abrev.cargar():
+        click.echo(f"{a.estado:10s} {a.abreviatura!r:20s} -> {a.expande!r} ({a.producto_id or 'varios'})")
 
 
 @cli.command()

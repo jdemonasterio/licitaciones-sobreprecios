@@ -54,10 +54,12 @@ def guardar_hechos(conn, cuit: str, hechos: list[dict], fuente: str, extraido_po
             h["confianza"] = 0.3
         conn.execute(
             "INSERT OR IGNORE INTO empresa_hechos (cuit, tipo, persona, documento, cargo, valor, vigente_desde, "
-            "fuente, fuente_url, extraido_por, confianza, created_at, hecho_key) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "fecha_publicacion, renovacion_total, fuente, fuente_url, extraido_por, confianza, created_at, "
+            "hecho_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (cuit, h.get("tipo"), h.get("persona"), h.get("documento"), h.get("cargo"), h.get("valor"),
-             h.get("vigente_desde"), fuente, h.get("fuente_url"), extraido_por, h.get("confianza"),
+             h.get("vigente_desde"), h.get("fecha_publicacion"),
+             int(bool(h.get("renovacion_total"))) if h.get("renovacion_total") is not None else None,
+             fuente, h.get("fuente_url"), extraido_por, h.get("confianza"),
              db.now_iso(), _hecho_key(h)))
         n += 1
     db.close_superseded_facts(conn, cuit)

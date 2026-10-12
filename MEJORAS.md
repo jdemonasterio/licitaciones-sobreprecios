@@ -95,11 +95,16 @@ empresa/organismo/persona) para que jdemonasterio marque cuales uniones son corr
 Como verificar: `python -m sobreprecios.cli goldens` genera ese TSV en
 `_scratch/licitaciones/` con columnas `Tu veredicto` / `Tu comentario`.
 
-**#12 — Distinguir fecha del acto, vigencia y publicacion en autoridades.**
-Una designacion de directorio puede ser parcial: hoy el riesgo es cerrar todo
-el directorio anterior aunque el acto nuevo no lo reemplace entero.
-Como verificar: un hecho societario de `empresa_hechos` muestra las 3 fechas
-por separado, y una designacion parcial no cierra cargos que no menciona.
+**#12 — Distinguir fecha del acto, vigencia y publicacion en autoridades. HECHO (2026-10-12).**
+`empresa_hechos` tiene las columnas nuevas `fecha_publicacion` (parseada del pie "e. .../ v. ..."
+del aviso, `bo_sociedades._PUBLICACION_RE`) y `renovacion_total` (bool, detecta "nuevo
+directorio" / "por vencimiento de los cargos"). `db._close_superseded_autoridades` ya no cierra
+el directorio entero por default: solo cierra un cargo anterior si el acto posterior tiene el
+MISMO cargo o esta marcado `renovacion_total=1`. Ver DESIGN_sobreprecios.md (decision 2026-10-12,
+"Autoridades con ventana temporal + designacion parcial") y `tests/test_bo_sociedades.py` /
+`tests/test_db.py`. Pendiente: no hay un fixture real de una designacion PARCIAL de verdad (los
+3 fixtures de BO que tenemos son renovaciones totales); la logica esta probada con datos
+sinteticos en test_db.py, conviene confirmarla contra un aviso real cuando aparezca uno.
 
 **#13 — Revisar y marcar las 23 decisiones del LLM prime.**
 `_scratch/licitaciones/DECISIONES_prime.md` (no se sube a git) tiene 23
@@ -182,14 +187,25 @@ lugar del supuesto de 1 mes. Como verificar: test con fixtures de procesos viejo
 Averiguar si Diarco y otros mayoristas tienen historial (o solo precio actual); el valor está en el pasado
 (Wayback). Como verificar: tabla de fuentes con desde/hasta por mayorista.
 
-**#39 — Cambios de nombre de organismos con búsqueda web + LLM (P13).**
-Script que busca en diarios los cambios de identidad institucional y los da por buenos con 4 confirmaciones
-independientes; grafo acíclico de sucesión/absorción. Como verificar: Desarrollo Social → Capital Humano
-aparece como sucesión con sus fuentes.
+**#39 — Cambios de nombre de organismos con búsqueda web + LLM (P13). HECHO (2026-10-12), parcial.**
+`sobreprecios/organismos_historia.py` + tabla `organismos_sucesion` + CLI `organismos-historia`. Busca en
+Google News RSS (sin API key), le pide al LLM barato que confirme cada resultado (`prompts/organismo_sucesion.md`)
+y exige >= 4 medios distintos para `estado=confirmado` (si no, `propuesto`, nunca se descarta); grafo acíclico
+(`es_aciclico`, rechaza ciclos). Corrida real con las 2 semillas de `config/organismos.yml` (Desarrollo Social →
+Capital Humano, Seguridad → Seguridad Nacional): Google News devolvió 12 resultados cada una, pero este entorno
+no tiene `GEMINI_API_KEY` configurada, asi que ninguna llegó a confirmarse (quedaron en `propuesto`, 0
+confirmaciones) — comportamiento correcto y esperado (sin LLM nunca se asume una confirmación), no una falla del
+script. 14 tests con búsqueda/LLM mockeados cubren el umbral y la aciclicidad. **Pendiente de
+jdemonasterio**: correr `organismos-historia` con una clave de Gemini real para ver si de verdad llega a las 4
+confirmaciones para estos 2 casos (o si Desarrollo Social → Capital Humano / Seguridad → Seguridad Nacional no
+tienen suficiente cobertura de prensa que lo diga explícitamente — posible, son cambios mencionados de pasada en
+notas políticas, no necesariamente "fuentes institucionales anunciando el cambio de nombre"). La vista de
+agrupación histórica (#14) todavía no lee este grafo (a propósito, queda para cuando #39 tenga casos confirmados
+de verdad).
 
-**#40 — Autoridades de empresas con ventana temporal (riesgo del prime).**
-Buscar notas de diarios que fechen la designación y en qué Boletín salió; distinguir fecha del acto, vigencia y
-publicación. Como verificar: una designación parcial no cierra cargos que no menciona.
+**#40 — Autoridades de empresas con ventana temporal (riesgo del prime). HECHO (2026-10-12).**
+Ver #12 (mismo trabajo): `fecha_publicacion` + `renovacion_total` en `empresa_hechos`, designación parcial ya no
+cierra cargos que el acto no menciona.
 
 **#44 — Validación humana de las referencias de mercado (P16, P17, P18; dentro de #34).**
 En la pantalla del caso, el humano marca cada precio de mercado (sobre todo los dos que confirman el mínimo) como
@@ -301,6 +317,19 @@ Hoy estan marcadas `verificado: inferido` (500 g y 800 g respectivamente): no
 pueden ser referencia principal hasta confirmarse con la fuente oficial.
 Como verificar: `config/productos.yml` muestra `verificado: confirmado` para
 esos dos productos, con la fuente que lo confirma.
+
+**#50 — Diccionario de abreviaturas de producto (owner, P22). HECHO (2026-10-12).**
+`config/abreviaturas.yml` + `sobreprecios/abreviaturas.py` (expansión aditiva/idempotente antes de
+`catalog.match_rules`, nunca por substring) + CLI `abreviaturas --buscar [--limite N] [--con-llm] |
+--aprobar X | --rechazar X` (minería determinística por prefijo/esqueleto-sin-vocales sobre
+descripciones sin producto, siempre `estado: propuesta`, nunca auto-aprobada). Seeds aprobados:
+`fid`→fideos, `lch`→leche, `desc`/`descr`→descremada, `"p descr"`→"parcialmente descremada" (de
+`productos_ajustes.yml`) + `hvo`→huevo, `int`→integral (encontrados AL MEDIR el impacto real de
+"fid": sin ellos, fideos al huevo/integral abreviados colaban como fideos comunes). Medido contra
+`data/sobreprecios.db`: 63 de 4939 descripciones de `precios_mercado` sin producto pasan a tener uno
+(fideos_secos vía "fid"), 0 en `renglones` (las compras oficiales no abrevian así), 0 falsos
+positivos nuevos. Ver DESIGN_sobreprecios.md (decisión 2026-10-12). Pendiente: correr `abreviaturas
+--buscar --con-llm` de verdad (con clave) para ver qué otros candidatos aparecen más allá de "fid".
 
 ## Operacion
 

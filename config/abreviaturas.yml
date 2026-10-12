@@ -1,0 +1,90 @@
+# Diccionario de abreviaturas / token-families por producto (MEJORAS #1, P22).
+#
+# Cada entrada expande una abreviatura a su forma completa ANTES del macheo por reglas
+# (sobreprecios.abreviaturas.expandir, enganchado en catalog.match_rules): nunca reemplaza el
+# texto original, solo AGREGA los tokens de `expande` al final de la descripción si `abreviatura`
+# aparece como tokens COMPLETOS y contiguos (nunca substring: "fid" no matchea "confidencial").
+# Por eso es seguro: una regla de exclusión que ya buscaba el token abreviado literal (ver
+# config/productos_ajustes.yml, "desc"/"descr"/"p descr") sigue funcionando igual.
+#
+# estado: aprobada (se aplica) | propuesta (esperando que un humano la revise, `cli.py
+#   abreviaturas --aprobar <texto>`) | rechazada (se guarda para no volver a proponerla, nunca
+#   se aplica). NUNCA se auto-aprueba desde el código, ni siquiera con --con-llm: el juicio del
+#   LLM queda en evidencia/nota para ayudar a decidir, el estado sigue en "propuesta".
+# producto_id: a qué producto del catálogo ayuda (informativo; puede ser null si aplica a varios,
+#   como "leche").
+# fuente: humano (vista a mano / seed de config/productos_ajustes.yml) | llm (propuesta por
+#   `abreviaturas --buscar --con-llm`).
+
+abreviaturas:
+  - abreviatura: fid
+    expande: fideos
+    producto_id: fideos_secos
+    estado: aprobada
+    evidencia: ["FID GUISERO 500G", "FID TIPO MOSTACHOL X500GRS", "FID SECOS SURTIDOS"]
+    fecha: "2026-10-12"
+    fuente: humano
+
+  - abreviatura: lch
+    expande: leche
+    producto_id: null
+    estado: aprobada
+    evidencia: ["LCH ENTERA SACHET 1LT", "LCH POLVO ENTERA FORT X800G"]
+    fecha: "2026-10-12"
+    fuente: humano
+
+  - abreviatura: desc
+    expande: descremada
+    producto_id: null
+    estado: aprobada
+    evidencia: ["LECHE ENTERA DESC SACHET"]
+    fecha: "2026-10-12"
+    fuente: humano
+    nota: "Seed tomado de config/productos_ajustes.yml (excluye_extra de leche_polvo_entera y
+      leche_entera_fluida, 2026-10-11): ya probado como señal de exclusion. Hoy NO cambia ningun
+      macheo (no hay producto 'leche descremada' en config/productos.yml) — lo aprobamos igual
+      porque es de riesgo cero y queda listo para el dia que se agregue ese producto."
+
+  - abreviatura: descr
+    expande: descremada
+    producto_id: null
+    estado: aprobada
+    evidencia: ["LECHE UAT P DESCR FORT"]
+    fecha: "2026-10-12"
+    fuente: humano
+    nota: "Mismo caso que 'desc': seed de productos_ajustes.yml (curado_por_claude de
+      leche_entera_fluida: 'juez casos: LECHE UAT P DESCR FORT entraba como entera'). Riesgo cero
+      hoy por el mismo motivo."
+
+  - abreviatura: "p descr"
+    expande: "parcialmente descremada"
+    producto_id: null
+    estado: aprobada
+    evidencia: ["LECHE UAT P DESCR FORT"]
+    fecha: "2026-10-12"
+    fuente: humano
+    nota: "Seed de productos_ajustes.yml (leche_entera_fluida, excluye_extra: 'p descr'). Riesgo
+      cero hoy por el mismo motivo que 'desc'/'descr'."
+
+  - abreviatura: hvo
+    expande: huevo
+    producto_id: null
+    estado: aprobada
+    evidencia: ["FID B BCA LAM HVO FINO", "FID DON FELIPE TALL HVO"]
+    fecha: "2026-10-12"
+    fuente: humano
+    nota: "Encontrado midiendo el impacto real de 'fid' (ver abajo): sin esta entrada, 'fid' hace
+      que fideos al huevo ABREVIADOS como HVO entren a fideos_secos, que los excluye por regla
+      (excluye: huevo) pero solo si el token esta completo. 'huevo'/'integral' no aparecen en
+      ningun incluye de config/productos.yml (grep 2026-10-12): agregar esta entrada solo PUEDE
+      sumar exclusiones correctas, nunca una inclusion falsa."
+
+  - abreviatura: int
+    expande: integral
+    producto_id: null
+    estado: aprobada
+    evidencia: ["FID INT SAN AGUSTIN MOST"]
+    fecha: "2026-10-12"
+    fuente: humano
+    nota: "Mismo caso que 'hvo': encontrado midiendo el impacto de 'fid' (fideos integrales
+      abreviados como INT se excluyen). Mismo chequeo de riesgo cero (ver nota de 'hvo')."

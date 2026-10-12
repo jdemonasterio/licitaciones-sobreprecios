@@ -339,6 +339,26 @@ CREATE TABLE IF NOT EXISTS validaciones_renglon (
     created_at TEXT NOT NULL,
     UNIQUE (renglon_id, parte)
 );
+
+-- Grafo de sucesión institucional entre organismos (MEJORAS #39, P13): cada fila es UN arco
+-- "desde" (nombre/código anterior) -> "hacia" (nombre/código nuevo), confirmado con búsqueda web +
+-- LLM barato (ver sobreprecios/organismos_historia.py). "confirmado" exige >= 4 fuentes
+-- independientes (dominios/medios distintos); con menos queda "propuesto" (nunca se borra lo
+-- encontrado). Nunca se escribe un arco que cierre un ciclo (A->B->...->A): ver
+-- organismos_historia.es_aciclico. Es de SOLO LECTURA para el resto del sistema (no se auto-aplica
+-- a `organismo_canonico`; la agrupación histórica sigue siendo explícita, MEJORAS #14).
+CREATE TABLE IF NOT EXISTS organismos_sucesion (
+    id INTEGER PRIMARY KEY,
+    saf TEXT,
+    desde TEXT NOT NULL,            -- nombre del organismo anterior
+    hacia TEXT NOT NULL,            -- nombre del organismo nuevo
+    tipo TEXT NOT NULL,             -- renombre | absorcion | division
+    fecha TEXT,
+    fuentes_json TEXT,              -- [{url, dominio, titulo, fecha}, ...]
+    estado TEXT NOT NULL DEFAULT 'propuesto',   -- confirmado | propuesto
+    created_at TEXT,
+    UNIQUE (desde, hacia)
+);
 """
 
 
@@ -364,12 +384,12 @@ def sync_empresas(conn: sqlite3.Connection) -> int:
 def close_superseded_facts(conn: sqlite3.Connection, cuit: str) -> None:
     """Cierra (vigente_hasta) los hechos reemplazados por un acto posterior del mismo tipo.
 
-    Domicilio, razón social y autoridades: cada acto nuevo reemplaza al anterior
-    completo (una designación de directorio nombra a TODO el directorio). Los
-    hechos con la misma fecha son del mismo acto y no se cierran entre sí. Socios
-    y sanciones no se cierran solos: un socio nuevo no implica que el anterior se fue.
+    Domicilio y razón social: cada acto nuevo reemplaza al anterior completo (es un solo
+    valor, no un directorio). Autoridades: ver `_close_superseded_autoridades` (MEJORAS #12/#40 —
+    una designación puede ser PARCIAL y no hay que cerrar cargos que el acto nuevo no menciona).
+    Socios y sanciones no se cierran solos: un socio nuevo no implica que el anterior se fue.
     """
-    for tipo in ("domicilio", "domicilio_fiscal", "razon_social", "autoridad"):
+    for tipo in ("domicilio", "domicilio_fiscal", "razon_social"):
         rows = conn.execute(
             "SELECT id, vigente_desde FROM empresa_hechos WHERE cuit=? AND tipo=? AND vigente_desde IS NOT NULL",
             (cuit, tipo)).fetchall()
@@ -379,7 +399,46 @@ def close_superseded_facts(conn: sqlite3.Connection, cuit: str) -> None:
             if later:
                 conn.execute("UPDATE empresa_hechos SET vigente_hasta=? WHERE id=? AND vigente_hasta IS NULL",
                              (later[0], row["id"]))
+    _close_superseded_autoridades(conn, cuit)
     conn.commit()
+
+
+def _close_superseded_autoridades(conn: sqlite3.Connection, cuit: str) -> None:
+    """Cierra cargos de `empresa_hechos` tipo='autoridad' reemplazados por un acto posterior.
+
+    Riesgo documentado en MEJORAS #12/#40: una designación puede ser PARCIAL (el acto nuevo
+    solo nombra un reemplazo de Presidente, por ejemplo) — cerrar TODO el directorio anterior
+    en ese caso inventaría una fecha de salida para directores que el acto ni menciona. Por eso
+    un acto posterior solo cierra los cargos anteriores que:
+      - tiene el MISMO cargo (ej. "presidente" reemplaza al "presidente" anterior), o
+      - el acto está marcado `renovacion_total=1` (el texto dice algo como "nuevo directorio"
+        o "por vencimiento de los cargos de los directores": ahí sí se reemplaza TODO, aunque
+        el acto no repita cada cargo uno por uno — ver `bo_sociedades._RENOVACION_TOTAL_RE`).
+    Hechos con la misma fecha son del mismo acto y no se cierran entre sí.
+    """
+    rows = conn.execute(
+        "SELECT id, vigente_desde, cargo, renovacion_total FROM empresa_hechos "
+        "WHERE cuit=? AND tipo='autoridad' AND vigente_desde IS NOT NULL", (cuit,)).fetchall()
+    if not rows:
+        return
+    fechas = sorted({r["vigente_desde"] for r in rows})
+    cargos_por_fecha: dict[str, set] = {}
+    total_por_fecha: dict[str, bool] = {}
+    for fecha in fechas:
+        del_acto = [r for r in rows if r["vigente_desde"] == fecha]
+        cargos_por_fecha[fecha] = {r["cargo"] for r in del_acto if r["cargo"]}
+        total_por_fecha[fecha] = any(bool(r["renovacion_total"]) for r in del_acto)
+    for row in rows:
+        closing = None
+        for fecha in fechas:
+            if fecha <= row["vigente_desde"]:
+                continue
+            if total_por_fecha[fecha] or row["cargo"] in cargos_por_fecha[fecha]:
+                closing = fecha
+                break
+        if closing:
+            conn.execute("UPDATE empresa_hechos SET vigente_hasta=? WHERE id=? AND vigente_hasta IS NULL",
+                         (closing, row["id"]))
 
 
 def now_iso() -> str:
@@ -435,6 +494,11 @@ MIGRATIONS = [
     ("ofertas", "causa_desestimacion", "TEXT"),
     ("comparaciones", "oferta_min_desestimada", "INTEGER"),
     ("comparaciones", "oferta_min_causa", "TEXT"),
+    # MEJORAS #12/#40: separar fecha del acto (vigente_desde, ya existía) de la fecha de
+    # PUBLICACIÓN en el BO (puede ser semanas/meses después, ver bo_sociedades._PUBLICACION_RE)
+    # y marcar si el acto es una renovación TOTAL del directorio (ver _close_superseded_autoridades).
+    ("empresa_hechos", "fecha_publicacion", "TEXT"),
+    ("empresa_hechos", "renovacion_total", "INTEGER"),
 ]
 
 

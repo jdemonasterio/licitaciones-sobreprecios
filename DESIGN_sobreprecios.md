@@ -27,6 +27,8 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Reportes | `sobreprecios/reports.py` | HTML/XLSX/CSV con metodología y limitaciones |
 | Goldens | `sobreprecios/goldens.py` | TSV de validación manual en `_scratch/licitaciones/` |
 | Normalización | `sobreprecios/normalize/` | CUIT (dígito verificador), razones sociales, personas, organismos; `entidades_alias` |
+| Abreviaturas | `sobreprecios/abreviaturas.py`, `config/abreviaturas.yml` | Diccionario de abreviaturas de producto; expansión aditiva pre-matcher + minería de candidatos (CLI `abreviaturas`) |
+| Sucesión de organismos | `sobreprecios/organismos_historia.py` | Grafo de renombres/absorciones (tabla `organismos_sucesion`), confirmado con búsqueda web + LLM barato (CLI `organismos-historia`) |
 | Archivo SEPA | `sources/sepa_archivo.py` | Volcados diarios SEPA 2024-08 → hoy (archivo comunitario preciazo), mediana por cadena |
 | Compuerta | `sobreprecios/revision.py` | "publicable" atado a una huella del cálculo; se revoca solo |
 | PDFs | `sobreprecios/pdf_text.py` | pdfplumber por columnas → OCR → LLM (benchmark 2026-10-11) |
@@ -273,6 +275,66 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   el primero que aparece llevado hacia atrás con el IPC del mes exacto, rotulado "PRECIO INFERIDO" en el motivo,
   confianza baja, nunca rojo. Si existe un dato anterior (aunque viejo) no se infiere: rige `gap_maximo_dias`.
 
+- **2026-10-12 · Diccionario de abreviaturas de producto (MEJORAS #1, P22)**: `config/abreviaturas.yml` (lista de
+  `{abreviatura, expande, producto_id, estado, evidencia, fecha, fuente}`, `estado` ∈ aprobada|propuesta|rechazada)
+  + `sobreprecios/abreviaturas.expandir()`, enganchado en `catalog.match_rules` (una línea: `tokens(abreviaturas.
+  expandir(descripcion))`). Es ADITIVO (nunca borra texto) e idempotente: agrega, al final de la descripción, los
+  tokens de la expansión de cada abreviatura APROBADA que aparece como tokens COMPLETOS y contiguos (nunca
+  substring: "fid" no le pega a "confidencial"). Seeds aprobados (`fuente: humano`, de los mismos ejemplos que ya
+  probó `config/productos_ajustes.yml` como exclusión): `fid`→fideos, `lch`→leche, `desc`/`descr`→descremada,
+  `"p descr"`→"parcialmente descremada". `hvo`→huevo e `int`→integral se agregaron DESPUÉS, al medir el impacto
+  real (ver abajo): sin ellos, "fid" hacía que fideos al huevo/integrales abreviados pasaran el `incluye` de
+  `fideos_secos` sin activar su propio `excluye` (que busca "huevo"/"integral" completos, no abreviados) — mismo
+  mecanismo, two-sided. Minería (`cli.py abreviaturas --buscar [--limite N] [--con-llm] | --aprobar X | --rechazar
+  X`, módulo `minar_candidatos`): sobre descripciones SIN producto (`renglones` + `precios_mercado`), tokens de
+  2-6 letras con frecuencia >= 2 que son prefijo o "esqueleto sin vocales" de una palabra `incluye` de algún
+  producto; se agregan siempre con `estado: propuesta` (nunca auto-aprobado, con o sin `--con-llm`: el veredicto
+  del LLM barato, con el prompt `prompts/abreviatura_candidata.md`, queda en `nota`/`llm_veredicto` para que un
+  humano decida). **Medición real** (copia de `data/sobreprecios.db`, 2026-10-12): de 1062 descripciones de
+  `renglones` sin producto, 0 contienen "fid"/"lch" (las compras oficiales no abrevian así); de 4939 descripciones
+  de `precios_mercado` sin producto, 63 pasan a tener producto (`fideos_secos` vía "fid") sin crear ningún falso
+  positivo nuevo (las 3 que lo eran — fideos al huevo/integral abreviados — se corrigieron agregando `hvo`/`int`,
+  ver arriba); "lch" aparece una sola vez en la base principal (impacto real nulo hoy, seed de bajo riesgo para
+  cuando aparezcan más SKUs así).
+
+- **2026-10-12 · Sucesión de organismos con búsqueda web + LLM (MEJORAS #39, P13)**: tabla `organismos_sucesion`
+  (`desde`, `hacia`, `tipo` renombre|absorcion|division, `fecha`, `fuentes_json`, `estado` confirmado|propuesto,
+  `UNIQUE(desde, hacia)`), SOLO LECTURA para el resto del sistema (nada agrupa por este grafo todavía; la vista de
+  MEJORAS #14 lo haría con `organismos_historia.leer()`). Semillas: `renombres` de `config/organismos.yml`
+  (`anterior = nombres[0]`, el "nombre a mostrar" documentado en ese YAML). Búsqueda: Google News RSS
+  (`news.google.com/rss/search`, sin API key, 2 queries por semilla — frase exacta y "X pasa a llamarse Y" —
+  deduplicadas por URL), parseado con `defusedxml.ElementTree` (no `xml.etree` a secas: el RSS es contenido
+  EXTERNO no confiable, ver CLAUDE.md). Cada resultado (título + medio + fecha) se le pasa al LLM barato
+  (`prompts/organismo_sucesion.md`, schema `{confirma, tipo, fecha, razon}`) — nunca se asume una confirmación sin
+  LLM (`--sin-llm` solo cuenta resultados, nunca confirma: "un resultado falso es peor que ninguno"). Exige >= 4
+  **medios DISTINTOS** confirmando (`<source>` del RSS como proxy de independencia — Google News no expone el
+  dominio real sin resolver el redirect uno por uno, documentado como decisión, no como garantía matemática) para
+  `estado=confirmado`; con menos, `estado=propuesto` con lo que se encontró (nunca se descarta). `es_aciclico()`
+  (BFS sobre los arcos ya guardados) rechaza cualquier arco que cierre un ciclo, incluso a sí mismo. CLI
+  `organismos-historia [--sin-llm] [--max-resultados N]`. **Corrida real** (2026-10-12, sin `GEMINI_API_KEY` en
+  este entorno): ambas semillas (SAF 311 Desarrollo Social→Capital Humano, SAF 343 Seguridad→Seguridad Nacional)
+  encontraron 12 resultados de noticias cada una (Google News respondió 200 OK) pero quedaron en `estado=propuesto`
+  con 0 confirmaciones — correcto y esperado: sin LLM no hay forma de leer si una nota confirma el cambio
+  institucional, así que nunca se asume que sí. Pendiente: correr con una clave real para ver si llega a las 4
+  confirmaciones independientes (la lógica de umbral/aciclicidad está cubierta por 14 tests con búsqueda/LLM
+  mockeados, `tests/test_organismos_historia.py`).
+
+- **2026-10-12 · Autoridades con ventana temporal + designación parcial (MEJORAS #12, #40)**: `empresa_hechos`
+  separa 3 fechas, nunca confundidas: `vigente_desde` (fecha del ACTO: asamblea/acta, ya existía),
+  `fecha_publicacion` (NUEVA columna: cuándo salió impreso el aviso en el BO — pie "e. DD/MM/AAAA Nº ... v. ...",
+  casi siempre semanas/meses después del acto, `bo_sociedades._PUBLICACION_RE`) y "vigencia" = el rango
+  `(vigente_desde, vigente_hasta)` de siempre. `renovacion_total` (NUEVA columna, bool): el acto reemplaza TODO el
+  directorio (texto "nuevo directorio" / "por vencimiento de los cargos de los directores" /
+  `bo_sociedades._RENOVACION_TOTAL_RE`) vs. uno PARCIAL. `db._close_superseded_autoridades` (reemplaza el bloque
+  que cerraba "autoridad" junto con domicilio/razón social) solo cierra un cargo anterior si el acto posterior
+  tiene el MISMO cargo o está marcado `renovacion_total=1` — antes cerraba TODO el directorio con la fecha de
+  cualquier acto posterior, aunque ese acto solo reemplazara al presidente (inventaba una fecha de salida para
+  directores que el acto ni mencionaba). Domicilio/domicilio_fiscal/razón social siguen cerrándose enteros (son un
+  solo valor, no un directorio). Tests con los fixtures reales de BO ya existentes (`tests/test_bo_sociedades.py`:
+  fecha de publicación 2014/2016 distinta de la del acto, `renovacion_total` por las dos frases) + 3 tests nuevos
+  de designación parcial/total en `tests/test_db.py` (el viejo `test_close_superseded_facts_replaces_whole_board`
+  describía exactamente el bug que esto corrige, se reemplazó por los 3 casos).
+
 ## 3. Cómo operar
 
 | Tarea | Comando / lugar |
@@ -288,6 +350,8 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Sin IA | `LIC_LLM_OFFLINE=1` |
 | Validar | `python -m sobreprecios.cli goldens` → TSV en `_scratch/licitaciones/` |
 | Normalizar entidades | `python -m sobreprecios.cli normalizar` (también corre dentro del pipeline) |
+| Minar/aprobar abreviaturas de producto | `python -m sobreprecios.cli abreviaturas [--buscar [--limite N] [--con-llm]] [--aprobar X] [--rechazar X]` → `config/abreviaturas.yml` |
+| Sucesión de organismos (renombres/absorciones) | `python -m sobreprecios.cli organismos-historia [--sin-llm] [--max-resultados N]` |
 | Auditar con juez | `python -m auditoria.juez --modelo <modelo> --n 60 --max-usd 5` → `_scratch/licitaciones/auditoria/` |
 | Auditar casos (rojos + cambios) | `python -m auditoria.juez --modelo <modelo> --modo casos --n 45 --max-usd 2.5 --ids 1761,1787` |
 | Ver actos admin./ofertas desestimadas/plazo de pago de un proceso COMPR.AR | automático: se muestran en `/licitacion/<id>` al importar (sin comando propio) |
@@ -311,6 +375,12 @@ redirect a host no permitido). El simulador (`tests/e2e/`) cubre los journeys de
 in-line en `/licitacion/<id>` con un navegador real, precios de programa (los tres formatos con fixtures, macheo, réplica por
 vigencia, idempotencia, fallback y familia en el comparador) y validaciones de programa (guardar/leer, import de TSV
 del juez); el simulador también cubre marcar una fila de "programa" ✗ y verla excluida del comparador.
+Diccionario de abreviaturas (`tests/test_abreviaturas.py`): expansión aditiva/idempotente, nunca por substring,
+minería determinística (sin depender del orden de un `set`), nunca auto-aprueba con `--con-llm` mockeado,
+regresión del caso real "fid" + "hvo"/"int" (huevo/integral abreviados no deben entrar como fideos comunes).
+Sucesión de organismos (`tests/test_organismos_historia.py`, 14 tests, búsqueda/LLM mockeados): semillas reales de
+`config/organismos.yml`, umbral de 4 medios independientes, deduplicación por URL entre queries, grafo acíclico
+(rechaza un ciclo y un arco a sí mismo), nunca confirma sin LLM.
 
 ## 5. Límites conocidos
 
@@ -333,6 +403,17 @@ del juez); el simulador también cubre marcar una fila de "programa" ✗ y verla
   esto de raíz cuando se implemente.
 - El proxy de documentos (`/doc`) no persiste nada más que un cache de 1 día: no sirve como archivo para un
   reporte que se vaya a mandar después (para eso, descargar el PDF directo con el link de "Abrir el proceso").
+- Sucesión de organismos: "medios independientes" usa el `<source>` del RSS de Google News como proxy de dominio
+  (no se resuelve el link de redirección uno por uno) — documentado como decisión, no como garantía matemática de
+  independencia. Sin `GEMINI_API_KEY` configurada, `organismos-historia` encuentra resultados pero nunca los
+  confirma (no hay LLM que juzgue la nota): quedó así en la corrida real de este entorno (2026-10-12, ambas
+  semillas en `estado=propuesto`, 12 resultados cada una) — no es un bug, es el fallback seguro a propósito.
+- Diccionario de abreviaturas: la minería (`abreviaturas --buscar`) solo propone tokens de UNA palabra (prefijo o
+  "esqueleto sin vocales" contra las palabras `incluye` del catálogo); abreviaturas de dos o más palabras ("p
+  descr") no se minan solas, se agregan a mano. Agregar una abreviatura de producto puede exponer gaps de exclusión
+  ya existentes en el catálogo (ver decisión 2026-10-12, "fid" + huevo/integral abreviados): cada seed nuevo que se
+  apruebe conviene medirlo contra la base principal antes, no asumir que es inocuo solo porque el token en sí es
+  claro.
 - Precios de programa: abr-dic 2023 sin edición encontrada (ver decisión 2026-10-12); PDF de 2022-01 pierde ~3 %
   de filas de aceite por una omisión de palabra en la fuente misma (ver esa decisión); el PDF nacional de
   2022-01 con ~30.000 precios (12,6 MB) no se incorporó, solo el de CABA.
