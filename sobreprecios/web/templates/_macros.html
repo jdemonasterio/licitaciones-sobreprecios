@@ -1,0 +1,17 @@
+{# Visor de documentos en el lugar (pedido de jdemonasterio, revisión de journeys): un panel
+   plegable que carga /doc?url=... en un <iframe> (la allowlist de host y el sandbox ya los pone
+   el proxy, revision_humana.obtener_documento / app.doc_proxy) en vez de abrir una pestaña
+   nueva, con el link directo como respaldo si el documento no carga ahí (p. ej. el visor de GDE
+   que pide sesión). `key` tiene que ser único en la página para que soft-nav recuerde si el
+   panel estaba abierto entre refrescos (ver data-soft-key en static/soft-nav.js). #}
+{% macro doc_viewer(url, etiqueta, key) %}
+{% if url %}
+<details data-soft-key="{{ key }}" style="margin-top:6px"
+         ontoggle="if(this.open){var f=this.querySelector('iframe'); if(f && !f.getAttribute('src')) f.setAttribute('src', f.dataset.src);}">
+    <summary>{{ etiqueta }}</summary>
+    <iframe class="doc-frame" data-src="/doc?url={{ url|urlencode }}" title="{{ etiqueta }}" loading="lazy"></iframe>
+    <p class="muted small">Si no carga acá (algunos visores de COMPR.AR piden sesión):
+    <a href="{{ url }}" target="_blank" rel="noopener">abrir en una pestaña nueva ↗</a>.</p>
+</details>
+{% endif %}
+{% endmacro %}

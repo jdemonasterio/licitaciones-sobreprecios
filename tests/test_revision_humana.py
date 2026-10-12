@@ -360,3 +360,131 @@ def test_doc_escapa_el_error_y_aisla_el_html_externo(monkeypatch):
     monkeypatch.setattr(webapp.revision_humana, "obtener_documento", lambda url: (b"<svg onload=alert(1)>", "image/svg+xml"))
     otro = client.get("/doc", params={"url": "https://comprar.gob.ar/x.svg"})
     assert otro.headers["content-type"].startswith("text/plain")
+
+
+# ── Checklist de explicaciones alternativas (MEJORAS #49.6) ────────────────
+
+def test_guardar_explicacion_rechaza_item_y_estado_desconocidos(tmp_path):
+    with db.session(tmp_path / "t.db") as conn:
+        _crear_renglon_fila(conn, 1)
+        with pytest.raises(ValueError):
+            rh.guardar_explicacion(conn, 1, "item_inventado", "verificado", "", "mateo")
+        with pytest.raises(ValueError):
+            rh.guardar_explicacion(conn, 1, "logistica", "estado_inventado", "", "mateo")
+
+
+def test_explicaciones_vigentes_siempre_trae_las_5_con_pendiente_por_defecto(tmp_path):
+    with db.session(tmp_path / "t.db") as conn:
+        _crear_renglon_fila(conn, 1)
+        out = rh.explicaciones_vigentes(conn, 1)
+    assert set(out) == set(rh.EXPLICACIONES_ITEMS)
+    assert all(v["estado"] == "pendiente" for v in out.values())
+
+
+def test_guardar_explicacion_queda_vigente_y_la_mas_reciente_pisa(tmp_path):
+    with db.session(tmp_path / "t.db") as conn:
+        _crear_renglon_fila(conn, 1)
+        rh.guardar_explicacion(conn, 1, "logistica", "verificado", "entrega en otra provincia", "mateo")
+        rh.guardar_explicacion(conn, 1, "logistica", "no_aplica", "en realidad no", "mateo")
+        out = rh.explicaciones_vigentes(conn, 1)
+    assert out["logistica"]["estado"] == "no_aplica"
+    assert out["logistica"]["nota"] == "en realidad no"
+    # Las otras 4 siguen en pendiente (no se tocaron).
+    assert all(out[item]["estado"] == "pendiente" for item in rh.EXPLICACIONES_ITEMS if item != "logistica")
+
+
+# ── Comprobante de cálculo (MEJORAS #49.2) ──────────────────────────────────
+
+def test_comprobante_de_renglon_inexistente_es_none(tmp_path):
+    with db.session(tmp_path / "t.db") as conn:
+        assert rh.comprobante(conn, 9999) is None
+
+
+def test_comprobante_trae_sensibilidad_explicaciones_y_estado_del_proceso(tmp_path):
+    with db.session(tmp_path / "t.db") as conn:
+        db.upsert(conn, "procesos", {"fuente": "bo_primera", "external_id": "p1", "numero": "1-2026",
+                                     "organismo": "ORG X", "estado_revision": "revisado",
+                                     "created_at": db.now_iso(), "updated_at": db.now_iso()},
+                 ("fuente", "external_id"))
+        proceso_id = conn.execute("SELECT id FROM procesos WHERE external_id='p1'").fetchone()[0]
+        conn.execute("INSERT INTO renglones (id, proceso_id, descripcion, external_key) "
+                    "VALUES (1, ?, 'yerba', 'k1')", (proceso_id,))
+        conn.execute("INSERT INTO comparaciones (renglon_id, semaforo, motivo_codigo, evidencia_json, "
+                    "sensibilidad_json) VALUES (1, 'amarillo', 'ok', '[]', '{\"0m\": 10.0, \"1m\": 8.0}')")
+        conn.commit()
+        rh.guardar_explicacion(conn, 1, "impuestos", "verificado", "tiene IVA distinto", "mateo")
+
+        data = rh.comprobante(conn, 1)
+    assert data is not None
+    assert data["sensibilidad"] == {"0m": 10.0, "1m": 8.0}
+    assert data["explicaciones"]["impuestos"]["estado"] == "verificado"
+    assert data["proceso_estado"]["estado_revision"] == "revisado"
+    assert data["par_corroborado"] == []   # sin ref_corroborada, no hay par que mostrar
+
+
+def test_comprobante_par_corroborado_trae_la_familia_de_cada_observacion(tmp_path):
+    import json as _json
+    from sobreprecios.pipeline.compare import Obs
+    from dataclasses import asdict
+    with db.session(tmp_path / "t.db") as conn:
+        _crear_renglon_fila(conn, 1)
+        evidencia = [asdict(Obs("seed_mayorista_a", "mayorista", "2021-06-07", 457.0, 1.0, "obs a")),
+                    asdict(Obs("seed_mayorista_b", "mayorista", "2021-06-07", 460.0, 1.0, "obs b"))]
+        conn.execute("INSERT INTO comparaciones (renglon_id, semaforo, motivo_codigo, evidencia_json, "
+                    "ref_corroborada) VALUES (1, 'amarillo', 'ok', ?, 460.0)", (_json.dumps(evidencia),))
+        conn.commit()
+        data = rh.comprobante(conn, 1)
+    assert len(data["par_corroborado"]) == 2
+    assert {o["familia"] for o in data["par_corroborado"]} == {"seed_mayorista_a", "seed_mayorista_b"}
+
+
+# ── Cola: colores en vivo y resumen corto (pedido de jdemonasterio, revisión de journeys) ──
+
+def test_cola_colores_en_vivo_coinciden_con_comparaciones_sin_depender_del_origen(tmp_path):
+    with db.session(tmp_path / "t.db") as conn:
+        _seed_comparacion(conn, 1, 1, "rojo", "ok")
+        _seed_comparacion(conn, 2, 1, "amarillo", "ok")
+        _seed_comparacion(conn, 3, 1, "verde", "ok")
+        _seed_comparacion(conn, 4, 1, "gris", "sin_datos")
+        datos = rh.cola(conn)
+        # Un caso rojo que un humano ya resolvio NO deberia inflar el color en vivo si el
+        # comparador lo recalculo distinto despues (a diferencia de `counts`, atado al origen).
+        conn.execute("UPDATE revisiones_caso SET estado='resuelto' WHERE renglon_id=1")
+        conn.execute("UPDATE comparaciones SET semaforo='verde' WHERE renglon_id=1")
+        conn.commit()
+        datos2 = rh.cola(conn)
+    assert datos["colores"] == {"rojo": 1, "amarillo": 1, "verde": 1, "gris": 1}
+    assert datos2["colores"]["rojo"] == 0 and datos2["colores"]["verde"] == 2
+
+
+def test_cola_resumen_corto_combina_producto_envase_y_motivo(tmp_path):
+    with db.session(tmp_path / "t.db") as conn:
+        db.upsert(conn, "procesos", {"fuente": "bo_primera", "external_id": "p1",
+                                     "organismo": "ORG X", "fecha_publicacion": "2021-06-07",
+                                     "created_at": db.now_iso(), "updated_at": db.now_iso()},
+                 ("fuente", "external_id"))
+        conn.execute("INSERT INTO renglones (id, proceso_id, descripcion, producto_id, contenido_base, "
+                    "unidad_base, external_key) VALUES (1, 1, 'desc larga SIByS', 'aceite_girasol', 1.5, 'l', 'k1')")
+        conn.execute("INSERT INTO comparaciones (renglon_id, semaforo, motivo_codigo, evidencia_json) "
+                    "VALUES (1, 'gris', 'revisar_unidad', '[]')")
+        conn.commit()
+        datos = rh.cola(conn)
+    item = next(it for it in datos["items"] if it["renglon_id"] == 1)
+    assert "1.5 l" in item["resumen_corto"]
+    assert "revisar unidad" in item["resumen_corto"]
+
+
+def test_cola_marca_monto_inconsistente_desde_las_alertas_del_renglon(tmp_path):
+    import json as _json
+    with db.session(tmp_path / "t.db") as conn:
+        db.upsert(conn, "procesos", {"fuente": "bo_primera", "external_id": "p1",
+                                     "created_at": db.now_iso(), "updated_at": db.now_iso()},
+                 ("fuente", "external_id"))
+        conn.execute("INSERT INTO renglones (id, proceso_id, descripcion, alertas, external_key) "
+                    "VALUES (1, 1, 'yerba', ?, 'k1')", (_json.dumps(["monto_inconsistente"]),))
+        conn.execute("INSERT INTO comparaciones (renglon_id, semaforo, motivo_codigo, evidencia_json) "
+                    "VALUES (1, 'rojo', 'ok', '[]')")
+        conn.commit()
+        datos = rh.cola(conn)
+    item = next(it for it in datos["items"] if it["renglon_id"] == 1)
+    assert item["monto_inconsistente"] is True

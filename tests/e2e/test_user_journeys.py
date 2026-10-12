@@ -115,9 +115,11 @@ def test_detalle_licitacion_muestra_evidencia_y_calculo(page, seeded_app):
     assert "sem-rojo" in renglon_rows.first.inner_html()
 
     # "evidencia de mercado" (sin tildes) para no depender de como el editor/fuente
-    # codifique "cómo"/"calculó" en la plantilla.
-    page.locator("details summary", has_text="evidencia de mercado").first.click()
-    opened = page.locator("details").first
+    # codifique "cómo"/"calculó" en la plantilla. Se busca el <details> que CONTIENE ese summary
+    # (no "el primero de la pagina": la sintesis/#49 agrego otros <details> de visor de
+    # documentos mas arriba, con menos prioridad que esta evidencia).
+    opened = page.locator("details", has=page.locator("summary", has_text="evidencia de mercado")).first
+    opened.locator("summary").click()
     assert opened.get_attribute("open") is not None
     detalle_texto = opened.inner_text()
     assert "mayorista" in detalle_texto.lower()
@@ -130,7 +132,10 @@ def test_detalle_licitacion_muestra_evidencia_y_calculo(page, seeded_app):
 
 def test_marcar_revision_no_recarga_pagina_conserva_estado(page, seeded_app):
     page.goto(f"/licitacion/{seeded_app.proceso_leche_id}")
-    page.evaluate("window.scrollTo(0, 250)")
+    # La sintesis de arriba (#49.1) movio la tarjeta de revision mas abajo: se lleva el boton a
+    # la vista primero (como haria una persona) para que el click no tenga que auto-scrollear y
+    # mover el "antes" que se compara abajo.
+    page.locator('form[action$="/revision"] button:has-text("Guardar")').scroll_into_view_if_needed()
     scroll_antes = page.evaluate("window.scrollY")
     marker = f"nav-check-{time.time()}"
     page.evaluate(f"window.__e2e_marker = {marker!r}")
@@ -547,5 +552,137 @@ def test_licitacion_validacion_inline_persiste_tras_navegar(page, seeded_app):
     cuerpo = page.locator("body").inner_text()
     assert "validado por" in cuerpo or "revisión parcial" in cuerpo, (
         "la validacion in-line no persistio tras navegar")
+
+    conftest.assert_clean(page)
+
+
+# ── 13. Sintesis arriba del detalle + compuerta de publicacion (MEJORAS #49.1/#49.4) ────────
+
+def test_licitacion_muestra_sintesis_y_que_falta_para_publicar(page, seeded_app):
+    page.goto(f"/licitacion/{seeded_app.proceso_leche_id}")
+    sintesis = page.locator('[data-soft-key="resumen"]')
+    assert sintesis.count() == 1
+    texto = sintesis.inner_text()
+    assert "Monto total del proceso" in texto
+    assert "Monto de los renglones analizados" in texto
+    assert "Qué falta para publicar" in texto
+    # La licitacion sembrada arranca "pendiente": tiene que listar ESO como pendiente.
+    assert "publicable" in texto.lower()
+
+    cuerpo = page.locator("body").inner_text()
+    assert "Guardar" in cuerpo and "Validé esta licitación" in cuerpo and "revoca sola" in cuerpo
+
+    conftest.assert_clean(page)
+
+
+# ── 14. Comprobante de calculo por renglon, imprimible (MEJORAS #49.2) ─────────────────────
+
+def test_comprobante_de_renglon_muestra_dato_normalizacion_y_escenarios(page, seeded_app):
+    renglon_id = conftest.read_db(
+        seeded_app.db_path, "SELECT id FROM renglones WHERE proceso_id=? ORDER BY id LIMIT 1",
+        (seeded_app.proceso_leche_id,))[0]["id"]
+
+    page.goto(f"/licitacion/{seeded_app.proceso_leche_id}")
+    with page.context.expect_page() as nueva_info:
+        page.locator('a[href="/renglon/%d/comprobante"]' % renglon_id).first.click()
+    comp = nueva_info.value
+    comp.wait_for_load_state()
+    cuerpo = comp.locator("body").inner_text()
+    assert "Comprobante de cálculo" in cuerpo
+    assert "Apertura de ofertas" in cuerpo
+    assert "Escenario amarillo" in cuerpo and "Escenario rojo" in cuerpo
+    assert "Explicaciones alternativas revisadas" in cuerpo
+    comp.close()
+
+
+# ── 15. Armar expediente para periodista (MEJORAS #49.5) ───────────────────────────────────
+
+def test_armar_expediente_para_periodista_se_arma_y_se_descarga(page, seeded_app):
+    page.goto(f"/licitacion/{seeded_app.proceso_leche_id}")
+    page.fill('form[action$="/expediente"] input[name="titulo"]', "Expediente e2e leche")
+    page.click('form[action$="/expediente"] button:has-text("Armar expediente para periodista")')
+    assert "armando" in _toast_text(page).lower() or "expediente" in _toast_text(page).lower()
+
+    estado = _wait_job_done(seeded_app.base_url, f"expediente_{seeded_app.proceso_leche_id}")
+    assert not estado.get("error"), estado
+    _force_soft_refresh(page, estado.get("message"))
+
+    fila = page.locator("tr", has_text="Expediente e2e leche")
+    fila.locator('a:has-text("Ver")').wait_for(timeout=10000)
+    with page.context.expect_page() as nueva_info:
+        fila.locator('a:has-text("Ver")').click()
+    exp_page = nueva_info.value
+    exp_page.wait_for_load_state()
+    cuerpo = exp_page.locator("body").inner_text()
+    assert "Qué se compró y qué se encontró" in cuerpo
+    assert "Cómo se construyó esta comparación" in cuerpo
+    exp_page.close()
+
+    with page.expect_download() as dl_info:
+        fila.locator('a:has-text("ZIP")').click()
+    zip_dl = dl_info.value
+    zip_path = zip_dl.path()
+    assert zip_path and zip_path.stat().st_size > 0
+
+    conftest.assert_clean(page)
+
+
+# ── 16. Checklist de explicaciones alternativas por caso (MEJORAS #49.6) ───────────────────
+
+def test_explicaciones_alternativas_se_guardan_sin_recargar(page, seeded_app):
+    renglon_id = conftest.read_db(
+        seeded_app.db_path, "SELECT id FROM renglones WHERE proceso_id=?",
+        (seeded_app.proceso_yerba_id,))[0]["id"]
+
+    page.goto(f"/revision/{renglon_id}")
+    marker = f"nav-check-{time.time()}"
+    page.evaluate(f"window.__e2e_marker = {marker!r}")
+
+    fila = page.locator("tr", has_text="Logística o lugar de entrega distinto")
+    fila.locator('select[name="estado"]').select_option("verificado")
+    nota = f"se entrego en otra provincia {time.time()}"
+    fila.locator('input[name="nota"]').fill(nota)
+    fila.locator('button:has-text("Guardar")').click()
+
+    assert "guardada" in _toast_text(page).lower()
+    assert page.evaluate("window.__e2e_marker") == marker, (
+        "la pagina de revision recargo completo en vez de refrescar en el lugar")
+
+    page.reload()
+    fila = page.locator("tr", has_text="Logística o lugar de entrega distinto")
+    assert nota in fila.inner_text()
+    assert "Verificado" in fila.inner_text()
+
+    conftest.assert_clean(page)
+
+
+# ── 17. Cola de revision: colores en vivo coinciden con la home ────────────────────────────
+
+def test_revision_cola_colores_en_vivo_coinciden_con_home(page, seeded_app):
+    page.goto("/")
+    rojos_home = page.locator(".kpis .kpi .sem-rojo").first.inner_text()
+
+    page.goto("/revision")
+    rojo_tile = page.locator('.kpis .kpi:has-text("Rojo") .sem-rojo').first.inner_text()
+    assert rojo_tile == rojos_home
+
+    cuerpo = page.locator("body").inner_text()
+    assert "Resolver" in cuerpo and "Publicable" in cuerpo
+    assert "1 kg" in cuerpo or "1,0 kg" in cuerpo   # resumen corto con el envase
+
+    conftest.assert_clean(page)
+
+
+# ── 18. Backup / restauracion sin consola (MEJORAS #49.8) ──────────────────────────────────
+
+def test_fuentes_descarga_copia_de_seguridad(page, seeded_app):
+    page.goto("/fuentes")
+    assert page.locator('a:has-text("Descargar copia de seguridad")').count() == 1
+    with page.expect_download() as dl_info:
+        page.click('a:has-text("Descargar copia de seguridad")')
+    dl = dl_info.value
+    path = dl.path()
+    assert path and path.stat().st_size > 0
+    assert open(path, "rb").read(16) == b"SQLite format 3\x00"
 
     conftest.assert_clean(page)

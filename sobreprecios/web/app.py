@@ -33,10 +33,11 @@ from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.background import BackgroundTask
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from .. import config, db, reports, revision_humana
-from . import _background, queries
+from .. import backup, config, db, reports, revision_humana
+from . import _background, format as fmt, queries
 
 WEB_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(WEB_DIR / "templates"))
@@ -51,77 +52,19 @@ logger = logging.getLogger(__name__)
 
 
 # ── Formato ────────────────────────────────────────────────────────────────
+# Los números y los textos de semáforo/motivo/referencia viven en web/format.py (no acá):
+# reports.py los necesita igual para el "comprobante de cálculo" y el expediente para
+# periodista, y así los dos lugares muestran EXACTAMENTE lo mismo para el mismo dato.
 
-def _ars(value, decimals=0, moneda="nominal"):
-    if value in (None, ""):
-        return "—"
-    try:
-        text = f"{float(value):,.{decimals}f}"
-    except (TypeError, ValueError):
-        return "—"
-    return ("US$ " if moneda == "usd" else "$ ") + text.replace(",", "X").replace(".", ",").replace("X", ".")
-
-
-def _num(value, decimals=0):
-    if value in (None, ""):
-        return "—"
-    text = f"{float(value):,.{decimals}f}"
-    return text.replace(",", "X").replace(".", ",").replace("X", ".")
-
-
-def _pct(value):
-    if value in (None, ""):
-        return "—"
-    return f"{float(value):+.1f}%".replace(".", ",")
-
-
-def _millones(value, moneda="nominal"):
-    pref = "US$" if moneda == "usd" else "$"
-    if not value:
-        return f"{pref} 0"
-    value = float(value)
-    if abs(value) >= 1e9:
-        return f"{pref} {value / 1e9:,.2f} mil M".replace(".", ",")
-    if abs(value) >= 1e6:
-        return f"{pref} {value / 1e6:,.1f} M".replace(".", ",")
-    return _ars(value, 0, moneda)
-
-
-SEMAFORO_TXT = {"rojo": "Sobreprecio alto", "amarillo": "Sobreprecio moderado", "verde": "En línea con mercado",
-                "gris": "Sin comparación"}
-REF_TXT = {"misma_marca": "misma marca", "p25_mayorista": "mayorista (P25)",
-           "mediana_mayorista": "mayorista (mediana)", "min_mayorista": "mayorista (mínimo)",
-           "mediana_minorista": "supermercado (mediana)", "indec": "INDEC (promedio)",
-           "min_mercado": "mínimo de mercado", "min_minorista": "supermercado (mínimo)"}
-ATRIBUTO_TXT = {"verificado": "variedad verificada", "no_exigido": "variedad no exigida en la ficha",
-                "desconocido": "variedad desconocida", "ambiguo": "variedad ambigua", "sin_mercado": "variedad sin mercado",
-                "verificado (humano)": "variedad confirmada a mano por el revisor"}
-MOTIVO_CODIGO_TXT = {
-    "sin_precio": "no se pudo calcular el precio por unidad base o falta la fecha de la compra",
-    "sin_datos": "no hay precios de mercado de este producto para comparar en esa fecha",
-    "revisar_unidad": "el Estado pagó una cantidad de veces la referencia tan grande o chica que probablemente "
-                      "haya un error de unidad (bulto vs. unidad, producto distinto) antes que un sobreprecio real",
-    "fuera_alcance": "este renglón no tiene un producto del catálogo para comparar (no es un error, es un bien "
-                     "que todavía no está catalogado)",
-    "atributo_desconocido": "no se puede saber qué variedad exige la compra (o dice dos a la vez): sin eso no "
-                            "se puede elegir contra qué precio de mercado comparar",
-    "sin_referencia_variante": "la compra exige una variedad puntual y el mercado no tiene precios de ESA "
-                               "variedad en la fecha: las otras variedades no son referencia válida",
-    "sin_referencia_presentacion": "la compra exige un envase puntual y el mercado no tiene ESE envase en la "
-                                   "fecha: un envase distinto no es referencia válida",
-    "equivalencia_por_verificar": "el sistema aceptó una variedad de mercado como equivalente a la exigida; "
-                                  "un humano todavía no confirmó que esa equivalencia sea correcta",
-    "ok": "se pudo calcular una referencia de mercado comparable",
-}
-# Legenda corta de #35: un caso es una investigación para que un humano decida, nunca una conclusión publicada sola.
-LEGENDA_INVESTIGACION = ("Un color (sobre todo rojo) es una investigación pendiente de revisión humana, no una "
-                         "conclusión: puede explicarse por logística, plazos de pago, especificaciones o un "
-                         "error de publicación. Nada sale a prensa sin pasar por Revisión y quedar \"publicable\".")
-
-templates.env.filters.update(ars=_ars, num=_num, pct=_pct, millones=_millones)
-templates.env.globals.update(SEMAFORO_TXT=SEMAFORO_TXT, REF_TXT=REF_TXT, ATRIBUTO_TXT=ATRIBUTO_TXT,
-                             MOTIVO_CODIGO_TXT=MOTIVO_CODIGO_TXT, LEGENDA_INVESTIGACION=LEGENDA_INVESTIGACION,
-                             PARTE_TXT=revision_humana.PARTE_TXT, PARTES_RENGLON=revision_humana.PARTES_RENGLON)
+templates.env.filters.update(ars=fmt.ars, num=fmt.num, pct=fmt.pct, millones=fmt.millones)
+templates.env.globals.update(SEMAFORO_TXT=fmt.SEMAFORO_TXT, REF_TXT=fmt.REF_TXT, ATRIBUTO_TXT=fmt.ATRIBUTO_TXT,
+                             MOTIVO_CODIGO_TXT=fmt.MOTIVO_CODIGO_TXT, LEGENDA_INVESTIGACION=fmt.LEGENDA_INVESTIGACION,
+                             PARTE_TXT=revision_humana.PARTE_TXT, PARTES_RENGLON=revision_humana.PARTES_RENGLON,
+                             explicar_semaforo=fmt.explicar_semaforo,
+                             EXPLICACIONES_ITEMS=revision_humana.EXPLICACIONES_ITEMS,
+                             EXPLICACION_TXT=revision_humana.EXPLICACION_TXT,
+                             EXPLICACION_ESTADOS=revision_humana.EXPLICACION_ESTADOS,
+                             EXPLICACION_ESTADO_TXT=revision_humana.EXPLICACION_ESTADO_TXT)
 
 
 # ── Seguridad mínima ───────────────────────────────────────────────────────
@@ -140,6 +83,13 @@ def _redirect(path: str, message: str | None = None) -> RedirectResponse:
         sep = "&" if "?" in path else "?"
         path = f"{path}{sep}message={urllib.parse.quote(message)}"
     return RedirectResponse(path, status_code=303)
+
+
+def _modo_publico() -> bool:
+    """Despliegue de solo lectura (deploy en la nube, LIC_MODO_PUBLICO=1): además de lo que
+    bloquee la seguridad general del deploy público, una descarga de copia de seguridad expone
+    TODA la base (notas de revisión humana incluidas) y nunca debe quedar disponible ahí."""
+    return os.getenv("LIC_MODO_PUBLICO") == "1"
 
 
 def _filtros(request: Request) -> dict:
@@ -164,6 +114,7 @@ def _moneda_ctx(conn, moneda: str) -> dict:
 def _render(request: Request, name: str, **ctx) -> HTMLResponse:
     ctx.setdefault("message", request.query_params.get("message"))
     ctx.setdefault("moneda", "nominal")
+    ctx.setdefault("modo_publico", _modo_publico())
     ctx["request"] = request
     ctx["jobs"] = _background.all_status()
     return templates.TemplateResponse(request, name, ctx)
@@ -191,6 +142,9 @@ def licitacion(request: Request, proceso_id: int):
             return _redirect("/", "No existe esa licitación")
         rows = queries.renglones(conn, proceso_id)
         validaciones = revision_humana.validaciones_renglones(conn, [r["id"] for r in rows])
+        resumen = queries.resumen_proceso(proc, rows, validaciones)
+        expedientes = [dict(r) for r in conn.execute(
+            "SELECT * FROM reportes WHERE tipo='expediente' AND proceso_id=? ORDER BY id DESC", (proceso_id,))]
         from ..normalize import moneda as moneda_mod
         mon = moneda_mod.cargar(conn)
         fecha = proc.get("fecha_adjudicacion") or proc.get("fecha_publicacion")
@@ -200,7 +154,8 @@ def licitacion(request: Request, proceso_id: int):
     from ..pipeline.extract import resolutive_part
     texto = resolutive_part(proc.get("texto") or "", 12000) if proc.get("texto") else ""
     return _render(request, "licitacion.html", p=proc, renglones=rows, texto=texto, equiv=equiv,
-                   validaciones=validaciones, cfg=config.settings().get("comparacion") or {})
+                   validaciones=validaciones, resumen=resumen, expedientes=expedientes,
+                   cfg=config.settings().get("comparacion") or {})
 
 
 @app.post("/licitacion/{proceso_id}/revision")
@@ -224,6 +179,48 @@ def licitacion_validar(proceso_id: int, nota: str = Form("")):
             return _redirect("/", "No existe esa licitación")
         revision.marcar(conn, proceso_id, "revisado", nota.strip() or None)
     return _redirect(f"/licitacion/{proceso_id}", "Licitación validada")
+
+
+@app.get("/renglon/{renglon_id}/comprobante", response_class=HTMLResponse)
+def renglon_comprobante(request: Request, renglon_id: int):
+    """"Comprobante de cálculo" por renglón (MEJORAS #49.2): una vista imprimible y autocontenida
+    (sin formularios: @media print de styles.css ya oculta nav/botones) con el dato original, la
+    normalización, la fecha de comparación, las referencias (con el par que confirma el mínimo),
+    los factores IPC, los dos escenarios financieros y las correcciones/validaciones humanas."""
+    with db.session() as conn:
+        data = revision_humana.comprobante(conn, renglon_id)
+        if not data:
+            return _redirect("/", "No existe ese renglón")
+    return _render(request, "comprobante.html", c=data)
+
+
+@app.post("/licitacion/{proceso_id}/expediente")
+def licitacion_expediente(proceso_id: int, titulo: str = Form(""), renglon_ids: list[int] = Form([])):
+    """"Armar expediente para periodista" (MEJORAS #49.5): job en segundo plano que junta la
+    síntesis del proceso y el comprobante de cálculo de los renglones elegidos en un HTML + ZIP
+    autocontenidos (aparecen en /reportes, tipo "expediente")."""
+    with db.session() as conn:
+        if not conn.execute("SELECT 1 FROM procesos WHERE id=?", (proceso_id,)).fetchone():
+            return _redirect("/", "No existe esa licitación")
+    started, msg = _background.start(
+        f"expediente_{proceso_id}", lambda: reports.crear_expediente(proceso_id, titulo, list(renglon_ids)))
+    return _redirect(f"/licitacion/{proceso_id}", "Armando el expediente…" if started else msg)
+
+
+@app.post("/revision/{renglon_id}/explicacion")
+def revision_explicacion(renglon_id: int, item: str = Form(...), estado: str = Form(...),
+                         nota: str = Form(""), revisor: str = Form("")):
+    """Checklist de explicaciones alternativas de UN caso (MEJORAS #49.6): nunca recalcula nada,
+    solo deja constancia de qué se descartó o qué quedó pendiente de chequear."""
+    with db.session() as conn:
+        if not conn.execute("SELECT 1 FROM renglones WHERE id=?", (renglon_id,)).fetchone():
+            return _redirect("/revision", "No existe ese renglón")
+        try:
+            revision_humana.guardar_explicacion(conn, renglon_id, item, estado, nota.strip(),
+                                                revisor.strip() or "revisor")
+        except ValueError as exc:
+            return _redirect(f"/revision/{renglon_id}", str(exc))
+    return _redirect(f"/revision/{renglon_id}", "Explicación guardada")
 
 
 @app.post("/renglon/{renglon_id}/validar")
@@ -388,6 +385,7 @@ def revision_page(request: Request):
     with db.session() as conn:
         datos = revision_humana.cola(conn, filtros)
         return _render(request, "revision.html", filtros=filtros, items=datos["items"], counts=datos["counts"],
+                       colores=datos["colores"],
                        opciones=queries.opciones_filtros(conn))
 
 
@@ -596,6 +594,43 @@ def fuentes_run(accion: str = Form(...), desde: str = Form(""), hasta: str = For
         return _redirect("/fuentes", "Acción desconocida")
     started, msg = _background.start("datos", _job_runner(accion, desde, hasta))
     return _redirect("/fuentes", f"Arrancó: {ACCIONES[accion]}" if started else msg)
+
+
+# ── Copia de seguridad / restauración sin consola (MEJORAS #49.8) ──────────
+
+@app.get("/fuentes/backup")
+def fuentes_backup():
+    """Descarga una copia de la base ACTUAL (API de backup online de SQLite: no bloquea otros
+    pedidos). El archivo temporal se borra solo una vez que terminó de mandarse.
+
+    Deshabilitado en modo público (LIC_MODO_PUBLICO=1, deploy en la nube de solo lectura): es un
+    GET que de otra forma expondría TODA la base, notas de revisión humana incluidas, a
+    cualquiera con el link. El formulario de abajo (`_modo_publico` en el contexto de la
+    plantilla) ya no se muestra ahí, pero el chequeo acá es la barrera real."""
+    if _modo_publico():
+        return _redirect("/fuentes", "Descargar la base está deshabilitado en este despliegue de solo lectura")
+    tmp_path = backup.hacer_backup()
+    nombre = backup.nombre_backup()
+    return FileResponse(tmp_path, filename=nombre, media_type="application/octet-stream",
+                        background=BackgroundTask(lambda: tmp_path.unlink(missing_ok=True)))
+
+
+@app.post("/fuentes/restaurar")
+async def fuentes_restaurar(archivo: UploadFile = File(...), confirmo: str = Form("")):
+    # Defensa en profundidad: un deploy público ya bloquea todo POST con su propio middleware,
+    # pero esta ruta reemplaza la base entera, así que no depende solo de eso.
+    if _modo_publico():
+        return _redirect("/fuentes", "Restaurar una base está deshabilitado en este despliegue de solo lectura")
+    if confirmo != "si":
+        return _redirect("/fuentes", "Confirmá la casilla antes de restaurar: esto reemplaza los datos actuales")
+    contenido = await archivo.read(backup.MAX_RESTORE_BYTES + 1)
+    if len(contenido) > backup.MAX_RESTORE_BYTES:
+        return _redirect("/fuentes", f"El archivo pesa más de {backup.MAX_RESTORE_BYTES // (1024*1024)} MB: no se puede restaurar")
+    try:
+        msg = backup.restaurar(contenido)
+    except ValueError as exc:
+        return _redirect("/fuentes", f"No se pudo restaurar: {exc}")
+    return _redirect("/fuentes", msg)
 
 
 # ── Precios de programa (Precios Cuidados/Justos/Máximos): validación manual ───────────────

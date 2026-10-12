@@ -339,6 +339,23 @@ CREATE TABLE IF NOT EXISTS validaciones_renglon (
     created_at TEXT NOT NULL,
     UNIQUE (renglon_id, parte)
 );
+
+-- Checklist de explicaciones alternativas por caso (MEJORAS #49.6, pedido de jdemonasterio):
+-- una brecha de precio no prueba una irregularidad por si sola; estos son los motivos mas
+-- comunes que pueden explicarla. Se muestran en /revision/<renglon_id>, el comprobante de
+-- calculo y el expediente para periodista. Nunca alimentan al comparador (son anotaciones
+-- humanas, no datos de entrada): a diferencia de correcciones_renglon, no se recalcula nada
+-- al guardar una.
+CREATE TABLE IF NOT EXISTS explicaciones_caso (
+    id INTEGER PRIMARY KEY,
+    renglon_id INTEGER NOT NULL REFERENCES renglones(id) ON DELETE CASCADE,
+    item TEXT NOT NULL,            -- logistica | impuestos | especificaciones | plazo_pago | error_publicacion
+    estado TEXT NOT NULL DEFAULT 'pendiente',   -- pendiente | verificado | no_aplica
+    nota TEXT,
+    autor TEXT,
+    created_at TEXT NOT NULL,
+    UNIQUE (renglon_id, item)
+);
 """
 
 
@@ -435,6 +452,11 @@ MIGRATIONS = [
     ("ofertas", "causa_desestimacion", "TEXT"),
     ("comparaciones", "oferta_min_desestimada", "INTEGER"),
     ("comparaciones", "oferta_min_causa", "TEXT"),
+    # Expediente para periodista (MEJORAS #49.5): reusa la tabla `reportes` (misma pantalla,
+    # mismos archivos html/xlsx/csv) en vez de una tabla aparte; `tipo` distingue uno de otro y
+    # `proceso_id` ata el expediente a UNA licitacion puntual (un reporte normal no tiene una).
+    ("reportes", "tipo", "TEXT"),
+    ("reportes", "proceso_id", "INTEGER"),
 ]
 
 

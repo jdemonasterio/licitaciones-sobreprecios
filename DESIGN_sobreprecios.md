@@ -33,7 +33,9 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Juez externo | `auditoria/juez.py` | Auditoría LLM fuera del programa, solo lectura, TSV + reglas sugeridas |
 | Simulador | `tests/e2e/`, `scripts/simular.py`, `simular.bat` | Recorridos de usuario reales en el navegador: compuerta antes de entregar |
 | Webui | `sobreprecios/web/` | FastAPI + Jinja; `soft-nav.js` (refresco en el lugar) y `_background.py` (jobs) |
-| Revisión humana | `sobreprecios/revision_humana.py` | Cola de casos grises/rojos/equivalencias/juez, correcciones manuales por campo, validación de referencias de mercado y validación rápida por renglón; proxy de documentos (`/doc`) |
+| Revisión humana | `sobreprecios/revision_humana.py` | Cola de casos grises/rojos/equivalencias/juez, correcciones manuales por campo, validación de referencias de mercado, validación rápida por renglón, checklist de explicaciones alternativas y el comprobante de cálculo imprimible; proxy de documentos (`/doc`) |
+| Formato webui | `sobreprecios/web/format.py` | Números (`$`, `%`), textos de semáforo/motivo/referencia y `explicar_semaforo()` — compartido por `app.py` (Jinja) y `reports.py` (HTML armado a mano) para que muestren exactamente lo mismo |
+| Backup | `sobreprecios/backup.py` | Copia de seguridad (API online de SQLite) y restauración (valida, deja un backup fechado, reemplazo atómico) sin consola |
 
 ## 2. Decisiones
 
@@ -273,6 +275,83 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
   el primero que aparece llevado hacia atrás con el IPC del mes exacto, rotulado "PRECIO INFERIDO" en el motivo,
   confianza baja, nunca rojo. Si existe un dato anterior (aunque viejo) no se infiere: rige `gap_maximo_dias`.
 
+- **2026-10-12 · MEJORAS #49 pendiente (revisión de journeys del LLM prime) + feedback directo de
+  jdemonasterio**: ocho piezas sobre la página de detalle de la licitación, el caso de revisión, los reportes y
+  el backup, con una ronda de feedback en el medio que cambió el alcance de dos de ellas:
+  - **Síntesis arriba de `/licitacion/<id>`** (`web/queries.resumen_proceso()`, función pura sobre los datos ya
+    cargados por la ruta, sin SQL nueva): renglones total/comparados/rojo/amarillo/verde/gris, equivalencia por
+    verificar / validados, **monto TOTAL del proceso** (declarado en la norma) vs **monto de los renglones
+    analizados** (suma) — antes los dos se llamaban "monto adjudicado" y se podían confundir — exceso estimado,
+    cobertura %, y una lista en castellano de "qué falta para publicar" (grises, equivalencias, objeciones,
+    renglones sin validar, monto inconsistente, precio inferido, referencia de programa, o simplemente que la
+    licitación no está marcada "publicable" todavía).
+  - **Comprobante de cálculo** (`revision_humana.comprobante()`, `GET /renglon/<id>/comprobante`): una página
+    imprimible (extiende `base.html`; `@media print` de `styles.css` ya oculta nav/formularios) con dato
+    original, normalización, las 3 fechas (apertura/adjudicación/publicación) explícitas, el par que confirma el
+    mínimo corroborado con su grupo comercial (`pipeline.compare.familia_fuente`), el mes de IPC usado por cada
+    observación ("abr-2024 → jun-2024 (x1.030)"), los dos escenarios financieros (1 mes = amarillo, 2 meses =
+    rojo, de `comparaciones.sensibilidad_json`), correcciones/validaciones humanas y el checklist de
+    explicaciones alternativas. Link desde el renglón en `/licitacion/<id>` y desde `/revision/<id>`.
+  - **Por qué este semáforo, en una línea** (`web/format.explicar_semaforo()`): se parsea `motivo`/`motivo_codigo`
+    (nunca repite el cálculo) para mostrar, junto al color, la razón corta y — si la brecha llega al umbral de
+    rojo pero el semáforo no es rojo — qué lo bloquea ("+52% pero amarillo: el mínimo no está confirmado por dos
+    cadenas"). Vive en `web/format.py` (no en `app.py`) para que `reports.py` lo use igual en el expediente.
+  - **Compuerta "publicable" visible**: el texto de la tarjeta "Revisión humana y publicación" en
+    `/licitacion/<id>` explica qué hacen Guardar / Validé esta licitación / Publicable; los reportes y el
+    expediente NUNCA bloquean la exportación (decisión explícita de jdemonasterio) pero imprimen una lista de
+    avisos (`reports.advertencias()`) en vez de un solo contador.
+  - **Expediente para periodista — redefinido a mitad de camino** (pedido directo de jdemonasterio: "el que
+    revisa y el que analiza es la misma persona; lo que llega al periodista es UN html, primero la licitación y
+    los resultados, después cómo se construyeron"): `reports.crear_expediente()` arma un HTML autocontenido (+
+    ZIP) en dos partes — ①"Qué se compró y qué se encontró" (fechas, montos, tabla de resultados por renglón con
+    semáforo y brecha) y ②"Cómo se construyó esta comparación" por renglón (fuentes con sus URLs, decisiones de
+    normalización — variedad, equivalencias, correcciones humanas —, manejo de inflación/IPC mes a mes o "PRECIO
+    INFERIDO", el supuesto de precio de programa cuando aplica, y las preguntas abiertas). Nunca repite el
+    comprobante completo de cada renglón (eso vive aparte). Reusa la tabla `reportes` (`tipo='expediente'`,
+    `proceso_id`) — aparece en `/reportes` junto a los reportes normales, con descarga ZIP en vez de Excel/CSV.
+  - **Checklist de explicaciones alternativas** (`revision_humana.EXPLICACIONES_ITEMS`, tabla
+    `explicaciones_caso`): logística/lugar de entrega, impuestos, especificaciones, plazo de pago, error de
+    publicación — estado pendiente/verificado/no_aplica + nota por ítem, en `/revision/<id>`. Nunca recalcula
+    nada (a diferencia de `correcciones_renglon`): es una anotación para quien lee, no un dato de entrada.
+  - **Backup / restauración sin consola** (`sobreprecios/backup.py`): "Descargar copia de seguridad" en
+    `/fuentes` usa la API de backup online de SQLite (`sqlite3.Connection.backup`, no bloquea otros pedidos);
+    "Restaurar copia" valida el archivo subido (header de SQLite + que tenga las tablas de esta app, tope de
+    300 MB), deja la base actual como un backup fechado al lado (`<nombre>.antes-de-restaurar-<fecha>.db`, nunca
+    se borra) y reemplaza con `os.replace` (atómico). Antes de mover la base vieja se le hace
+    `PRAGMA wal_checkpoint(TRUNCATE)` y se mueven sus `-wal`/`-shm` junto con el backup: sin esto, un WAL viejo
+    quedado en el mismo nombre de archivo podría "seguir" la base nueva. **Deshabilitado en modo público**
+    (`LIC_MODO_PUBLICO=1`, el deploy de solo lectura en la nube de otro agente): el GET de descarga expondría
+    notas de revisión humana a cualquiera con el link, así que `app._modo_publico()` lo corta antes de tocar el
+    archivo y la plantilla oculta el panel entero (`ctx["modo_publico"]`, seteado en `_render()` para toda
+    página); el POST de restaurar lo corta igual aunque el middleware general del deploy público ya bloquee todo
+    POST (defensa en profundidad: esta ruta reemplaza la base entera).
+  - **"Ver documento" en el lugar** (pedido directo de jdemonasterio, no solo etiquetas más claras): un visor
+    plegable reusable (`web/templates/_macros.html::doc_viewer`) que carga `/doc?url=` en un `<iframe>` (la
+    allowlist de host y el sandbox siguen siendo de `revision_humana.obtener_documento`/`doc_proxy`) con el link
+    directo como respaldo si el documento no carga ahí (p. ej. el visor de GDE que pide sesión). Aplicado al
+    aviso del proceso y a los actos administrativos en `/licitacion/<id>` y al comprobante de cálculo; `/revision/
+    <id>` ya tenía su propio visor desde #34 (sin tocar). Las etiquetas también se volvieron explícitas: "Ver
+    documento ↗" en la tabla de actos pasó a "Abrir en COMPR.AR ↗" / "Ver acá (sección actos)" porque esa URL es
+    el proceso con un ancla, nunca un PDF directo.
+  - **Fechas explícitas en todos lados** (pedido directo de jdemonasterio): apertura/adjudicación/publicación
+    como 3 líneas separadas (nunca un solo `COALESCE` escondiendo cuál se usó) en `/licitacion/<id>`,
+    `/revision/<id>` y el comprobante; cada observación de mercado en las tablas de evidencia muestra "mes de la
+    observación → mes de la compra (factor)" en vez de solo el factor IPC pelado.
+  - **Cola de revisión rediseñada** (pedido directo de jdemonasterio): el color (semáforo), el motivo
+    (`explicar_semaforo`) y el origen de la alerta (gris/equivalencia/rojo/juez/agregado a mano, más una
+    etiqueta aparte "monto inconsistente" leída de `renglones.alertas`) son columnas separadas, nunca un solo
+    badge. "Bien" muestra un resumen corto armado en Python (`revision_humana.cola()`: producto canónico +
+    envase + motivo corto, p. ej. "aceite girasol 1,5 l — revisar unidad") con la descripción SIByS completa en
+    un `<details>` colapsado. Los conteos de color son **en vivo** desde `comparaciones` (`cola()` devuelve
+    `colores`, idéntico cálculo que `queries.kpis()` sin filtros) para que coincidan siempre con la home — el
+    tally viejo por `origen` de `revisiones_caso` (`counts`) queda aparte, bajo "por qué entró a la cola", porque
+    es un acumulado histórico que puede desactualizarse si un caso ya resuelto cambió de color después. Una
+    leyenda explica "Resolver" (veredicto sobre un caso puntual) vs "Validé esta licitación" (atajo que marca
+    TODO el proceso) vs "Publicable" (la compuerta real de exportación).
+  - Verificado con el simulador (`tests/e2e/test_user_journeys.py`, escenarios 13-18) y ~70 tests nuevos
+    (`test_web_format.py`, `test_web_queries.py`, `test_backup.py`, `test_reports.py`, `test_web_app.py`, más
+    casos agregados a `test_revision_humana.py`).
+
 ## 3. Cómo operar
 
 | Tarea | Comando / lugar |
@@ -294,9 +373,13 @@ límites. Los planes en borrador viven en `_scratch/` (no se commitean); lo que 
 | Revisar casos pendientes | `/revision` (cola) → abrir un caso → corregir dato y/o validar referencias de mercado → "Guardar y recalcular" |
 | Validar un renglón sin abrir el caso | `/licitacion/<id>` → desplegar el renglón → "Validación rápida" (✓/✗/?) |
 | Importar una corrida del juez a la cola | `python -m sobreprecios.cli importar-juez <carpeta>` o botón en `/revision/juez` |
-| Mirar un documento (BO/COMPR.AR) sin salir | botón "Ver documento" en `/revision/<renglon_id>` (proxy `/doc`, solo esos hosts) |
+| Mirar un documento (BO/COMPR.AR) sin salir | panel plegable "Ver documento"/"Ver acá" en `/licitacion/<id>`, `/revision/<renglon_id>` y el comprobante (proxy `/doc`, solo esos hosts; link directo de respaldo) |
 | Bajar / validar precios de programa (Precios Cuidados/Justos) | `python -m sobreprecios.cli precios-programa [--edicion ID] [--juez TSV]` · solapa `/precios-programa` |
-| Antes de entregar | `simular.bat` / `python scripts/simular.py`: 20 recorridos de usuario tienen que dar OK |
+| Ver el comprobante de cálculo imprimible de un renglón | link "comprobante de cálculo" en `/licitacion/<id>` o `/revision/<id>` → `/renglon/<id>/comprobante` |
+| Armar expediente para periodista | en `/licitacion/<id>`, elegir renglones y título → "Armar expediente para periodista" → aparece en `/reportes` (tipo "Expediente", descarga HTML o ZIP) |
+| Completar el checklist de explicaciones alternativas de un caso | `/revision/<id>` → tarjeta "Explicaciones alternativas" (logística, impuestos, especificaciones, plazo de pago, error de publicación) |
+| Descargar / restaurar una copia de la base sin consola | botones en `/fuentes` → "Descargar copia de seguridad" / "Restaurar copia" (deshabilitado si `LIC_MODO_PUBLICO=1`) |
+| Antes de entregar | `simular.bat` / `python scripts/simular.py`: 26 recorridos de usuario tienen que dar OK |
 
 ## 4. Tests
 
@@ -307,10 +390,18 @@ pago del pliego), gateway LLM (cache, cuota, perfiles), normalización de links,
 con regresión del falso positivo "Requiere pago"), revisión humana (`tests/test_revision_humana.py`: correcciones
 por campo y su recálculo, la cola no pisa una decisión humana, exclusión de referencias de mercado, resumen de
 validación por renglón, parser de `items.tsv`/`resumen.md` del juez, allowlist de host del proxy de documentos incl.
-redirect a host no permitido). El simulador (`tests/e2e/`) cubre los journeys de `/revision` y de la validación
-in-line en `/licitacion/<id>` con un navegador real, precios de programa (los tres formatos con fixtures, macheo, réplica por
-vigencia, idempotencia, fallback y familia en el comparador) y validaciones de programa (guardar/leer, import de TSV
-del juez); el simulador también cubre marcar una fila de "programa" ✗ y verla excluida del comparador.
+redirect a host no permitido, checklist de explicaciones alternativas, comprobante de cálculo con su par
+corroborado y la familia de cada observación, colores en vivo y resumen corto de la cola). El simulador
+(`tests/e2e/`) cubre los journeys de `/revision` y de la validación in-line en `/licitacion/<id>` con un navegador
+real, precios de programa (los tres formatos con fixtures, macheo, réplica por vigencia, idempotencia, fallback y
+familia en el comparador), validaciones de programa (guardar/leer, import de TSV del juez), la síntesis y la
+compuerta visible en `/licitacion/<id>`, el comprobante de cálculo, armar un expediente para periodista en
+background y descargarlo (HTML + ZIP), el checklist de explicaciones alternativas sin recargar, que los colores de
+la cola coincidan con la home, y la descarga de la copia de seguridad; el simulador también cubre marcar una fila
+de "programa" ✗ y verla excluida del comparador. `test_web_format.py`/`test_web_queries.py` prueban
+`explicar_semaforo()` y `resumen_proceso()` como funciones puras; `test_backup.py` prueba el backup/restauración
+sobre bases en `tmp_path` (nunca la real); `test_reports.py` prueba `advertencias()` y `crear_expediente()`;
+`test_web_app.py` prueba las rutas nuevas y que `LIC_MODO_PUBLICO=1` bloquee backup/restore (`TestClient`).
 
 ## 5. Límites conocidos
 
@@ -333,6 +424,12 @@ del juez); el simulador también cubre marcar una fila de "programa" ✗ y verla
   esto de raíz cuando se implemente.
 - El proxy de documentos (`/doc`) no persiste nada más que un cache de 1 día: no sirve como archivo para un
   reporte que se vaya a mandar después (para eso, descargar el PDF directo con el link de "Abrir el proceso").
+- El expediente para periodista y el comprobante de cálculo son HTML autocontenido (texto + links a las fuentes
+  públicas): no empaquetan los PDFs externos (BO/COMPR.AR) dentro del ZIP, así que esos links dejan de servir si
+  la fuente los mueve. Para un archivo que sobreviva eso, descargar los PDFs aparte con los links de "Abrir...".
+- Backup/restauración no coordina con jobs en background que puedan estar escribiendo a mitad de camino (no hay
+  lock global): en la práctica es una herramienta de un solo usuario local, así que el riesgo es bajo, pero
+  restaurar mientras corre "Buscar en el BO + COMPR.AR" o "Recalcular sobreprecios" no está probado.
 - Precios de programa: abr-dic 2023 sin edición encontrada (ver decisión 2026-10-12); PDF de 2022-01 pierde ~3 %
   de filas de aceite por una omisión de palabra en la fuente misma (ver esa decisión); el PDF nacional de
   2022-01 con ~30.000 precios (12,6 MB) no se incorporó, solo el de CABA.

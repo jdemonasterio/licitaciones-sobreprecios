@@ -223,22 +223,47 @@ Hecho: fechas visibles (apertura = fecha de comparación vs adjudicación), cuen
 evidencia a todo el ancho, números de casos grises rotulados "diagnóstico bloqueado", "adjudicado" en vez de
 "pagado", texto de Precios Cuidados sin afirmar que son un piso, cola de revisión que respeta el color (9 rojos),
 DESIGN con la tolerancia real (±5 %). Pendiente, en orden:
-1. Síntesis arriba del detalle de cada licitación: renglones señalados, monto total vs monto analizado, cobertura,
-   exceso y qué bloquea publicar (hoy la lista dice "monto adjudicado" para el subtotal de renglones).
-2. Comprobante de cálculo por renglón (datos originales, normalización, fechas efectivas, par que confirma el
-   mínimo con sus grupos, IPC, escenarios de plazo) exportable con el caso.
-3. Explicar junto al color por qué un +52 % es amarillo (qué condición impide el rojo).
-4. Compuerta "publicable" visible: qué hacen Guardar / Validé / Publicable y qué falta para publicar.
+1. **[hecho 2026-10-12]** Síntesis arriba del detalle de cada licitación: renglones señalados, monto total vs
+   monto analizado, cobertura, exceso y qué bloquea publicar (antes la lista decía "monto adjudicado" para el
+   subtotal de renglones Y para el total del proceso; ahora son dos etiquetas distintas). Ver
+   `web/queries.resumen_proceso()` y DESIGN_sobreprecios.md §2.
+2. **[hecho 2026-10-12]** Comprobante de cálculo por renglón (datos originales, normalización, las 3 fechas,
+   par que confirma el mínimo con sus grupos, mes de IPC usado, escenarios de plazo) exportable con el caso:
+   `/renglon/<id>/comprobante`, imprimible.
+3. **[hecho 2026-10-12]** Explicar junto al color por qué un +52 % es amarillo (qué condición impide el rojo):
+   `web/format.explicar_semaforo()`, en `/licitacion/<id>`, `/revision/<id>` y la cola.
+4. **[hecho 2026-10-12]** Compuerta "publicable" visible: qué hacen Guardar / Validé / Publicable y qué falta
+   para publicar; los reportes y el expediente nunca bloquean la exportación, imprimen avisos en su lugar
+   (decisión explícita de jdemonasterio).
 5. Investigar: separar comparación histórica de la extrapolación con precios de hoy (contexto, nunca rojo) y
    decir qué tipo de documento se importó (pliego, dictamen, adjudicación, OC); estado "procesado, sin
-   comparación" con motivos y próximos pasos.
+   comparación" con motivos y próximos pasos. *(fuera del alcance de la ronda 2026-10-12: queda para el agente de
+   Investigar/Analítica/i18n.)*
 6. Analítica auditable: cobertura por organismo (comparables / total / publicables), n por mes, ponderación; aviso
-   cuando un ranking mezcla años en pesos de cada fecha.
+   cuando un ranking mezcla años en pesos de cada fecha. *(idem #5: fuera de alcance de esta ronda.)*
 7. Nombres legibles (ediciones de programa, tipos de importación), fechas dd/mm/aaaa y controles en español.
-8. Lo que agregaría: vista de impacto antes/después de un cambio de reglas o catálogo; paquete para el periodista
-   (expediente congelado con fuentes); checklist de explicaciones alternativas por caso; backup/restauración de la
-   base sin consola.
-Como verificar: cada punto con su criterio en `_scratch/licitaciones/REVISION_PRIME_JOURNEYS.md` (local).
+   *(idem #5: fuera de alcance de esta ronda.)*
+8. Lo que agregaría:
+   - vista de impacto antes/después de un cambio de reglas o catálogo — **todavía pendiente**;
+   - **[hecho 2026-10-12]** paquete para el periodista: `/licitacion/<id>` → "Armar expediente para periodista" →
+     HTML + ZIP autocontenido en `/reportes` (reformulado a pedido directo de jdemonasterio: primero la
+     licitación y los resultados, después cómo se construyó la comparación — ver DESIGN_sobreprecios.md §2);
+   - **[hecho 2026-10-12]** checklist de explicaciones alternativas por caso: tarjeta en `/revision/<id>`
+     (`revision_humana.EXPLICACIONES_ITEMS`);
+   - **[hecho 2026-10-12]** backup/restauración de la base sin consola: botones en `/fuentes`
+     (`sobreprecios/backup.py`), deshabilitado en el deploy público (`LIC_MODO_PUBLICO=1`).
+Como verificar: cada punto con su criterio en `_scratch/licitaciones/REVISION_PRIME_JOURNEYS.md` (local). Lo
+hecho el 2026-10-12 también quedó cubierto en el simulador (`tests/e2e/test_user_journeys.py`, escenarios 13-18)
+y en tests unitarios nuevos (`test_web_format.py`, `test_web_queries.py`, `test_backup.py`, `test_reports.py`,
+`test_web_app.py`).
+
+Además, en la misma ronda, feedback directo de jdemonasterio (no estaba en la lista original de #49) también
+quedó resuelto: fechas explícitas (apertura/adjudicación/publicación, y mes-a-mes de cada precio de mercado) en
+toda la pantalla de la licitación, el comprobante y el expediente; "Ver documento" abre en el lugar (panel
+plegable con `/doc`, nunca solo una pestaña nueva) en `/licitacion/<id>` y el comprobante; y la cola de revisión
+(`/revision`) separa color / motivo / origen de la alerta en columnas, muestra un resumen corto del bien con la
+descripción completa colapsada, explica Resolver vs Validar vs Publicable, y sus conteos de color coinciden en
+vivo con la home.
 
 **#41 — Domicilios: solo se ocultan los de personas humanas.** Los de empresas y organismos se muestran. Verificado 2026-10-12: la página de cada empresa muestra su domicilio legal y ningún filtro oculta domicilios de personas jurídicas; los reportes no exportan datos societarios.
 

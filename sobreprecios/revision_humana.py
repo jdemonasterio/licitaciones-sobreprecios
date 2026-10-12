@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import json
 import re
 import sqlite3
 import time
@@ -281,11 +282,66 @@ def validaciones_renglones(conn: sqlite3.Connection, renglon_ids: list[int]) -> 
     return out
 
 
+# ── Checklist de explicaciones alternativas por caso (MEJORAS #49.6) ───────────
+# Una brecha de precio no prueba una irregularidad: logística/lugar de entrega, impuestos,
+# especificaciones técnicas, plazo de pago distinto del supuesto, o un error de la publicación
+# original pueden explicarla. El humano marca cada una como pendiente/verificado/no aplica con
+# una nota; se muestra en /revision/<renglon_id>, el comprobante de cálculo y el expediente para
+# periodista. A diferencia de `correcciones_renglon`, NUNCA dispara un recálculo: es una
+# anotación para quien lee, no un dato de entrada del comparador.
+
+EXPLICACIONES_ITEMS = ("logistica", "impuestos", "especificaciones", "plazo_pago", "error_publicacion")
+EXPLICACION_TXT = {
+    "logistica": "Logística o lugar de entrega distinto",
+    "impuestos": "Impuestos o alícuotas distintas",
+    "especificaciones": "Especificaciones técnicas distintas",
+    "plazo_pago": "Plazo de pago real distinto del supuesto",
+    "error_publicacion": "Error en la publicación original (monto, cantidad, unidad)",
+}
+EXPLICACION_ESTADOS = ("pendiente", "verificado", "no_aplica")
+EXPLICACION_ESTADO_TXT = {"pendiente": "Pendiente", "verificado": "Verificado: explica la brecha",
+                          "no_aplica": "No aplica a este caso"}
+
+
+def guardar_explicacion(conn: sqlite3.Connection, renglon_id: int, item: str, estado: str, nota: str,
+                        autor: str) -> None:
+    if item not in EXPLICACIONES_ITEMS:
+        raise ValueError(f"explicación desconocida: {item!r}")
+    if estado not in EXPLICACION_ESTADOS:
+        raise ValueError(f"estado desconocido: {estado!r}")
+    conn.execute(
+        "INSERT INTO explicaciones_caso (renglon_id, item, estado, nota, autor, created_at) "
+        "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(renglon_id, item) DO UPDATE SET "
+        "estado=excluded.estado, nota=excluded.nota, autor=excluded.autor, created_at=excluded.created_at",
+        (renglon_id, item, estado, nota or None, autor or None, db.now_iso()))
+    conn.commit()
+
+
+def explicaciones_vigentes(conn: sqlite3.Connection, renglon_id: int) -> dict[str, dict]:
+    """Las 5 explicaciones para `renglon_id`, con las que todavía no se tocaron en 'pendiente'
+    (nunca None: así la plantilla siempre tiene las 5 filas del checklist)."""
+    rows = conn.execute("SELECT * FROM explicaciones_caso WHERE renglon_id = ?", (renglon_id,)).fetchall()
+    out = {r["item"]: dict(r) for r in rows}
+    for item in EXPLICACIONES_ITEMS:
+        out.setdefault(item, {"item": item, "estado": "pendiente", "nota": None, "autor": None})
+    return out
+
+
 # ── Cola de revisión ─────────────────────────────────────────────────────────
 
 GRIS_MOTIVOS_REVISAR = ("atributo_desconocido", "sin_referencia_variante", "sin_referencia_presentacion",
                         "sin_datos", "revisar_unidad")
 ORIGENES = ("gris", "equivalencia", "rojo", "juez", "manual")
+# Etiqueta CORTA del motivo (distinta de format.MOTIVO_CODIGO_TXT, que es la explicación larga):
+# para el resumen de una línea de la cola ("Aceite de girasol 1,5 L — revisar unidad", pedido de
+# jdemonasterio tras la revisión de journeys). Vive acá (no en web/format.py) porque la arma
+# `cola()`, que no es solo del webui (también la usa el CLI).
+MOTIVO_CODIGO_CORTO = {
+    "sin_precio": "sin precio", "sin_datos": "sin datos de mercado", "revisar_unidad": "revisar unidad",
+    "fuera_alcance": "fuera de catálogo", "atributo_desconocido": "variedad desconocida",
+    "sin_referencia_variante": "variedad sin referencia", "sin_referencia_presentacion": "envase sin referencia",
+    "equivalencia_por_verificar": "equivalencia por verificar", "ok": "comparación ok",
+}
 
 
 def _detectar(conn: sqlite3.Connection) -> list[dict]:
@@ -347,10 +403,12 @@ def cola(conn: sqlite3.Connection, filtros: dict | None = None) -> dict:
         params.append(filtros["producto"])
     rows = conn.execute(
         "SELECT rc.id revision_id, rc.renglon_id, rc.origen, rc.estado, rc.veredicto, rc.nota, rc.revisor, "
-        "rc.updated_at, r.proceso_id, r.descripcion, r.proveedor, COALESCE(pr.nombre, r.producto_id) producto, "
+        "rc.updated_at, r.proceso_id, r.descripcion, r.proveedor, r.contenido_base, r.unidad_base, r.alertas, "
+        "COALESCE(pr.nombre, r.producto_id) producto, "
         "COALESCE(p.organismo_canonico, p.organismo) organismo, "
         "COALESCE(p.fecha_adjudicacion, p.fecha_publicacion) fecha, "
-        "k.semaforo, k.motivo_codigo, k.sobreprecio_ajustado_pct brecha, k.exceso_ars "
+        "k.semaforo, k.motivo, k.motivo_codigo, k.sobreprecio_ajustado_pct brecha, "
+        "k.sobreprecio_ajustado_pct, k.sobreprecio_corroborado_pct, k.exceso_ars "
         "FROM revisiones_caso rc JOIN renglones r ON r.id = rc.renglon_id "
         "JOIN procesos p ON p.id = r.proceso_id LEFT JOIN comparaciones k ON k.renglon_id = r.id "
         "LEFT JOIN productos pr ON pr.id = r.producto_id "
@@ -360,7 +418,32 @@ def cola(conn: sqlite3.Connection, filtros: dict | None = None) -> dict:
     counts = {o: 0 for o in ORIGENES}
     for r in conn.execute("SELECT origen, COUNT(*) n FROM revisiones_caso GROUP BY origen"):
         counts[r["origen"]] = r["n"]
-    return {"items": [dict(r) for r in rows], "counts": counts}
+
+    # Colores EN VIVO (MEJORAS #49.4, pedido de jdemonasterio: "tienen que coincidir con la home,
+    # 9 rojos"): directo de `comparaciones`, igual que `web.queries.kpis()` sin filtros — nunca el
+    # tally de `counts` (que es por ORIGEN de la cola, acumulado histórico, y puede quedar
+    # desactualizado si un caso ya resuelto cambió de color después).
+    total_renglones = conn.execute("SELECT COUNT(*) n FROM renglones").fetchone()["n"]
+    colores = {"rojo": 0, "amarillo": 0, "verde": 0}
+    for r in conn.execute(
+            "SELECT semaforo, COUNT(*) n FROM comparaciones WHERE semaforo IN ('rojo','amarillo','verde') "
+            "GROUP BY semaforo"):
+        colores[r["semaforo"]] = r["n"]
+    colores["gris"] = max(total_renglones - sum(colores.values()), 0)
+
+    items = []
+    for r in rows:
+        d = dict(r)
+        d["alertas_list"] = json.loads(d["alertas"]) if d.get("alertas") else []
+        d["monto_inconsistente"] = "monto_inconsistente" in d["alertas_list"]
+        partes = [(d.get("producto") or "(sin producto)").replace("_", " ")]
+        if d.get("contenido_base") and d.get("unidad_base"):
+            partes.append(f"{d['contenido_base']:g} {d['unidad_base']}")
+        corto = " ".join(partes)
+        motivo_corto = MOTIVO_CODIGO_CORTO.get(d.get("motivo_codigo"), "")
+        d["resumen_corto"] = f"{corto} — {motivo_corto}" if motivo_corto else corto
+        items.append(d)
+    return {"items": items, "counts": counts, "colores": colores}
 
 
 def guardar_revision(conn: sqlite3.Connection, renglon_id: int, veredicto: str | None, nota: str,
@@ -382,17 +465,24 @@ def caso(conn: sqlite3.Connection, renglon_id: int) -> dict | None:
         "SELECT r.*, k.*, pr.nombre producto_nombre, p.id proceso_id, p.numero, p.fuente, "
         "COALESCE(p.organismo_canonico, p.organismo) organismo, p.url proceso_url, "
         "COALESCE(p.fecha_adjudicacion, p.fecha_publicacion) fecha_proceso, d.url doc_url, "
+        # Las 3 fechas por separado (MEJORAS #49.2, pedido de jdemonasterio): apertura/adjudicación/
+        # publicación nunca deben quedar escondidas detrás de un solo COALESCE en el comprobante.
+        "p.fecha_apertura fecha_apertura, p.fecha_adjudicacion fecha_adjudicacion, "
+        "p.fecha_publicacion fecha_publicacion, "
         "r.id id "
         "FROM renglones r JOIN procesos p ON p.id = r.proceso_id LEFT JOIN comparaciones k ON k.renglon_id = r.id "
         "LEFT JOIN productos pr ON pr.id = r.producto_id LEFT JOIN documentos d ON d.id = p.documento_id "
         "WHERE r.id = ?", (renglon_id,)).fetchone()
     if not row:
         return None
-    import json
     data = dict(row)
     data["fuente_fragmento"] = json.loads(data["fuente_fragmento"]) if data.get("fuente_fragmento") else None
     data["evidencia"] = json.loads(data["evidencia_json"]) if data.get("evidencia_json") else []
     data["alertas_list"] = json.loads(data["alertas"]) if data.get("alertas") else []
+    # Brecha segun el plazo de pago supuesto (0/1/2/3 meses, prime P20): las dos escenarios
+    # financieros del comprobante de calculo (1 mes = amarillo, 2 meses = rojo) salen de aca.
+    data["sensibilidad"] = json.loads(data["sensibilidad_json"]) if data.get("sensibilidad_json") else {}
+    data["explicaciones"] = explicaciones_vigentes(conn, renglon_id)
     validaciones = validaciones_mercado_vigentes(conn, renglon_id)
     for o in data["evidencia"]:
         clave = clave_observacion(o.get("fuente", ""), o.get("fecha", ""), o.get("descripcion"))
@@ -433,6 +523,29 @@ def caso(conn: sqlite3.Connection, renglon_id: int) -> dict | None:
         {"nombre": nombre, "frases": ", ".join(" ".join(p) for p in frases[:6])}
         for nombre, frases in sorted((prod.variantes or {}).items())
     ] if prod and prod.variantes else [])
+    return data
+
+
+def comprobante(conn: sqlite3.Connection, renglon_id: int) -> dict | None:
+    """Datos para el "comprobante de cálculo" de un renglón (MEJORAS #49.2): todo lo que
+    `caso()` ya junta (dato original, normalización, evidencia, correcciones, explicaciones
+    alternativas) más el par de observaciones que forma el mínimo CORROBORADO (con su grupo
+    comercial, `familia_fuente`) y el estado de publicación del proceso al que pertenece — para
+    que el documento se pueda imprimir o mandar solo, sin tener que volver a abrir la app.
+    """
+    data = caso(conn, renglon_id)
+    if not data:
+        return None
+    from .pipeline.compare import familia_fuente
+    pool_no_oficial = [o for o in data["evidencia"] if o.get("canal") != "oficial"]
+    par = pool_no_oficial[:2] if data.get("ref_corroborada") else []
+    for o in par:
+        o["familia"] = familia_fuente(o.get("fuente", ""))
+    data["par_corroborado"] = par
+    proc = conn.execute(
+        "SELECT id, numero, organismo, estado_revision, revision_huella, nota_revision "
+        "FROM procesos WHERE id = ?", (data["proceso_id"],)).fetchone()
+    data["proceso_estado"] = dict(proc) if proc else {}
     return data
 
 
