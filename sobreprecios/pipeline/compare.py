@@ -37,7 +37,8 @@ import statistics
 from dataclasses import asdict, dataclass, field, replace
 
 from .. import config, db
-from ..catalog import Producto, load_catalog, variante as variante_de, variante_estado, variantes_aceptadas
+from ..catalog import (Producto, load_catalog, variante as variante_de, variante_estado, variante_legible,
+                       variantes_aceptadas)
 from ..revision_humana import aplicar_correcciones, aplicar_exclusiones_mercado
 from .comprar_import import actualizar_estado_documental, brecha_ofertas
 from ..textnorm import norm, tokens
@@ -489,7 +490,7 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
                 obs = misma
             elif cfg.get("variante_sin_mercado", "gris") == "gris":
                 bloqueo = ("sin_referencia_variante",
-                           f"no hay precios de mercado de la variante exigida ({variante}) en la fecha; "
+                           f"no hay precios de mercado de la variante exigida ({variante_legible(variante)}) en la fecha; "
                            "las otras variantes no son referencia")
             else:
                 res.estado_atributo = "sin_mercado"
@@ -731,7 +732,7 @@ def compare(precio_estado_ub: float | None, cantidad_base: float | None, fecha: 
     if res.presentacion_exacta:
         notas.append("misma presentación")
     if variante and res.estado_atributo in {"verificado", "por_defecto"}:
-        notas.append(f"misma variedad ({variante})")
+        notas.append(f"misma variedad ({variante_legible(variante)})")
     elif res.estado_atributo == "no_exigido":
         notas.append("variedad no exigida en la ficha")
     if nota_equivalencia and res.estado_atributo in {"verificado", "por_defecto", "verificado (humano)"}:

@@ -50,8 +50,8 @@ REF_TXT = {"misma_marca": "misma marca", "p25_mayorista": "mayorista (P25)",
            "mediana_mayorista": "mayorista (mediana)", "min_mayorista": "mayorista (mínimo)",
            "mediana_minorista": "supermercado (mediana)", "indec": "INDEC (promedio)",
            "min_mercado": "mínimo de mercado", "min_minorista": "supermercado (mínimo)"}
-ATRIBUTO_TXT = {"verificado": "variedad verificada", "no_exigido": "variedad no exigida en la ficha",
-                "desconocido": "variedad desconocida", "ambiguo": "variedad ambigua", "sin_mercado": "variedad sin mercado",
+ATRIBUTO_TXT = {"verificado": "la compra pide una variedad concreta y se identificó cuál", "no_exigido": "variedad no exigida en la ficha",
+                "desconocido": "variedad desconocida", "ambiguo": "variedad ambigua", "sin_mercado": "el mercado no tiene esa variedad en la fecha",
                 "verificado (humano)": "variedad confirmada a mano por el revisor"}
 MOTIVO_CODIGO_TXT = {
     "sin_precio": "no se pudo calcular el precio por unidad base o falta la fecha de la compra",
@@ -77,7 +77,8 @@ LEGENDA_INVESTIGACION = ("Un color (sobre todo rojo) es una investigación pendi
 
 
 _SIN_ROJO_RE = re.compile(r"sin rojo:\s*([^)]+)")
-_EQUIV_RE = re.compile(r"no está verificada \(([^)]+)\)")
+# Lazy hasta el ")" que cierra la oración: el detalle puede traer paréntesis adentro ("variante exigida (mostachol)").
+_EQUIV_RE = re.compile(r"no está verificada \((.+?)\)(?=[.;]|$)")
 
 
 def explicar_semaforo(row: dict) -> str:

@@ -70,3 +70,14 @@ def test_explicar_semaforo_sin_porcentaje_no_rompe():
     assert fmt.explicar_semaforo({"semaforo": "verde"}) == "Verde: dentro de lo esperado."
     assert fmt.explicar_semaforo({"semaforo": "rojo"}) == "Rojo."
     assert fmt.explicar_semaforo({"semaforo": "amarillo", "motivo": ""}) == "Amarillo."
+
+
+def test_explicar_semaforo_equivalencia_con_parentesis_anidados_no_se_corta():
+    """Regresión: el detalle trae la variante entre paréntesis y la frase se cortaba en el primer ")"."""
+    row = {"semaforo": "amarillo", "motivo_codigo": "equivalencia_por_verificar", "sobreprecio_ajustado_pct": 106.9,
+           "motivo": "posible sobreprecio: +106.9% vs min mercado de productos parecidos, pero la equivalencia no "
+                     "está verificada (no hay precios de mercado de la variante exigida (mostachol) en la fecha; "
+                     "las otras variantes no son referencia). Revisar el pliego antes de concluir"}
+    texto = fmt.explicar_semaforo(row)
+    assert "(mostachol) en la fecha; las otras variantes no son referencia" in texto
+    assert texto.count("(") == texto.count(")")

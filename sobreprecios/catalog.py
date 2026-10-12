@@ -218,6 +218,15 @@ def variantes_aceptadas(prod: Producto | None, variante_compra: str | None) -> s
     return {variante_compra, *((prod.compatibles.get(variante_compra) or ()) if prod else ())}
 
 
+def variante_legible(codigo: str | None) -> str:
+    """Código de variante del catálogo → texto para personas: 'sopero_sin_detalle' → 'sopero, sin forma
+    específica', 'cabello_angel' → 'cabello angel'. Los motivos y la webui nunca muestran el código crudo."""
+    if not codigo:
+        return ""
+    texto = codigo.removesuffix("_sin_detalle").replace("_", " ")
+    return f"{texto}, sin forma específica" if codigo.endswith("_sin_detalle") else texto
+
+
 def variante(prod: Producto | None, descripcion: str | None) -> str | None:
     """Variante según las frases de la descripción ('largos', 'fortificada'...) o None si no se sabe.
 

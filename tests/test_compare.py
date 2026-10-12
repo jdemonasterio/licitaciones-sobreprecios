@@ -523,3 +523,14 @@ def test_falta_el_envase_no_se_reporta_como_falta_la_variedad():
                   presentacion_exacta=True, variante="fortificada", variante_obs=vfn,
                   variantes_ok={"fortificada", "comun"})
     assert res.motivo_codigo == "sin_referencia_presentacion"
+
+
+@pytest.mark.parametrize("codigo, esperado", [
+    ("sopero_sin_detalle", "sopero, sin forma específica"),
+    ("cabello_angel", "cabello angel"),
+    ("cortos", "cortos"),
+    (None, ""),
+])
+def test_variante_legible_nunca_muestra_el_codigo_crudo(codigo, esperado):
+    from sobreprecios.catalog import variante_legible
+    assert variante_legible(codigo) == esperado
